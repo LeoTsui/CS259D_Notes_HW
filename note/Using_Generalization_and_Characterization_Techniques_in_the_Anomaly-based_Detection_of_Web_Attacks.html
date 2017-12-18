@@ -1,0 +1,856 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.4.1/github-markdown.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/styles/default.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.8.3/katex.min.css">
+    <link rel="stylesheet" href="https://gitcdn.xyz/repo/goessner/mdmath/master/css/texmath.css">
+    <link rel="stylesheet" href="https://gitcdn.xyz/repo/goessner/mdmath/master/css/vscode-texmath.css">
+    <title>Using Generalization and Characterization Techniques in the Anomaly-based Detection of Web Attacks</title>
+
+</head>
+
+<body class="markdown-body">
+    <h1 data-line="0" class="code-line" id="using-generalization-and-characterization-techniques-in-the-anomaly-based-detection-of-web-attacks">Using Generalization and Characterization Techniques in the Anomaly-based Detection of Web Attacks</h1>
+    <!-- TOC -->
+    <ul>
+        <li data-line="4" class="code-line"><a href="#background-knowledge-and-insight">Background Knowledge and Insight</a></li>
+        <li data-line="5" class="code-line"><a href="#goal">Goal</a></li>
+        <li data-line="6" class="code-line"><a href="#architecture">Architecture</a>
+            <ul>
+                <li data-line="7" class="code-line"><a href="#event-collection">Event Collection</a></li>
+                <li data-line="8" class="code-line"><a href="#anomaly-detection">Anomaly detection</a></li>
+                <li data-line="9" class="code-line"><a href="#anomaly-signature-generation">Anomaly signature generation</a></li>
+                <li data-line="10" class="code-line"><a href="#anomaly-aggregation">Anomaly aggregation</a></li>
+                <li data-line="11" class="code-line"><a href="#attack-class-inference">Attack class Inference</a></li>
+            </ul>
+        </li>
+        <li data-line="12" class="code-line"><a href="#feature">Feature</a>
+            <ul>
+                <li data-line="13" class="code-line"><a href="#attribute-length">Attribute length</a></li>
+                <li data-line="14" class="code-line"><a href="#character-distribution">Character distribution</a></li>
+                <li data-line="15" class="code-line"><a href="#structural-inference">Structural inference</a></li>
+                <li data-line="16" class="code-line"><a href="#token-finder">Token finder</a></li>
+            </ul>
+        </li>
+        <li data-line="17" class="code-line"><a href="#reference">Reference</a></li>
+    </ul>
+    <!-- /TOC -->
+    <h2 data-line="21" class="code-line" id="background-knowledge-and-insight">Background Knowledge and Insight</h2>
+    <ul>
+        <li data-line="23" class="code-line">Web application
+            <ul>
+                <li data-line="24" class="code-line">Easy to develop, deploy, and access</li>
+                <li data-line="25" class="code-line">Critical security vulnerabilities
+                    <ul>
+                        <li data-line="26" class="code-line">Lack of awareness of security issues</li>
+                        <li data-line="27" class="code-line">Feature-driven development</li>
+                        <li data-line="28" class="code-line">Time-to-market constraints</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li data-line="29" class="code-line">Anomaly detection for web security
+            <ul>
+                <li data-line="30" class="code-line">Pro
+                    <ul>
+                        <li data-line="31" class="code-line">Adapt to ad-hoc nature of web apps
+                            <ul>
+                                <li data-line="32" class="code-line">Custom-developed</li>
+                            </ul>
+                        </li>
+                        <li data-line="33" class="code-line">Identify previously unknown attacks</li>
+                    </ul>
+                </li>
+                <li data-line="34" class="code-line">Con
+                    <ul>
+                        <li data-line="35" class="code-line">Prone to producing false positives</li>
+                        <li data-line="36" class="code-line">Not characterization of attack causing anomaly(the nature of a detected attack)</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li data-line="37" class="code-line">Anomaly generalization
+            <ul>
+                <li data-line="38" class="code-line">Group similar anomalies together</li>
+                <li data-line="39" class="code-line">Administrator analyzes each group
+                    <ul>
+                        <li data-line="40" class="code-line">If false positives: Filter</li>
+                        <li data-line="41" class="code-line">If instances of attack: Generate anomaly signature</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li data-line="42" class="code-line">Attack characterization
+            <ul>
+                <li data-line="43" class="code-line">Types of exploitations follow specific rules</li>
+            </ul>
+        </li>
+    </ul>
+    <h2 data-line="45" class="code-line" id="goal">Goal</h2>
+    <ul>
+        <li data-line="47" class="code-line">Detection system can be deployed on an existing web-based system</li>
+        <li data-line="48" class="code-line">Detecting unknown attacks, in the unsupervised fashion
+            <ul>
+                <li data-line="49" class="code-line"><strong>Generalize</strong> similar anomalies</li>
+                <li data-line="50" class="code-line"><strong>Characterize</strong> the normal behavior</li>
+            </ul>
+        </li>
+    </ul>
+    <h2 data-line="52" class="code-line" id="architecture">Architecture</h2>
+    <p data-line="54" class="code-line"><img src="images/G&amp;C.png" alt="Architecture of web intrusion detection system"></p>
+    <h3 data-line="56" class="code-line" id="event-collection">Event Collection</h3>
+    <ul>
+        <li data-line="58" class="code-line">Web server access logs</li>
+        <li data-line="59" class="code-line">Source of the events is unknown</li>
+    </ul>
+    <h3 data-line="61" class="code-line" id="anomaly-detection">Anomaly detection</h3>
+    <ul>
+        <li data-line="63" class="code-line">Learns profiles of normal application behavior and detect deviations</li>
+        <li data-line="64" class="code-line">Input: URLs of successful GET requests</li>
+        <li data-line="65" class="code-line">Learning phase
+            <ul>
+                <li data-line="66" class="code-line">Builds profiles of normal behavior for each application parameter</li>
+                <li data-line="67" class="code-line">Set a dynamic detection threshold for the attribute</li>
+            </ul>
+        </li>
+        <li data-line="68" class="code-line">Detection phase
+            <ul>
+                <li data-line="69" class="code-line">Evaluate the observed values of the attribute</li>
+                <li data-line="70" class="code-line">Outputs: anomaly score,
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>[</mo><mn>0</mn><mo separator="true">,</mo><mn>1</mn><mo>]</mo></mrow><annotation encoding="application/x-tex">[0, 1]</annotation></semantics></math></span>
+                        <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base"><span class="mopen">[</span><span class="mord mathrm">0</span>
+                        <span class="mpunct">,</span>
+                        <span class="mord mathrm">1</span><span class="mclose">]</span></span>
+                        </span>
+                        </span>
+                    </eq>
+                    <ul>
+                        <li data-line="71" class="code-line">
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mn>0</mn></mrow><annotation encoding="application/x-tex">0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.64444em;"></span>
+                                <span class="strut bottom" style="height:0.64444em;vertical-align:0em;"></span><span class="base"><span class="mord mathrm">0</span></span>
+                                </span>
+                                </span>
+                            </eq>, high anomalous value</li>
+                        <li data-line="72" class="code-line">Weighted sum of the individual model scores</li>
+                    </ul>
+                </li>
+                <li data-line="73" class="code-line">Alert</li>
+            </ul>
+        </li>
+    </ul>
+    <h3 data-line="75" class="code-line" id="anomaly-signature-generation">Anomaly signature generation</h3>
+    <ul>
+        <li data-line="77" class="code-line">Generates anomaly signatures to group &quot;similar&quot; alerts</li>
+        <li data-line="78" class="code-line">Signature set can be modified at run-time</li>
+        <li data-line="79" class="code-line">Similarity metric: model-dependent</li>
+        <li data-line="80" class="code-line">Anomaly signature is generated by the relaxation of the parameters used by the anomaly models</li>
+    </ul>
+    <h3 data-line="82" class="code-line" id="anomaly-aggregation">Anomaly aggregation</h3>
+    <ul>
+        <li data-line="84" class="code-line">Groups anomalies according to model-specific similarity operations</li>
+    </ul>
+    <h3 data-line="86" class="code-line" id="attack-class-inference">Attack class Inference</h3>
+    <ul>
+        <li data-line="88" class="code-line">Characterizes types of attacks anomalies may represent</li>
+        <li data-line="89" class="code-line">Challenge: Anomalies hard for human analysts to interpret</li>
+        <li data-line="90" class="code-line">Observation: Attack classes violate anomaly models in consistent ways
+            <ul>
+                <li data-line="91" class="code-line">Use consistencies to provide hints to analyst</li>
+            </ul>
+        </li>
+        <li data-line="92" class="code-line">Compared with misuse detection
+            <ul>
+                <li data-line="93" class="code-line">Difference: Class inference only applied to anomalous events</li>
+                <li data-line="94" class="code-line">Advantage: Class inference can be less precise</li>
+            </ul>
+        </li>
+        <li data-line="95" class="code-line">Families of attacks
+            <ul>
+                <li data-line="96" class="code-line">Directory traversal
+                    <ul>
+                        <li data-line="97" class="code-line">Unauthorized access to files on web server
+                            <ul>
+                                <li data-line="98" class="code-line">Use &quot;.&quot; and &quot;/&quot;</li>
+                            </ul>
+                        </li>
+                        <li data-line="99" class="code-line"><strong>Heuristic activated</strong>
+                            <ul>
+                                <li data-line="100" class="code-line"><strong>Character distribution: dominating char set C intersecting {&quot;.&quot;, &quot;/&quot;}</strong></li>
+                                <li data-line="101" class="code-line"><strong>Structural inference: prefix ending in &quot;.&quot; or &quot;/&quot;</strong></li>
+                            </ul>
+                        </li>
+                        <li data-line="102" class="code-line">Attack inference
+                            <ul>
+                                <li data-line="103" class="code-line">Scan anomalous attribute value for regex (/|\.\.)+</li>
+                            </ul>
+                        </li>
+                        <li data-line="104" class="code-line">Example
+                            <ul>
+                                <li data-line="105" class="code-line">Itemid = &quot;cat ../../../../../etc/shadow&quot;</li>
+                                <li data-line="106" class="code-line">Char distribution model detects high count of . and /</li>
+                                <li data-line="107" class="code-line">Structural inference model detects anomalous structure</li>
+                                <li data-line="108" class="code-line">Attack inference matches (/|\.\.)+ &amp; detects directory traversal</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+                <li data-line="109" class="code-line">Cross-site scripting
+                    <ul>
+                        <li data-line="110" class="code-line">Execute malicious code on client-side machine</li>
+                        <li data-line="111" class="code-line"><strong>Heuristic activated: structural inference, character distribution, token finder</strong>
+                            <ul>
+                                <li data-line="112" class="code-line">Insertion of HTML tags</li>
+                                <li data-line="113" class="code-line">Use of client-side scripting code as content</li>
+                            </ul>
+                        </li>
+                        <li data-line="114" class="code-line">Attack inference: scan for JavaScript or HTML fragments
+                            <ul>
+                                <li data-line="115" class="code-line">&quot;script&quot;, &quot;&lt;&quot; , &quot;&gt;&quot;</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+                <li data-line="116" class="code-line">SQL injection
+                    <ul>
+                        <li data-line="117" class="code-line">Unauthorized modifications to SQL queries
+                            <ul>
+                                <li data-line="118" class="code-line">Escape an input to a query parameter</li>
+                            </ul>
+                        </li>
+                        <li data-line="119" class="code-line"><strong>Heuristic activated: attribute structure</strong></li>
+                        <li data-line="120" class="code-line">Attack inference
+                            <ul>
+                                <li data-line="121" class="code-line">Scan attribute value for SQL keywords (e.g., SELECT, INSERT, UPDATE, DELETE, ', --)</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+                <li data-line="122" class="code-line">Buffer overflow
+                    <ul>
+                        <li data-line="123" class="code-line">Send a large amount of data
+                            <ul>
+                                <li data-line="124" class="code-line">overflow a buffer</li>
+                                <li data-line="125" class="code-line">overwrite return address, data, function pointers, sensitive variables</li>
+                            </ul>
+                        </li>
+                        <li data-line="126" class="code-line">Significant deviation from normal profiles</li>
+                        <li data-line="127" class="code-line"><strong>Heuristic activated: character distribution, structural inference, attribute length</strong></li>
+                        <li data-line="128" class="code-line">Attack inference
+                            <ul>
+                                <li data-line="129" class="code-line">Scan attribute string for binary values (ASCII chars &gt; 0x80)</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+    </ul>
+    <h2 data-line="131" class="code-line" id="feature">Feature</h2>
+    <h3 data-line="133" class="code-line" id="attribute-length">Attribute length</h3>
+    <ul>
+        <li data-line="135" class="code-line">Characterization
+            <ul>
+                <li data-line="136" class="code-line"><strong>Many attribute values are either fixed in size or vary over a small range</strong></li>
+                <li data-line="137" class="code-line">Approximate actual(unknown) distribution of attribute lengths</li>
+                <li data-line="138" class="code-line">Chebyshev inequality
+                    <ul>
+                        <li data-line="139" class="code-line">Weak bound</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li data-line="140" class="code-line">Generalization
+            <ul>
+                <li data-line="141" class="code-line">
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>μ</mi></mrow><annotation encoding="application/x-tex">\\mu</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span>
+                        <span class="strut bottom" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="base"><span class="mord mathit">μ</span></span>
+                        </span>
+                        </span>
+                    </eq>, sample mean</li>
+                <li data-line="142" class="code-line">
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msup><mi>σ</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">\\sigma^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.8141079999999999em;"></span>
+                        <span class="strut bottom" style="height:0.8141079999999999em;vertical-align:0em;"></span><span class="base"><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">σ</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141079999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mathrm mtight">2</span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                    </eq>, variance</li>
+                <li data-line="143" class="code-line">
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>l</mi><mtext>obsv</mtext></msub></mrow><annotation encoding="application/x-tex">l\_{\\text{obsv}}</annotation></semantics></math></span><span class="katex-html"
+                            aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.84444em;vertical-align:-0.15em;"></span><span class="base"><span class="mord"><span class="mord mathit" style="margin-right:0.01968em;">l</span>
+                        <span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:-0.01968em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mathrm mtight">obsv</span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                    </eq>, observed attribute length</li>
+                <li data-line="144" class="code-line">
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>l</mi><mtext>orig</mtext></msub></mrow><annotation encoding="application/x-tex">l\_{\\text{orig}}</annotation></semantics></math></span><span class="katex-html"
+                            aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.980548em;vertical-align:-0.286108em;"></span><span class="base"><span class="mord"><span class="mord mathit" style="margin-right:0.01968em;">l</span>
+                        <span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.317502em;"><span style="top:-2.5500000000000003em;margin-left:-0.01968em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mathrm mtight">orig</span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"></span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                    </eq>, anomalous attribute length</li>
+                <li data-line="145" class="code-line">
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>d</mi><mtext>attr</mtext></msub></mrow><annotation encoding="application/x-tex">d\_{\\text{attr}}</annotation></semantics></math></span><span class="katex-html"
+                            aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.84444em;vertical-align:-0.15em;"></span><span class="base"><span class="mord"><span class="mord mathit">d</span>
+                        <span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2805559999999999em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mathrm mtight">attr</span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                    </eq>, configurable distance</li>
+                <li data-line="146" class="code-line">
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>ψ</mi><mtext>attrlen</mtext></msub><mo>(</mo><msub><mi>l</mi><mtext>obsv</mtext></msub><mo separator="true">,</mo><msub><mi>l</mi><mtext>orig</mtext></msub><mo>)</mo></mrow><annotation encoding="application/x-tex">\\psi\_{\\text{attrlen}}(l\_{\\text{obsv}}, l\_{\\text{orig}})</annotation></semantics></math></span>
+                        <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1.036108em;vertical-align:-0.286108em;"></span><span class="base"><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">ψ</span>
+                        <span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mathrm mtight">attrlen</span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                        </span>
+                        </span>
+                        </span><span class="mopen">(</span><span class="mord"><span class="mord mathit" style="margin-right:0.01968em;">l</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:-0.01968em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mathrm mtight">obsv</span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                        </span>
+                        </span>
+                        </span><span class="mpunct">,</span><span class="mord"><span class="mord mathit" style="margin-right:0.01968em;">l</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.317502em;"><span style="top:-2.5500000000000003em;margin-left:-0.01968em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mathrm mtight">orig</span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"></span></span>
+                        </span>
+                        </span>
+                        </span><span class="mclose">)</span></span>
+                        </span>
+                        </span>
+                    </eq>, similarity operator</li>
+                <li data-line="147" class="code-line">
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>ψ</mi><mtext>attrlen</mtext></msub><mo>≡</mo><mo>∣</mo><mfrac><mrow><msup><mi>σ</mi><mn>2</mn></msup></mrow><mrow><mo>(</mo><msub><mi>l</mi><mtext>obsv</mtext></msub><mo>−</mo><mi>μ</mi><msup><mo>)</mo><mn>2</mn></msup></mrow></mfrac><mo>−</mo><mfrac><mrow><msup><mi>σ</mi><mn>2</mn></msup></mrow><mrow><mo>(</mo><msub><mi>l</mi><mtext>orig</mtext></msub><mo>−</mo><mi>μ</mi><msup><mo>)</mo><mn>2</mn></msup></mrow></mfrac><mo>∣</mo><mo>&lt;</mo><msub><mi>d</mi><mtext>attr</mtext></msub></mrow><annotation encoding="application/x-tex">\\psi\_{\\text{attrlen}} \\equiv \\lvert \\frac{\\sigma^2}{(l\_{\\text{obsv}} - \\mu)^2} - \\frac{\\sigma^2}{(l\_{\\text{orig}} - \\mu)^2} \\rvert &lt; d\_{\\text{attr}}</annotation></semantics></math></span>
+                        <span class="katex-html" aria-hidden="true"><span class="strut" style="height:1.01792em;"></span><span class="strut bottom" style="height:1.5602399999999998em;vertical-align:-0.5423199999999999em;"></span><span class="base"><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">ψ</span>
+                        <span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mathrm mtight">attrlen</span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                        </span>
+                        </span>
+                        </span><span class="mrel">≡</span><span class="mopen">∣</span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.01792em;"><span style="top:-2.655em;"><span class="pstrut" style="height:3em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mopen mtight">(</span><span class="mord mtight"><span class="mord mathit mtight" style="margin-right:0.01968em;">l</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3448em;"><span style="top:-2.3487714285714287em;margin-left:-0.01968em;margin-right:0.07142857142857144em;"><span class="pstrut" style="height:2.5em;"></span>
+                        <span class="sizing reset-size3 size1 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mathrm mtight">obsv</span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15122857142857138em;"></span></span>
+                        </span>
+                        </span>
+                        </span><span class="mbin mtight">−</span><span class="mord mathit mtight">μ</span><span class="mclose mtight"><span class="mclose mtight">)</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7463142857142857em;"><span style="top:-2.786em;margin-right:0.07142857142857144em;"><span class="pstrut" style="height:2.5em;"></span>
+                        <span class="sizing reset-size3 size1 mtight"><span class="mord mathrm mtight">2</span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight"><span class="mord mathit mtight" style="margin-right:0.03588em;">σ</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8913142857142857em;"><span style="top:-2.931em;margin-right:0.07142857142857144em;"><span class="pstrut" style="height:2.5em;"></span>
+                        <span class="sizing reset-size3 size1 mtight"><span class="mord mathrm mtight">2</span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.52em;"></span></span>
+                        </span>
+                        </span><span class="mclose nulldelimiter"></span></span><span class="mbin">−</span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.01792em;"><span style="top:-2.655em;"><span class="pstrut" style="height:3em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mopen mtight">(</span><span class="mord mtight"><span class="mord mathit mtight" style="margin-right:0.01968em;">l</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3340428571428571em;"><span style="top:-2.357em;margin-left:-0.01968em;margin-right:0.07142857142857144em;"><span class="pstrut" style="height:2.5em;"></span>
+                        <span class="sizing reset-size3 size1 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mathrm mtight">orig</span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2818857142857143em;"></span></span>
+                        </span>
+                        </span>
+                        </span><span class="mbin mtight">−</span><span class="mord mathit mtight">μ</span><span class="mclose mtight"><span class="mclose mtight">)</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7463142857142857em;"><span style="top:-2.786em;margin-right:0.07142857142857144em;"><span class="pstrut" style="height:2.5em;"></span>
+                        <span class="sizing reset-size3 size1 mtight"><span class="mord mathrm mtight">2</span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight"><span class="mord mathit mtight" style="margin-right:0.03588em;">σ</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8913142857142857em;"><span style="top:-2.931em;margin-right:0.07142857142857144em;"><span class="pstrut" style="height:2.5em;"></span>
+                        <span class="sizing reset-size3 size1 mtight"><span class="mord mathrm mtight">2</span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.5423199999999999em;"></span></span>
+                        </span>
+                        </span><span class="mclose nulldelimiter"></span></span><span class="mclose">∣</span><span class="mrel">&lt;</span><span class="mord"><span class="mord mathit">d</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2805559999999999em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mathrm mtight">attr</span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                    </eq>
+                </li>
+            </ul>
+        </li>
+    </ul>
+    <h3 data-line="149" class="code-line" id="character-distribution">Character distribution</h3>
+    <ul>
+        <li data-line="151" class="code-line">Characterization
+            <ul>
+                <li data-line="152" class="code-line"><strong>Many attribute take values that have similar character distribution</strong></li>
+                <li data-line="153" class="code-line">Typical queries: human readable; Slow drop off</li>
+                <li data-line="154" class="code-line">ICD(idealized character distribution): Sorted frequencies of 256 chars; Pearson test</li>
+                <li data-line="155" class="code-line">Relative character frequencies
+                    <ul>
+                        <li data-line="156" class="code-line">Malicious queries
+                            <ul>
+                                <li data-line="157" class="code-line">Sharp drop-off, large occurrences of a single character</li>
+                                <li data-line="158" class="code-line">Little drop-off, random character values</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li data-line="159" class="code-line">Generalization
+            <ul>
+                <li data-line="160" class="code-line">
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>m</mi></mrow><annotation encoding="application/x-tex">m</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span>
+                        <span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base"><span class="mord mathit">m</span></span>
+                        </span>
+                        </span>
+                    </eq>,
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">#</mi></mrow><annotation encoding="application/x-tex">\\#</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span>
+                        <span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base"><span class="mord mathrm">#</span></span>
+                        </span>
+                        </span>
+                    </eq> dominating character value</li>
+                <li data-line="161" class="code-line">
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>c</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">c\_i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span>
+                        <span class="strut bottom" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="base"><span class="mord"><span class="mord mathit">c</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight">i</span></span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                    </eq>, the
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msup><mi>i</mi><mrow><mi>t</mi><mi>h</mi></mrow></msup></mrow><annotation encoding="application/x-tex">i^{th}</annotation></semantics></math></span><span class="katex-html"
+                            aria-hidden="true"><span class="strut" style="height:0.849108em;"></span><span class="strut bottom" style="height:0.849108em;vertical-align:0em;"></span><span class="base"><span class="mord"><span class="mord mathit">i</span>
+                        <span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.849108em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathit mtight">t</span>
+                        <span class="mord mathit mtight">h</span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                    </eq> domination character value</li>
+                <li data-line="162" class="code-line">
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>f</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">f\_i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span>
+                        <span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base"><span class="mord"><span class="mord mathit" style="margin-right:0.10764em;">f</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:-0.10764em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight">i</span></span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                    </eq>, corresponding relative frequency</li>
+                <li data-line="163" class="code-line">
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>C</mi></mrow><annotation encoding="application/x-tex">C</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span>
+                        <span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base"><span class="mord mathit" style="margin-right:0.07153em;">C</span></span>
+                        </span>
+                        </span>
+                    </eq>, set of
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>m</mi></mrow><annotation encoding="application/x-tex">m</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span>
+                        <span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base"><span class="mord mathit">m</span></span>
+                        </span>
+                        </span>
+                    </eq> dominating character values and frequency pairs extracted from the model</li>
+                <li data-line="164" class="code-line">
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>C</mi><mo>=</mo><mo>{</mo><mo>(</mo><msub><mi>c</mi><mn>1</mn></msub><mo separator="true">,</mo><msub><mi>f</mi><mn>1</mn></msub><mo>)</mo><mo separator="true">,</mo><mo>(</mo><msub><mi>c</mi><mn>2</mn></msub><mo separator="true">,</mo><msub><mi>f</mi><mn>2</mn></msub><mo>)</mo><mo separator="true">,</mo><mo>(</mo><msub><mi>c</mi><mi>m</mi></msub><mo separator="true">,</mo><msub><mi>f</mi><mi>m</mi></msub><mo>)</mo><mo>}</mo></mrow><annotation encoding="application/x-tex">C = \\{ (c\_1, f\_1), (c\_2, f\_2), (c\_m, f\_m) \\}</annotation></semantics></math></span>
+                        <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base"><span class="mord mathit" style="margin-right:0.07153em;">C</span>
+                        <span class="mrel">=</span>
+                        <span class="mopen">{</span><span class="mopen">(</span><span class="mord"><span class="mord mathit">c</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mathrm mtight">1</span></span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                        </span>
+                        </span>
+                        </span><span class="mpunct">,</span><span class="mord"><span class="mord mathit" style="margin-right:0.10764em;">f</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.10764em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mathrm mtight">1</span></span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                        </span>
+                        </span>
+                        </span><span class="mclose">)</span><span class="mpunct">,</span><span class="mopen">(</span><span class="mord"><span class="mord mathit">c</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mathrm mtight">2</span></span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                        </span>
+                        </span>
+                        </span><span class="mpunct">,</span><span class="mord"><span class="mord mathit" style="margin-right:0.10764em;">f</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.10764em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mathrm mtight">2</span></span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                        </span>
+                        </span>
+                        </span><span class="mclose">)</span><span class="mpunct">,</span><span class="mopen">(</span><span class="mord"><span class="mord mathit">c</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight">m</span></span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                        </span>
+                        </span>
+                        </span><span class="mpunct">,</span><span class="mord"><span class="mord mathit" style="margin-right:0.10764em;">f</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:-0.10764em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight">m</span></span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                        </span>
+                        </span>
+                        </span><span class="mclose">)</span><span class="mclose">}</span></span>
+                        </span>
+                        </span>
+                    </eq>
+                </li>
+                <li data-line="165" class="code-line">
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>C</mi><mtext>obsv</mtext></msub></mrow><annotation encoding="application/x-tex">C\_{\\text{obsv}}</annotation></semantics></math></span><span class="katex-html"
+                            aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="base"><span class="mord"><span class="mord mathit" style="margin-right:0.07153em;">C</span>
+                        <span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:-0.07153em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mathrm mtight">obsv</span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                    </eq>, set of dominating characters from the observed attribute value</li>
+                <li data-line="166" class="code-line">
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>C</mi><mtext>orig</mtext></msub></mrow><annotation encoding="application/x-tex">C\_{\\text{orig}}</annotation></semantics></math></span><span class="katex-html"
+                            aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.969438em;vertical-align:-0.286108em;"></span><span class="base"><span class="mord"><span class="mord mathit" style="margin-right:0.07153em;">C</span>
+                        <span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.317502em;"><span style="top:-2.5500000000000003em;margin-left:-0.07153em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mathrm mtight">orig</span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"></span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                    </eq>, corresponding set from he original anomalous value</li>
+                <li data-line="167" class="code-line">Sharp drop-off
+                    <ul>
+                        <li data-line="168" class="code-line">
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>ψ</mi><mtext>cdist</mtext></msub><mo>≡</mo><mi>m</mi><mi>i</mi><mi>n</mi><mo>{</mo><mo>∣</mo><msub><mi>f</mi><mrow><mtext>obsv</mtext><mo separator="true">,</mo><mi>i</mi></mrow></msub><mo>−</mo><msub><mi>f</mi><mrow><mtext>orig</mtext><mo separator="true">,</mo><mi>j</mi></mrow></msub><mo>∣</mo><mo>}</mo><mo>&lt;</mo><msub><mi>d</mi><mtext>cdist</mtext></msub></mrow><annotation encoding="application/x-tex">\\psi\_{\\text{cdist}} \\equiv min \\{ \\lvert f\_{\\text{obsv}, i} - f\_{\\text{orig}, j} \\rvert \\} &lt; d\_{\\text{cdist}}</annotation></semantics></math></span>
+                                <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1.036108em;vertical-align:-0.286108em;"></span><span class="base"><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">ψ</span>
+                                <span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                                <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mathrm mtight">cdist</span></span>
+                                </span>
+                                </span>
+                                </span>
+                                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                                </span>
+                                </span>
+                                </span><span class="mrel">≡</span><span class="mord mathit">m</span><span class="mord mathit">i</span><span class="mord mathit">n</span><span class="mopen">{</span><span class="mopen">∣</span><span class="mord"><span class="mord mathit" style="margin-right:0.10764em;">f</span>
+                                <span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361079999999999em;"><span style="top:-2.5500000000000003em;margin-left:-0.10764em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                                <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mathrm mtight">obsv</span></span><span class="mpunct mtight">,</span><span class="mord mathit mtight">i</span></span>
+                                </span>
+                                </span>
+                                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"></span></span>
+                                </span>
+                                </span>
+                                </span><span class="mbin">−</span><span class="mord"><span class="mord mathit" style="margin-right:0.10764em;">f</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.317502em;"><span style="top:-2.5500000000000003em;margin-left:-0.10764em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                                <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mathrm mtight">orig</span></span><span class="mpunct mtight">,</span><span class="mord mathit mtight"
+                                    style="margin-right:0.05724em;">j</span></span>
+                                </span>
+                                </span>
+                                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"></span></span>
+                                </span>
+                                </span>
+                                </span><span class="mclose">∣</span><span class="mclose">}</span><span class="mrel">&lt;</span><span class="mord"><span class="mord mathit">d</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                                <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mathrm mtight">cdist</span></span>
+                                </span>
+                                </span>
+                                </span>
+                                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                            </eq>
+                        </li>
+                    </ul>
+                </li>
+                <li data-line="169" class="code-line">Little drop-off
+                    <ul>
+                        <li data-line="170" class="code-line">
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>ψ</mi><mtext>cdist</mtext></msub><mo>≡</mo><mi>m</mi><mi>a</mi><mi>x</mi><mo>{</mo><mo>∣</mo><msub><mi>f</mi><mrow><mtext>obsv</mtext><mo separator="true">,</mo><mi>i</mi></mrow></msub><mo>−</mo><msub><mi>f</mi><mrow><mtext>orig</mtext><mo separator="true">,</mo><mi>j</mi></mrow></msub><mo>∣</mo><mo>}</mo><mo>&lt;</mo><msub><mi>d</mi><mtext>cdist</mtext></msub></mrow><annotation encoding="application/x-tex">\\psi\_{\\text{cdist}} \\equiv max \\{ \\lvert f\_{\\text{obsv}, i} - f\_{\\text{orig}, j} \\rvert \\} &lt; d\_{\\text{cdist}}</annotation></semantics></math></span>
+                                <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1.036108em;vertical-align:-0.286108em;"></span><span class="base"><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">ψ</span>
+                                <span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                                <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mathrm mtight">cdist</span></span>
+                                </span>
+                                </span>
+                                </span>
+                                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                                </span>
+                                </span>
+                                </span><span class="mrel">≡</span><span class="mord mathit">m</span><span class="mord mathit">a</span><span class="mord mathit">x</span><span class="mopen">{</span><span class="mopen">∣</span><span class="mord"><span class="mord mathit" style="margin-right:0.10764em;">f</span>
+                                <span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361079999999999em;"><span style="top:-2.5500000000000003em;margin-left:-0.10764em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                                <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mathrm mtight">obsv</span></span><span class="mpunct mtight">,</span><span class="mord mathit mtight">i</span></span>
+                                </span>
+                                </span>
+                                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"></span></span>
+                                </span>
+                                </span>
+                                </span><span class="mbin">−</span><span class="mord"><span class="mord mathit" style="margin-right:0.10764em;">f</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.317502em;"><span style="top:-2.5500000000000003em;margin-left:-0.10764em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                                <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mathrm mtight">orig</span></span><span class="mpunct mtight">,</span><span class="mord mathit mtight"
+                                    style="margin-right:0.05724em;">j</span></span>
+                                </span>
+                                </span>
+                                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"></span></span>
+                                </span>
+                                </span>
+                                </span><span class="mclose">∣</span><span class="mclose">}</span><span class="mrel">&lt;</span><span class="mord"><span class="mord mathit">d</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                                <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mathrm mtight">cdist</span></span>
+                                </span>
+                                </span>
+                                </span>
+                                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                            </eq>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+    </ul>
+    <h3 data-line="172" class="code-line" id="structural-inference">Structural inference</h3>
+    <ul>
+        <li data-line="174" class="code-line">Characterization
+            <ul>
+                <li data-line="175" class="code-line"><strong>Many attribute values can be modeled as strings generated by a regular grammar</strong></li>
+                <li data-line="176" class="code-line">Construct probabilistic grammar</li>
+                <li data-line="177" class="code-line">Anomaly score calculated as product of transition probabilities along path through NFA for a given value</li>
+            </ul>
+        </li>
+        <li data-line="178" class="code-line">Generalization
+            <ul>
+                <li data-line="179" class="code-line">Extract prefix up to and including first grammar-violating character
+                    <ul>
+                        <li data-line="180" class="code-line">Intuition: <strong>Prefix shared by attacks against same app</strong></li>
+                    </ul>
+                </li>
+                <li data-line="181" class="code-line">Mapping
+                    <ul>
+                        <li data-line="182" class="code-line">&quot;a&quot; for all lower-case alphabetic chars</li>
+                        <li data-line="183" class="code-line">&quot;A&quot; for all upper-case alphabetic chars</li>
+                        <li data-line="184" class="code-line">&quot;0&quot; for all numeric chars</li>
+                        <li data-line="185" class="code-line">All other chars unchanged</li>
+                    </ul>
+                </li>
+                <li data-line="186" class="code-line">
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>ψ</mi><mtext>structure</mtext></msub><mo>(</mo><msub><mi>s</mi><mtext>obsv</mtext></msub><mo separator="true">,</mo><msub><mi>s</mi><mtext>orig</mtext></msub><mo>)</mo><mo>≡</mo><msub><mi>s</mi><mrow><mtext>obsv</mtext><mo separator="true">,</mo><mi>i</mi></mrow></msub><mo>−</mo><msub><mi>s</mi><mrow><mtext>orig</mtext><mo separator="true">,</mo><mi>i</mi></mrow></msub></mrow><annotation encoding="application/x-tex">\\psi\_{\\text{structure}} ( s\_{\\text{obsv}}, s\_{\\text{orig}} ) \\equiv s\_{\\text{obsv}, i} - s\_{\\text{orig}, i}</annotation></semantics></math></span>
+                        <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1.036108em;vertical-align:-0.286108em;"></span><span class="base"><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">ψ</span>
+                        <span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2805559999999999em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mathrm mtight">structure</span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                        </span>
+                        </span>
+                        </span><span class="mopen">(</span><span class="mord"><span class="mord mathit">s</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mathrm mtight">obsv</span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                        </span>
+                        </span>
+                        </span><span class="mpunct">,</span><span class="mord"><span class="mord mathit">s</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.317502em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mathrm mtight">orig</span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"></span></span>
+                        </span>
+                        </span>
+                        </span><span class="mclose">)</span><span class="mrel">≡</span><span class="mord"><span class="mord mathit">s</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361079999999999em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mathrm mtight">obsv</span></span><span class="mpunct mtight">,</span><span class="mord mathit mtight">i</span></span>
+                        </span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"></span></span>
+                        </span>
+                        </span>
+                        </span><span class="mbin">−</span><span class="mord"><span class="mord mathit">s</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.317502em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mathrm mtight">orig</span></span><span class="mpunct mtight">,</span><span class="mord mathit mtight">i</span></span>
+                        </span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"></span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                    </eq>
+                </li>
+            </ul>
+        </li>
+    </ul>
+    <h3 data-line="188" class="code-line" id="token-finder">Token finder</h3>
+    <ul>
+        <li data-line="190" class="code-line">Characterization
+            <ul>
+                <li data-line="191" class="code-line"><strong>Many attribute takes values that are drawn from a small set of constants</strong></li>
+                <li data-line="192" class="code-line">Flags/indices</li>
+                <li data-line="193" class="code-line">Random/enumeration</li>
+            </ul>
+        </li>
+        <li data-line="194" class="code-line">Generalization
+            <ul>
+                <li data-line="195" class="code-line">
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>l</mi><mi>e</mi><mi>x</mi></mrow><annotation encoding="application/x-tex">lex</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span>
+                        <span class="strut bottom" style="height:0.69444em;vertical-align:0em;"></span><span class="base"><span class="mord mathit" style="margin-right:0.01968em;">l</span><span class="mord mathit">e</span><span class="mord mathit">x</span></span>
+                        </span>
+                        </span>
+                    </eq>, lexicographical similarity function
+                    <ul>
+                        <li data-line="196" class="code-line">Hamming distance</li>
+                        <li data-line="197" class="code-line">Levenshtein distance</li>
+                    </ul>
+                </li>
+                <li data-line="198" class="code-line">
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>ψ</mi><mtext>token</mtext></msub><mo>≡</mo><mi>l</mi><mi>e</mi><mi>x</mi><mo>(</mo><msub><mi>l</mi><mtext>obsv</mtext></msub><mo separator="true">,</mo><msub><mi>l</mi><mtext>orig</mtext></msub><mo>)</mo></mrow><annotation encoding="application/x-tex">\\psi\_{\\text{token}} \\equiv lex(l\_{\\text{obsv}}, l\_{\\text{orig}})</annotation></semantics></math></span>
+                        <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1.036108em;vertical-align:-0.286108em;"></span><span class="base"><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">ψ</span>
+                        <span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mathrm mtight">token</span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                        </span>
+                        </span>
+                        </span><span class="mrel">≡</span><span class="mord mathit" style="margin-right:0.01968em;">l</span><span class="mord mathit">e</span><span class="mord mathit">x</span><span class="mopen">(</span><span class="mord"><span class="mord mathit" style="margin-right:0.01968em;">l</span>
+                        <span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:-0.01968em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mathrm mtight">obsv</span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                        </span>
+                        </span>
+                        </span><span class="mpunct">,</span><span class="mord"><span class="mord mathit" style="margin-right:0.01968em;">l</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.317502em;"><span style="top:-2.5500000000000003em;margin-left:-0.01968em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mathrm mtight">orig</span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"></span></span>
+                        </span>
+                        </span>
+                        </span><span class="mclose">)</span></span>
+                        </span>
+                        </span>
+                    </eq>
+                </li>
+            </ul>
+        </li>
+    </ul>
+    <h2 data-line="200" class="code-line" id="reference">Reference</h2>
+    <ul>
+        <li data-line="202" class="code-line">Using Generalization and Characterization Techniques in the Anomaly-based Detection of Web Attacks, Robertson et al., 2006</li>
+        <li data-line="203" class="code-line"><a href="http://dreamkorea.tistory.com/attachment/hk70.pdf">http://dreamkorea.tistory.com/attachment/hk70.pdf</a></li>
+        <li data-line="204" class="code-line">CS 259D Session 12</li>
+    </ul>
+
+</body>
+
+</html>

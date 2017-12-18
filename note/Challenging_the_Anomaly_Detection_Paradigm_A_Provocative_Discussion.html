@@ -1,0 +1,146 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.4.1/github-markdown.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/styles/default.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.8.3/katex.min.css">
+    <link rel="stylesheet" href="https://gitcdn.xyz/repo/goessner/mdmath/master/css/texmath.css">
+    <link rel="stylesheet" href="https://gitcdn.xyz/repo/goessner/mdmath/master/css/vscode-texmath.css">
+    <title>Challenging the Anomaly Detection Paradigm: A Provocative Discussion</title>
+
+</head>
+
+<body class="markdown-body">
+    <h1 data-line="0" class="code-line" id="challenging-the-anomaly-detection-paradigm-a-provocative-discussion">Challenging the Anomaly Detection Paradigm: A Provocative Discussion</h1>
+    <!-- TOC -->
+    <ul>
+        <li data-line="4" class="code-line"><a href="#definitions-of-anomaly">Definitions of Anomaly</a></li>
+        <li data-line="5" class="code-line"><a href="#assumptions-and-question">Assumptions And Question</a>
+            <ul>
+                <li data-line="6" class="code-line"><a href="#problem-domain">Problem Domain</a></li>
+                <li data-line="7" class="code-line"><a href="#training-data">Training Data</a></li>
+                <li data-line="8" class="code-line"><a href="#operational-usability">Operational Usability</a></li>
+            </ul>
+        </li>
+        <li data-line="9" class="code-line"><a href="#recommend">Recommend</a></li>
+        <li data-line="10" class="code-line"><a href="#reference">Reference</a></li>
+    </ul>
+    <!-- /TOC -->
+    <h2 data-line="14" class="code-line" id="definitions-of-anomaly">Definitions of Anomaly</h2>
+    <ul>
+        <li data-line="16" class="code-line">Three types of anomalous
+            <ul>
+                <li data-line="17" class="code-line">Foreign-symbol anomalous
+                    <ul>
+                        <li data-line="18" class="code-line">Character or item appears first time</li>
+                    </ul>
+                </li>
+                <li data-line="19" class="code-line">Foreign n-gram anomalies
+                    <ul>
+                        <li data-line="20" class="code-line">Previously unseen sequence of characters</li>
+                    </ul>
+                </li>
+                <li data-line="21" class="code-line">Rare n-gram anomalies
+                    <ul>
+                        <li data-line="22" class="code-line">Sequence of characters appears more than once, but below a user specified threshold</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li data-line="23" class="code-line">Anomalous not malicious</li>
+        <li data-line="24" class="code-line">Definition of &quot;malicious&quot;
+            <ul>
+                <li data-line="25" class="code-line">Subjective</li>
+                <li data-line="26" class="code-line">Site-specific</li>
+            </ul>
+        </li>
+    </ul>
+    <h2 data-line="28" class="code-line" id="assumptions-and-question">Assumptions And Question</h2>
+    <h3 data-line="30" class="code-line" id="problem-domain">Problem Domain</h3>
+    <ul>
+        <li data-line="32" class="code-line">Attacks are anomalous (different from the norm)
+            <ul>
+                <li data-line="33" class="code-line">Blind spots of detector</li>
+                <li data-line="34" class="code-line">Hind actions</li>
+            </ul>
+        </li>
+        <li data-line="35" class="code-line">Attacks are rare
+            <ul>
+                <li data-line="36" class="code-line">Anomaly not the smallest cluster</li>
+                <li data-line="37" class="code-line">Scanning is on the top of flow counts</li>
+            </ul>
+        </li>
+        <li data-line="38" class="code-line">Anomalous activity is malicious
+            <ul>
+                <li data-line="39" class="code-line">Alpha flows (very large point-to-point data exchanges)</li>
+                <li data-line="40" class="code-line">DoS</li>
+                <li data-line="41" class="code-line"><em>Flash crowds</em></li>
+                <li data-line="42" class="code-line"><em>Port scans</em></li>
+                <li data-line="43" class="code-line"><em>Network scans</em></li>
+                <li data-line="44" class="code-line">Outage events</li>
+                <li data-line="45" class="code-line">Point-to-multipoint connection (such as content distribution mechanisms)</li>
+                <li data-line="46" class="code-line"><em>Worms</em></li>
+            </ul>
+        </li>
+    </ul>
+    <h3 data-line="48" class="code-line" id="training-data">Training Data</h3>
+    <ul>
+        <li data-line="50" class="code-line">Attack-free data is available
+            <ul>
+                <li data-line="51" class="code-line">Malicious behavior could last for many days</li>
+                <li data-line="52" class="code-line">Attack free data hard to obtain</li>
+            </ul>
+        </li>
+        <li data-line="53" class="code-line">Simulated data is representative
+            <ul>
+                <li data-line="54" class="code-line">Suspicious simulated data</li>
+                <li data-line="55" class="code-line">Labeled data expensive to obtain</li>
+            </ul>
+        </li>
+        <li data-line="56" class="code-line">Network traffic is static
+            <ul>
+                <li data-line="57" class="code-line">Hard to retrain or update IDS in a drifting environment
+                    <ul>
+                        <li data-line="58" class="code-line">IDS should be an unsupervised learning system</li>
+                    </ul>
+                </li>
+                <li data-line="59" class="code-line">High weight for recent data</li>
+            </ul>
+        </li>
+    </ul>
+    <h3 data-line="61" class="code-line" id="operational-usability">Operational Usability</h3>
+    <ul>
+        <li data-line="63" class="code-line">False alarm rates &gt; 1% are acceptable
+            <ul>
+                <li data-line="64" class="code-line">Depend on the traffic volume</li>
+            </ul>
+        </li>
+        <li data-line="65" class="code-line">The definition of malicious is universal
+            <ul>
+                <li data-line="66" class="code-line">Depend on the organization</li>
+            </ul>
+        </li>
+        <li data-line="67" class="code-line">Administrators can interpret anomalies
+            <ul>
+                <li data-line="68" class="code-line">They are tired</li>
+            </ul>
+        </li>
+    </ul>
+    <h2 data-line="70" class="code-line" id="recommend">Recommend</h2>
+    <ul>
+        <li data-line="72" class="code-line">More clearly define</li>
+        <li data-line="73" class="code-line">More accurate purpose</li>
+        <li data-line="74" class="code-line">More models</li>
+        <li data-line="75" class="code-line">More tests</li>
+    </ul>
+    <h2 data-line="77" class="code-line" id="reference">Reference</h2>
+    <ul>
+        <li data-line="79" class="code-line">Challenging the Anomaly Detection Paradigm: A Provocative Discussion, Gates-Taylor, 2007</li>
+        <li data-line="80" class="code-line">CS 259D Session 13</li>
+    </ul>
+
+</body>
+
+</html>

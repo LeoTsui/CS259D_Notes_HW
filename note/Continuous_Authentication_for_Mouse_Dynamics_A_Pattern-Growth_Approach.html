@@ -1,0 +1,936 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.4.1/github-markdown.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/styles/default.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.8.3/katex.min.css">
+    <link rel="stylesheet" href="https://gitcdn.xyz/repo/goessner/mdmath/master/css/texmath.css">
+    <link rel="stylesheet" href="https://gitcdn.xyz/repo/goessner/mdmath/master/css/vscode-texmath.css">
+    <title>Continuous Authentication for Mouse Dynamics: A Pattern-Growth Approach</title>
+
+</head>
+
+<body class="markdown-body">
+    <h1 data-line="0" class="code-line" id="continuous-authentication-for-mouse-dynamics-a-pattern-growth-approach">Continuous Authentication for Mouse Dynamics: A Pattern-Growth Approach</h1>
+    <!-- TOC -->
+    <ul>
+        <li data-line="4" class="code-line"><a href="#background-knowledge">Background Knowledge</a></li>
+        <li data-line="5" class="code-line"><a href="#goal-and-contribution">Goal and Contribution</a></li>
+        <li data-line="6" class="code-line"><a href="#datamouse-behavior-data">Data(Mouse Behavior Data)</a>
+            <ul>
+                <li data-line="7" class="code-line"><a href="#data-source">Data Source</a></li>
+                <li data-line="8" class="code-line"><a href="#mouse-behavior-analysis">Mouse Behavior Analysis</a></li>
+                <li data-line="9" class="code-line"><a href="#mouse-behavior-pattern-mining">Mouse Behavior Pattern Mining</a>
+                    <ul>
+                        <li data-line="10" class="code-line"><a href="#clarifying-questions">Clarifying Questions</a></li>
+                        <li data-line="11" class="code-line"><a href="#mining-method">Mining Method</a></li>
+                        <li data-line="12" class="code-line"><a href="#reference-behavior-pattern-generation-and-matching">Reference-Behavior Pattern Generation and Matching</a></li>
+                        <li data-line="13" class="code-line"><a href="#behavior-pattern-analysis">Behavior Pattern Analysis</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li data-line="14" class="code-line"><a href="#feature">Feature</a></li>
+        <li data-line="15" class="code-line"><a href="#detection">Detection</a></li>
+        <li data-line="16" class="code-line"><a href="#limitation">Limitation</a></li>
+        <li data-line="17" class="code-line"><a href="#reference">Reference</a></li>
+    </ul>
+    <!-- /TOC -->
+    <h2 data-line="21" class="code-line" id="background-knowledge">Background Knowledge</h2>
+    <ul>
+        <li data-line="23" class="code-line">User Authentication Mechanism
+            <ul>
+                <li data-line="24" class="code-line">Only at the initial login session</li>
+                <li data-line="25" class="code-line">Continuous (re)authentication
+                    <ul>
+                        <li data-line="26" class="code-line">Passive</li>
+                        <li data-line="27" class="code-line">Transparent to users
+                            <ul>
+                                <li data-line="28" class="code-line">No hit on usability</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li data-line="29" class="code-line">Mouse dynamics
+            <ul>
+                <li data-line="30" class="code-line">Intrinsic behavioral variability
+                    <ul>
+                        <li data-line="31" class="code-line">Intrinsic human factors
+                            <ul>
+                                <li data-line="32" class="code-line">Biological or emotional status of the user</li>
+                            </ul>
+                        </li>
+                        <li data-line="33" class="code-line">External environmental variables
+                            <ul>
+                                <li data-line="34" class="code-line">Software environment, task, interaction mode</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+                <li data-line="35" class="code-line">No enough data for malicious users</li>
+                <li data-line="36" class="code-line">No public data set in mouse dynamics research</li>
+            </ul>
+        </li>
+        <li data-line="37" class="code-line">Hypothesis
+            <ul>
+                <li data-line="38" class="code-line">Observation:
+                    <ul>
+                        <li data-line="39" class="code-line">Measurements extracted from these behavior patterns</li>
+                        <li data-line="40" class="code-line">
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>→</mo></mrow><annotation encoding="application/x-tex">\\to</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.36687em;"></span>
+                                <span class="strut bottom" style="height:0.36687em;vertical-align:0em;"></span><span class="base"><span class="mrel">→</span></span>
+                                </span>
+                                </span>
+                            </eq> More stable than those from holistic behavior</li>
+                    </ul>
+                </li>
+                <li data-line="41" class="code-line">Assumption:
+                    <ul>
+                        <li data-line="42" class="code-line">Frequent behavior segments in mouse behavior</li>
+                        <li data-line="43" class="code-line">
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>→</mo></mrow><annotation encoding="application/x-tex">\\to</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.36687em;"></span>
+                                <span class="strut bottom" style="height:0.36687em;vertical-align:0em;"></span><span class="base"><span class="mrel">→</span></span>
+                                </span>
+                                </span>
+                            </eq> Provide more stable and discriminative features or measurements</li>
+                        <li data-line="44" class="code-line">
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>→</mo></mrow><annotation encoding="application/x-tex">\\to</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.36687em;"></span>
+                                <span class="strut bottom" style="height:0.36687em;vertical-align:0em;"></span><span class="base"><span class="mrel">→</span></span>
+                                </span>
+                                </span>
+                            </eq> Allow one to more accurately characterize the discriminable components of mouse behavior.</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li data-line="45" class="code-line">One-Class Classification
+            <ul>
+                <li data-line="46" class="code-line">Only legitimate user patterns are available</li>
+                <li data-line="47" class="code-line">Useing both the legitimate user's and impostors' samples is not practical
+                    <ul>
+                        <li data-line="48" class="code-line">Too much impostors' samples in realistic applications</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+    </ul>
+    <h2 data-line="50" class="code-line" id="goal-and-contribution">Goal and Contribution</h2>
+    <ul>
+        <li data-line="52" class="code-line">Using a pattern-growth­ based mining method to extract frequent-behavior segments</li>
+        <li data-line="53" class="code-line">One-class classification</li>
+        <li data-line="54" class="code-line">Established a new mouse behavioral data set</li>
+        <li data-line="55" class="code-line">Develop a simple and efficient continuous user authentication method.</li>
+    </ul>
+    <h2 data-line="57" class="code-line" id="datamouse-behavior-data">Data(Mouse Behavior Data)</h2>
+    <h3 data-line="59" class="code-line" id="data-source">Data Source</h3>
+    <ul>
+        <li data-line="61" class="code-line">Set an experimental environment</li>
+        <li data-line="62" class="code-line">Same computer hardware configuration</li>
+        <li data-line="63" class="code-line">All users are college students(Some people majoring in computer science)</li>
+        <li data-line="64" class="code-line">28 participants
+            <ul>
+                <li data-line="65" class="code-line">~90,000 mouse actions/user</li>
+                <li data-line="66" class="code-line">30 sessions
+                    <ul>
+                        <li data-line="67" class="code-line">Each 30 minute</li>
+                        <li data-line="68" class="code-line">Internet surfing, word processing, online chatting,programming, online gaming</li>
+                        <li data-line="69" class="code-line">Between 30-60 days per participant</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li data-line="70" class="code-line">Data record
+            <ul>
+                <li data-line="71" class="code-line">Event type (e.g., mouse move/click), position,timestamp, application information</li>
+            </ul>
+        </li>
+    </ul>
+    <h3 data-line="73" class="code-line" id="mouse-behavior-analysis">Mouse Behavior Analysis</h3>
+    <ul>
+        <li data-line="75" class="code-line">Mouse events
+            <ul>
+                <li data-line="76" class="code-line">System messages sent to receiving applications
+                    <ul>
+                        <li data-line="77" class="code-line">Inform current cursor position &amp; mouse button status</li>
+                    </ul>
+                </li>
+                <li data-line="78" class="code-line">Types
+                    <ul>
+                        <li data-line="79" class="code-line">Mouse Down</li>
+                        <li data-line="80" class="code-line">Mouse Up</li>
+                        <li data-line="81" class="code-line">Mouse Wheel</li>
+                        <li data-line="82" class="code-line">Mouse Move</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li data-line="83" class="code-line">Mouse actions
+            <ul>
+                <li data-line="84" class="code-line">Single click
+                    <ul>
+                        <li data-line="85" class="code-line">Mouse down followed by mouse up</li>
+                    </ul>
+                </li>
+                <li data-line="86" class="code-line">Double click
+                    <ul>
+                        <li data-line="87" class="code-line">Mouse down, up, down, up</li>
+                    </ul>
+                </li>
+                <li data-line="88" class="code-line">Common movement
+                    <ul>
+                        <li data-line="89" class="code-line">General mouse movement with no clicks</li>
+                    </ul>
+                </li>
+                <li data-line="90" class="code-line">Point and click movement
+                    <ul>
+                        <li data-line="91" class="code-line">Mouse movement followed by single/double click</li>
+                    </ul>
+                </li>
+                <li data-line="92" class="code-line">Drag and drop movement
+                    <ul>
+                        <li data-line="93" class="code-line">Mouse down, movement, mouse up</li>
+                    </ul>
+                </li>
+                <li data-line="94" class="code-line">Silence
+                    <ul>
+                        <li data-line="95" class="code-line">No mouse operation</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li data-line="96" class="code-line">Encoded <strong>Mouse action</strong> into <strong>Mouse operation</strong></li>
+        <li data-line="97" class="code-line">Mouse operation
+            <ul>
+                <li data-line="98" class="code-line">Truple:
+                    <ul>
+                        <li data-line="99" class="code-line"><code>&lt;action-type, application-type, screen-area, window-position, timestamp&gt;</code></li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li data-line="100" class="code-line">Mouse-Behavior pattern: recurring &amp; fixed segments
+            <ul>
+                <li data-line="101" class="code-line">Micro-habitual patterns
+                    <ul>
+                        <li data-line="102" class="code-line">Subconscious/habitual factors urging GUI interactions</li>
+                    </ul>
+                </li>
+                <li data-line="103" class="code-line">Task-intended patterns
+                    <ul>
+                        <li data-line="104" class="code-line">Operating habits under certain applications (e.g., using certain function of an application)</li>
+                        <li data-line="105" class="code-line">Example: creating a new document in a word processing app</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+    </ul>
+    <h3 data-line="107" class="code-line" id="mouse-behavior-pattern-mining">Mouse Behavior Pattern Mining</h3>
+    <h4 data-line="109" class="code-line" id="clarifying-questions">Clarifying Questions</h4>
+    <ul>
+        <li data-line="111" class="code-line">
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>I</mi><mo>=</mo><mo>{</mo><msub><mi>i</mi><mn>1</mn></msub><mo separator="true">,</mo><msub><mi>i</mi><mn>2</mn></msub><mo separator="true">,</mo><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><mo separator="true">,</mo><msub><mi>i</mi><mi>n</mi></msub><mo>}</mo></mrow><annotation encoding="application/x-tex">I = \\{i\_1 , i\_2, ..., i\_n\\}</annotation></semantics></math></span>
+                <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base"><span class="mord mathit" style="margin-right:0.07847em;">I</span>
+                <span class="mrel">=</span>
+                <span class="mopen">{</span><span class="mord"><span class="mord mathit">i</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                <span class="sizing reset-size6 size3 mtight"><span class="mord mathrm mtight">1</span></span>
+                </span>
+                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                </span>
+                </span>
+                </span><span class="mpunct">,</span><span class="mord"><span class="mord mathit">i</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                <span class="sizing reset-size6 size3 mtight"><span class="mord mathrm mtight">2</span></span>
+                </span>
+                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                </span>
+                </span>
+                </span><span class="mpunct">,</span><span class="mord mathrm">.</span><span class="mord mathrm">.</span><span class="mord mathrm">.</span><span class="mpunct">,</span><span class="mord"><span class="mord mathit">i</span>
+                <span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight">n</span></span>
+                </span>
+                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                </span>
+                </span>
+                </span><span class="mclose">}</span></span>
+                </span>
+                </span>
+            </eq> a set of all mouse operations</li>
+        <li data-line="112" class="code-line">
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mrow><mi mathvariant="normal">o</mi><mi mathvariant="normal">p</mi><mi mathvariant="normal">e</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">t</mi><mi mathvariant="normal">i</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">n</mi></mrow><mtext>-</mtext><mrow><mi mathvariant="normal">s</mi><mi mathvariant="normal">e</mi><mi mathvariant="normal">t</mi></mrow></mrow><annotation encoding="application/x-tex">\\mathrm{operation}\\text{-}\\mathrm{set}</annotation></semantics></math></span>
+                <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.66786em;"></span><span class="strut bottom" style="height:0.8623000000000001em;vertical-align:-0.19444em;"></span><span class="base"><span class="mord"><span class="mord mathrm">o</span>
+                <span class="mord mathrm">p</span>
+                <span class="mord mathrm">e</span><span class="mord mathrm">r</span><span class="mord mathrm">a</span><span class="mord mathrm">t</span><span class="mord mathrm">i</span><span class="mord mathrm">o</span><span class="mord mathrm">n</span></span>
+                <span class="mord text"><span class="mord mathrm">-</span></span>
+                <span class="mord"><span class="mord mathrm">s</span><span class="mord mathrm">e</span><span class="mord mathrm">t</span></span>
+                </span>
+                </span>
+                </span>
+            </eq>: a set of mouse operations
+            <ul>
+                <li data-line="113" class="code-line">Example:
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>{</mo><mo>(</mo><mn>1</mn><mo separator="true">,</mo><mn>3</mn><mo separator="true">,</mo><mn>4</mn><mo separator="true">,</mo><mn>0</mn><mo>)</mo><mo separator="true">,</mo><mo>(</mo><mn>2</mn><mo separator="true">,</mo><mn>1</mn><mo separator="true">,</mo><mn>4</mn><mo separator="true">,</mo><mn>0</mn><mo>)</mo><mo separator="true">,</mo><mo>(</mo><mn>3</mn><mo separator="true">,</mo><mn>1</mn><mo separator="true">,</mo><mn>4</mn><mo separator="true">,</mo><mn>0</mn><mo>)</mo><mo>}</mo></mrow><annotation encoding="application/x-tex">\\{(1,3,4,0), (2,1,4,0), (3,1,4,0)\\}</annotation></semantics></math></span>
+                        <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base"><span class="mopen">{</span><span class="mopen">(</span>
+                        <span class="mord mathrm">1</span>
+                        <span class="mpunct">,</span><span class="mord mathrm">3</span><span class="mpunct">,</span><span class="mord mathrm">4</span><span class="mpunct">,</span><span class="mord mathrm">0</span><span class="mclose">)</span>
+                        <span class="mpunct">,</span>
+                        <span class="mopen">(</span><span class="mord mathrm">2</span><span class="mpunct">,</span><span class="mord mathrm">1</span><span class="mpunct">,</span><span class="mord mathrm">4</span><span class="mpunct">,</span>
+                        <span class="mord mathrm">0</span>
+                        <span class="mclose">)</span><span class="mpunct">,</span><span class="mopen">(</span><span class="mord mathrm">3</span><span class="mpunct">,</span><span class="mord mathrm">1</span><span class="mpunct">,</span>
+                        <span class="mord mathrm">4</span>
+                        <span class="mpunct">,</span><span class="mord mathrm">0</span><span class="mclose">)</span><span class="mclose">}</span></span>
+                        </span>
+                        </span>
+                    </eq>
+                </li>
+            </ul>
+        </li>
+        <li data-line="114" class="code-line">
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>s</mi></mrow><annotation encoding="application/x-tex">s</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span>
+                <span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base"><span class="mord mathit">s</span></span>
+                </span>
+                </span>
+            </eq>, sequence: ordered list of operation sets by user ID and timestamp
+            <ul>
+                <li data-line="115" class="code-line">
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>s</mi><mo>=</mo><mo>{</mo><msub><mi>s</mi><mn>1</mn></msub><mo separator="true">,</mo><msub><mi>s</mi><mn>2</mn></msub><mo separator="true">,</mo><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><mo separator="true">,</mo><msub><mi>s</mi><mi>k</mi></msub><mo>}</mo></mrow><annotation encoding="application/x-tex">s = \\{s\_1, s\_2, ..., s\_k\\}</annotation></semantics></math></span>
+                        <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base"><span class="mord mathit">s</span>
+                        <span class="mrel">=</span><span class="mopen">{</span>
+                        <span class="mord"><span class="mord mathit">s</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mathrm mtight">1</span></span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                        </span>
+                        </span>
+                        </span><span class="mpunct">,</span><span class="mord"><span class="mord mathit">s</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mathrm mtight">2</span></span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                        </span>
+                        </span>
+                        </span><span class="mpunct">,</span><span class="mord mathrm">.</span><span class="mord mathrm">.</span><span class="mord mathrm">.</span><span class="mpunct">,</span><span class="mord"><span class="mord mathit">s</span>
+                        <span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight" style="margin-right:0.03148em;">k</span></span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                        </span>
+                        </span>
+                        </span><span class="mclose">}</span></span>
+                        </span>
+                        </span>
+                    </eq>, each
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>s</mi><mi>j</mi></msub></mrow><annotation encoding="application/x-tex">s\_j</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span>
+                        <span class="strut bottom" style="height:0.716668em;vertical-align:-0.286108em;"></span><span class="base"><span class="mord"><span class="mord mathit">s</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.311664em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight" style="margin-right:0.05724em;">j</span></span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"></span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                    </eq>
+                    <ul>
+                        <li data-line="116" class="code-line">An
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mtext>operation-set</mtext></mrow><annotation encoding="application/x-tex">\\text{operation-set}</annotation></semantics></math></span><span class="katex-html"
+                                    aria-hidden="true"><span class="strut" style="height:0.66786em;"></span><span class="strut bottom" style="height:0.8623000000000001em;vertical-align:-0.19444em;"></span><span class="base"><span class="mord text"><span class="mord mathrm">operation-set</span></span>
+                                </span>
+                                </span>
+                                </span>
+                            </eq> (subset of
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>I</mi></mrow><annotation encoding="application/x-tex">I</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span>
+                                <span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base"><span class="mord mathit" style="margin-right:0.07847em;">I</span></span>
+                                </span>
+                                </span>
+                            </eq>),
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>s</mi><mi>j</mi></msub><mo>⊂</mo><mi>I</mi></mrow><annotation encoding="application/x-tex">s\_j \\subset I</annotation></semantics></math></span>
+                                <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.969438em;vertical-align:-0.286108em;"></span><span class="base"><span class="mord"><span class="mord mathit">s</span>
+                                <span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.311664em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                                <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight" style="margin-right:0.05724em;">j</span></span>
+                                </span>
+                                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"></span></span>
+                                </span>
+                                </span>
+                                </span><span class="mrel">⊂</span><span class="mord mathit" style="margin-right:0.07847em;">I</span></span>
+                                </span>
+                                </span>
+                            </eq>, for
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mn>1</mn><mo>≤</mo><mi>j</mi><mo>≤</mo><mi>l</mi></mrow><annotation encoding="application/x-tex">1 \\leq j \\leq l</annotation></semantics></math></span>
+                                <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base"><span class="mord mathrm">1</span>
+                                <span class="mrel">≤</span>
+                                <span class="mord mathit" style="margin-right:0.05724em;">j</span><span class="mrel">≤</span><span class="mord mathit" style="margin-right:0.01968em;">l</span></span>
+                                </span>
+                                </span>
+                            </eq>
+                        </li>
+                        <li data-line="117" class="code-line">Called an element of sequence
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>s</mi></mrow><annotation encoding="application/x-tex">s</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span>
+                                <span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base"><span class="mord mathit">s</span></span>
+                                </span>
+                                </span>
+                            </eq>
+                        </li>
+                        <li data-line="118" class="code-line">
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>s</mi><mi>j</mi></msub><mo>=</mo><mo>⟨</mo><msub><mi>x</mi><mn>1</mn></msub><mo separator="true">,</mo><msub><mi>x</mi><mn>2</mn></msub><mo separator="true">,</mo><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><mo separator="true">,</mo><msub><mi>x</mi><mi>m</mi></msub><mo>⟩</mo></mrow><annotation encoding="application/x-tex">s\_j = \\langle x\_1, x\_2, ..., x\_m \\rangle</annotation></semantics></math></span>
+                                <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1.036108em;vertical-align:-0.286108em;"></span><span class="base"><span class="mord"><span class="mord mathit">s</span>
+                                <span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.311664em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                                <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight" style="margin-right:0.05724em;">j</span></span>
+                                </span>
+                                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"></span></span>
+                                </span>
+                                </span>
+                                </span><span class="mrel">=</span><span class="mopen">⟨</span><span class="mord"><span class="mord mathit">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                                <span class="sizing reset-size6 size3 mtight"><span class="mord mathrm mtight">1</span></span>
+                                </span>
+                                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                                </span>
+                                </span>
+                                </span><span class="mpunct">,</span><span class="mord"><span class="mord mathit">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                                <span class="sizing reset-size6 size3 mtight"><span class="mord mathrm mtight">2</span></span>
+                                </span>
+                                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                                </span>
+                                </span>
+                                </span><span class="mpunct">,</span><span class="mord mathrm">.</span><span class="mord mathrm">.</span><span class="mord mathrm">.</span><span class="mpunct">,</span><span class="mord"><span class="mord mathit">x</span>
+                                <span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                                <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight">m</span></span>
+                                </span>
+                                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                                </span>
+                                </span>
+                                </span><span class="mclose">⟩</span></span>
+                                </span>
+                                </span>
+                            </eq>, each
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>x</mi><mi>k</mi></msub></mrow><annotation encoding="application/x-tex">x\_k</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span>
+                                <span class="strut bottom" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="base"><span class="mord"><span class="mord mathit">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                                <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight" style="margin-right:0.03148em;">k</span></span>
+                                </span>
+                                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                            </eq> a mouse operation</li>
+                    </ul>
+                </li>
+                <li data-line="119" class="code-line">Example:
+                    <ul>
+                        <li data-line="120" class="code-line">
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>s</mi><mo>=</mo><mo>{</mo><mo>⟨</mo><mo>(</mo><mn>1</mn><mo separator="true">,</mo><mn>3</mn><mo separator="true">,</mo><mn>4</mn><mo separator="true">,</mo><mn>0</mn><mo>)</mo><mo>⟩</mo><mo separator="true">,</mo><mo>⟨</mo><mo>(</mo><mn>1</mn><mo separator="true">,</mo><mn>3</mn><mo separator="true">,</mo><mn>4</mn><mo separator="true">,</mo><mn>0</mn><mo>)</mo><mo separator="true">,</mo><mo>(</mo><mn>2</mn><mo separator="true">,</mo><mn>1</mn><mo separator="true">,</mo><mn>4</mn><mo separator="true">,</mo><mn>0</mn><mo>)</mo><mo separator="true">,</mo><mo>(</mo><mn>3</mn><mo separator="true">,</mo><mn>1</mn><mo separator="true">,</mo><mn>4</mn><mo separator="true">,</mo><mn>0</mn><mo>)</mo><mo>⟩</mo><mo separator="true">,</mo><mo>⟨</mo><mo>(</mo><mn>2</mn><mo separator="true">,</mo><mn>1</mn><mo separator="true">,</mo><mn>2</mn><mo separator="true">,</mo><mn>1</mn><mo>)</mo><mo>⟩</mo><mo>}</mo></mrow><annotation encoding="application/x-tex">s = \\{\\langle(1,3,4,0)\\rangle, \\langle(1,3,4,0), (2,1,4,0), (3,1,4,0)\\rangle, \\langle(2,1,2,1)\\rangle\\}</annotation></semantics></math></span>
+                                <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base"><span class="mord mathit">s</span>
+                                <span class="mrel">=</span><span class="mopen">{</span>
+                                <span class="mopen">⟨</span><span class="mopen">(</span><span class="mord mathrm">1</span><span class="mpunct">,</span><span class="mord mathrm">3</span><span class="mpunct">,</span><span class="mord mathrm">4</span>
+                                <span class="mpunct">,</span>
+                                <span class="mord mathrm">0</span><span class="mclose">)</span><span class="mclose">⟩</span><span class="mpunct">,</span><span class="mopen">⟨</span><span class="mopen">(</span><span class="mord mathrm">1</span>
+                                <span class="mpunct">,</span>
+                                <span class="mord mathrm">3</span><span class="mpunct">,</span><span class="mord mathrm">4</span><span class="mpunct">,</span><span class="mord mathrm">0</span><span class="mclose">)</span><span class="mpunct">,</span>
+                                <span class="mopen">(</span>
+                                <span class="mord mathrm">2</span><span class="mpunct">,</span><span class="mord mathrm">1</span><span class="mpunct">,</span><span class="mord mathrm">4</span><span class="mpunct">,</span><span class="mord mathrm">0</span>
+                                <span class="mclose">)</span><span class="mpunct">,</span><span class="mopen">(</span><span class="mord mathrm">3</span><span class="mpunct">,</span><span class="mord mathrm">1</span><span class="mpunct">,</span>
+                                <span class="mord mathrm">4</span>
+                                <span class="mpunct">,</span><span class="mord mathrm">0</span><span class="mclose">)</span><span class="mclose">⟩</span><span class="mpunct">,</span><span class="mopen">⟨</span><span class="mopen">(</span>
+                                <span class="mord mathrm">2</span>
+                                <span class="mpunct">,</span><span class="mord mathrm">1</span><span class="mpunct">,</span><span class="mord mathrm">2</span><span class="mpunct">,</span><span class="mord mathrm">1</span>
+                                <span class="mclose">)</span>
+                                <span class="mclose">⟩</span><span class="mclose">}</span></span>
+                                </span>
+                                </span>
+                            </eq>
+                        </li>
+                        <li data-line="121" class="code-line">
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mrow><mi mathvariant="normal">l</mi><mi mathvariant="normal">e</mi><mi mathvariant="normal">n</mi><mi mathvariant="normal">g</mi><mi mathvariant="normal">t</mi><mi mathvariant="normal">h</mi></mrow><mo>(</mo><mi>s</mi><mo>)</mo><mo>=</mo><mn>5</mn></mrow><annotation encoding="application/x-tex">\\mathrm{length}(s) = 5</annotation></semantics></math></span>
+                                <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base"><span class="mord"><span class="mord mathrm">l</span>
+                                <span class="mord mathrm">e</span>
+                                <span class="mord mathrm">n</span><span class="mord mathrm" style="margin-right:0.01389em;">g</span><span class="mord mathrm">t</span><span class="mord mathrm">h</span></span><span class="mopen">(</span><span class="mord mathit">s</span>
+                                <span class="mclose">)</span><span class="mrel">=</span><span class="mord mathrm">5</span></span>
+                                </span>
+                                </span>
+                            </eq>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li data-line="122" class="code-line">
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>α</mi></mrow><annotation encoding="application/x-tex">\\alpha</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span>
+                <span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base"><span class="mord mathit" style="margin-right:0.0037em;">α</span></span>
+                </span>
+                </span>
+            </eq>, a subsequence of
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>s</mi></mrow><annotation encoding="application/x-tex">s</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span>
+                <span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base"><span class="mord mathit">s</span></span>
+                </span>
+                </span>
+            </eq>
+            <ul>
+                <li data-line="123" class="code-line">Example
+                    <ul>
+                        <li data-line="124" class="code-line">
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>{</mo><mo>⟨</mo><mo>(</mo><mn>1</mn><mo separator="true">,</mo><mn>3</mn><mo separator="true">,</mo><mn>4</mn><mo separator="true">,</mo><mn>0</mn><mo>)</mo><mo>⟩</mo><mo>}</mo></mrow><annotation encoding="application/x-tex">\\{\\langle(1,3,4,0)\\rangle\\}</annotation></semantics></math></span>
+                                <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base"><span class="mopen">{</span>
+                                <span class="mopen">⟨</span><span class="mopen">(</span>
+                                <span class="mord mathrm">1</span><span class="mpunct">,</span><span class="mord mathrm">3</span><span class="mpunct">,</span><span class="mord mathrm">4</span><span class="mpunct">,</span><span class="mord mathrm">0</span>
+                                <span class="mclose">)</span>
+                                <span class="mclose">⟩</span><span class="mclose">}</span></span>
+                                </span>
+                                </span>
+                            </eq> is a subsequence of
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>{</mo><mo>⟨</mo><mo>(</mo><mn>1</mn><mo separator="true">,</mo><mn>3</mn><mo separator="true">,</mo><mn>4</mn><mo separator="true">,</mo><mn>0</mn><mo>)</mo><mo separator="true">,</mo><mo>(</mo><mn>2</mn><mo separator="true">,</mo><mn>1</mn><mo separator="true">,</mo><mn>4</mn><mo separator="true">,</mo><mn>0</mn><mo>)</mo><mo separator="true">,</mo><mo>(</mo><mn>3</mn><mo separator="true">,</mo><mn>1</mn><mo separator="true">,</mo><mn>4</mn><mo separator="true">,</mo><mn>0</mn><mo>)</mo><mo>⟩</mo><mo>}</mo></mrow><annotation encoding="application/x-tex">\\{\\langle(1,3,4,0), (2,1,4,0), (3,1,4,0)\\rangle\\}</annotation></semantics></math></span>
+                                <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base"><span class="mopen">{</span>
+                                <span class="mopen">⟨</span><span class="mopen">(</span>
+                                <span class="mord mathrm">1</span><span class="mpunct">,</span><span class="mord mathrm">3</span><span class="mpunct">,</span><span class="mord mathrm">4</span><span class="mpunct">,</span><span class="mord mathrm">0</span>
+                                <span class="mclose">)</span>
+                                <span class="mpunct">,</span><span class="mopen">(</span><span class="mord mathrm">2</span><span class="mpunct">,</span><span class="mord mathrm">1</span><span class="mpunct">,</span><span class="mord mathrm">4</span>
+                                <span class="mpunct">,</span>
+                                <span class="mord mathrm">0</span><span class="mclose">)</span><span class="mpunct">,</span><span class="mopen">(</span><span class="mord mathrm">3</span><span class="mpunct">,</span><span class="mord mathrm">1</span>
+                                <span class="mpunct">,</span>
+                                <span class="mord mathrm">4</span><span class="mpunct">,</span><span class="mord mathrm">0</span><span class="mclose">)</span><span class="mclose">⟩</span><span class="mclose">}</span></span>
+                                </span>
+                                </span>
+                            </eq>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li data-line="125" class="code-line">
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>L</mi></mrow><annotation encoding="application/x-tex">L</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span>
+                <span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base"><span class="mord mathit">L</span></span>
+                </span>
+                </span>
+            </eq>, length of sequence: the number of mouse operation instances
+            <ul>
+                <li data-line="126" class="code-line">
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mtext>L-sequence</mtext></mrow><annotation encoding="application/x-tex">\\text{L-sequence}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span>
+                        <span class="strut bottom" style="height:0.8777699999999999em;vertical-align:-0.19444em;"></span><span class="base"><span class="mord text"><span class="mord mathrm">L-sequence</span></span>
+                        </span>
+                        </span>
+                        </span>
+                    </eq>: A sequence of length
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>L</mi></mrow><annotation encoding="application/x-tex">L</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span>
+                        <span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base"><span class="mord mathit">L</span></span>
+                        </span>
+                        </span>
+                    </eq>
+                </li>
+            </ul>
+        </li>
+        <li data-line="127" class="code-line">
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>S</mi></mrow><annotation encoding="application/x-tex">S</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span>
+                <span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base"><span class="mord mathit" style="margin-right:0.05764em;">S</span></span>
+                </span>
+                </span>
+            </eq>, a mouse operation sequence database
+            <ul>
+                <li data-line="128" class="code-line">A set of triples
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>⟨</mo><mi>I</mi><mi>D</mi><mo separator="true">,</mo><mi>s</mi><mi>i</mi><mi>d</mi><mo separator="true">,</mo><mi>s</mi><mo>⟩</mo></mrow><annotation encoding="application/x-tex">\\langle ID, sid, s \\rangle</annotation></semantics></math></span>
+                        <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base"><span class="mopen">⟨</span><span class="mord mathit"
+                            style="margin-right:0.07847em;">I</span>
+                        <span class="mord mathit" style="margin-right:0.02778em;">D</span><span class="mpunct">,</span><span class="mord mathit">s</span><span class="mord mathit">i</span><span class="mord mathit">d</span><span class="mpunct">,</span>
+                        <span class="mord mathit">s</span><span class="mclose">⟩</span></span>
+                        </span>
+                        </span>
+                    </eq>
+                    <ul>
+                        <li data-line="129" class="code-line">
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>I</mi><mi>D</mi></mrow><annotation encoding="application/x-tex">ID</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span>
+                                <span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base"><span class="mord mathit" style="margin-right:0.07847em;">I</span><span class="mord mathit" style="margin-right:0.02778em;">D</span></span>
+                                </span>
+                                </span>
+                            </eq>, the user ID</li>
+                        <li data-line="130" class="code-line">
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>s</mi><mi>i</mi><mi>d</mi></mrow><annotation encoding="application/x-tex">sid</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span>
+                                <span class="strut bottom" style="height:0.69444em;vertical-align:0em;"></span><span class="base"><span class="mord mathit">s</span><span class="mord mathit">i</span><span class="mord mathit">d</span></span>
+                                </span>
+                                </span>
+                            </eq>, a sequence
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>I</mi><mi>D</mi></mrow><annotation encoding="application/x-tex">ID</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span>
+                                <span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base"><span class="mord mathit" style="margin-right:0.07847em;">I</span><span class="mord mathit" style="margin-right:0.02778em;">D</span></span>
+                                </span>
+                                </span>
+                            </eq>
+                        </li>
+                        <li data-line="131" class="code-line">
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>s</mi></mrow><annotation encoding="application/x-tex">s</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span>
+                                <span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base"><span class="mord mathit">s</span></span>
+                                </span>
+                                </span>
+                            </eq>, a sequence</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li data-line="132" class="code-line">
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mrow><mi mathvariant="normal">S</mi><mi mathvariant="normal">u</mi><mi mathvariant="normal">p</mi><mi mathvariant="normal">p</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">r</mi><msub><mi mathvariant="normal">t</mi><mi mathvariant="normal">S</mi></msub></mrow><mo>(</mo><mi>α</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">\\mathrm{Support\_S} (\\alpha)</annotation></semantics></math></span>
+                <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base"><span class="mord"><span class="mord mathrm">S</span>
+                <span class="mord mathrm">u</span>
+                <span class="mord mathrm">p</span><span class="mord mathrm">p</span><span class="mord mathrm">o</span><span class="mord mathrm">r</span><span class="mord"><span class="mord mathrm">t</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                <span class="sizing reset-size6 size3 mtight"><span class="mord mathrm mtight">S</span></span>
+                </span>
+                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                </span>
+                </span>
+                </span>
+                </span><span class="mopen">(</span><span class="mord mathit" style="margin-right:0.0037em;">α</span><span class="mclose">)</span></span>
+                </span>
+                </span>
+            </eq> =
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">#</mi></mrow><annotation encoding="application/x-tex">\\#</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span>
+                <span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base"><span class="mord mathrm">#</span></span>
+                </span>
+                </span>
+            </eq> tuples in databases
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>S</mi></mrow><annotation encoding="application/x-tex">S</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span>
+                <span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base"><span class="mord mathit" style="margin-right:0.05764em;">S</span></span>
+                </span>
+                </span>
+            </eq> that contain
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>α</mi></mrow><annotation encoding="application/x-tex">\\alpha</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span>
+                <span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base"><span class="mord mathit" style="margin-right:0.0037em;">α</span></span>
+                </span>
+                </span>
+            </eq>
+        </li>
+        <li data-line="133" class="code-line">Sequential pattern:
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mrow><mi mathvariant="normal">S</mi><mi mathvariant="normal">u</mi><mi mathvariant="normal">p</mi><mi mathvariant="normal">p</mi><mi mathvariant="normal">o</mi><mi mathvariant="normal">r</mi><msub><mi mathvariant="normal">t</mi><mi mathvariant="normal">S</mi></msub></mrow><mo>≥</mo><mi>ξ</mi></mrow><annotation encoding="application/x-tex">\\mathrm{Support\_S} \\geq \\xi</annotation></semantics></math></span>
+                <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base"><span class="mord"><span class="mord mathrm">S</span>
+                <span class="mord mathrm">u</span>
+                <span class="mord mathrm">p</span><span class="mord mathrm">p</span><span class="mord mathrm">o</span><span class="mord mathrm">r</span><span class="mord"><span class="mord mathrm">t</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                <span class="sizing reset-size6 size3 mtight"><span class="mord mathrm mtight">S</span></span>
+                </span>
+                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                </span>
+                </span>
+                </span>
+                </span><span class="mrel">≥</span><span class="mord mathit" style="margin-right:0.04601em;">ξ</span></span>
+                </span>
+                </span>
+            </eq>
+            <ul>
+                <li data-line="134" class="code-line">
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>ξ</mi></mrow><annotation encoding="application/x-tex">\\xi</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span>
+                        <span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base"><span class="mord mathit" style="margin-right:0.04601em;">ξ</span></span>
+                        </span>
+                        </span>
+                    </eq> a given threshold</li>
+            </ul>
+        </li>
+        <li data-line="135" class="code-line"><strong>Problem Statement</strong>
+            <ul>
+                <li data-line="136" class="code-line">The problem of sequential mouse behavior pattern mining is:
+                    <ul>
+                        <li data-line="137" class="code-line">Input
+                            <ul>
+                                <li data-line="138" class="code-line">Mouse operation sequence
+                                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>S</mi></mrow><annotation encoding="application/x-tex">S</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span>
+                                        <span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base"><span class="mord mathit" style="margin-right:0.05764em;">S</span></span>
+                                        </span>
+                                        </span>
+                                    </eq>
+                                </li>
+                                <li data-line="139" class="code-line">minimun support threshold
+                                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>ξ</mi></mrow><annotation encoding="application/x-tex">\\xi</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span>
+                                        <span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base"><span class="mord mathit" style="margin-right:0.04601em;">ξ</span></span>
+                                        </span>
+                                        </span>
+                                    </eq>
+                                </li>
+                            </ul>
+                        </li>
+                        <li data-line="140" class="code-line">Output
+                            <ul>
+                                <li data-line="141" class="code-line">Complete set of all frequent mouse behavior patterns in
+                                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>S</mi></mrow><annotation encoding="application/x-tex">S</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span>
+                                        <span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base"><span class="mord mathit" style="margin-right:0.05764em;">S</span></span>
+                                        </span>
+                                        </span>
+                                    </eq>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+    </ul>
+    <h4 data-line="143" class="code-line" id="mining-method">Mining Method</h4>
+    <ul>
+        <li data-line="145" class="code-line">PrefixSpan
+            <ul>
+                <li data-line="146" class="code-line">Mining Sequential Patterns by Pattern­ Growth: The PrefixSpan Approach (2004)</li>
+                <li data-line="147" class="code-line">Project the database into a set of smaller databases
+                    <ul>
+                        <li data-line="148" class="code-line">Based on set of patterns mined so far</li>
+                    </ul>
+                </li>
+                <li data-line="149" class="code-line">Mine locally frequent patterns in each projected database</li>
+            </ul>
+        </li>
+    </ul>
+    <h4 data-line="151" class="code-line" id="reference-behavior-pattern-generation-and-matching">Reference-Behavior Pattern Generation and Matching</h4>
+    <ul>
+        <li data-line="153" class="code-line">&quot;Baseline&quot; normal behavior pattern generation
+            <ul>
+                <li data-line="154" class="code-line">For each user
+                    <ul>
+                        <li data-line="155" class="code-line">Mine behavior patterns from each session</li>
+                        <li data-line="156" class="code-line">Collect all patterns as reference behavior pattern</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li data-line="157" class="code-line">Pattern matching
+            <ul>
+                <li data-line="158" class="code-line">Given a new operation sequence match against mined patterns
+                    <ul>
+                        <li data-line="159" class="code-line">Search patterns</li>
+                        <li data-line="160" class="code-line">Output all matching patterns</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+    </ul>
+    <h4 data-line="162" class="code-line" id="behavior-pattern-analysis">Behavior Pattern Analysis</h4>
+    <ul>
+        <li data-line="164" class="code-line">Set minimum support
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mn>8</mn><mi mathvariant="normal">%</mi></mrow><annotation encoding="application/x-tex">8\\%</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span>
+                <span class="strut bottom" style="height:0.80556em;vertical-align:-0.05556em;"></span><span class="base"><span class="mord mathrm">8</span><span class="mord mathrm">%</span></span>
+                </span>
+                </span>
+            </eq>
+            <ul>
+                <li data-line="165" class="code-line">Trade-off value</li>
+            </ul>
+        </li>
+    </ul>
+    <h2 data-line="167" class="code-line" id="feature">Feature</h2>
+    <p data-line="169" class="code-line"><code>Frequent-behavior patterns cannot be used directly</code></p>
+    <ul>
+        <li data-line="171" class="code-line">Feature Construction from Mined Pattern
+            <ul>
+                <li data-line="172" class="code-line">Click elapsed time
+                    <ul>
+                        <li data-line="173" class="code-line">Time spent by user to perform a click action</li>
+                        <li data-line="174" class="code-line">Single click:
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mrow><mi mathvariant="normal">m</mi><mi mathvariant="normal">e</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">n</mi></mrow></mrow><annotation encoding="application/x-tex">\\mathrm{mean}</annotation></semantics></math></span>
+                                <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base"><span class="mord"><span class="mord mathrm">m</span>
+                                <span class="mord mathrm">e</span>
+                                <span class="mord mathrm">a</span><span class="mord mathrm">n</span></span>
+                                </span>
+                                </span>
+                                </span>
+                            </eq>,
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mrow><mi mathvariant="normal">s</mi><mi mathvariant="normal">t</mi><mi mathvariant="normal">d</mi><mi mathvariant="normal">v</mi></mrow></mrow><annotation encoding="application/x-tex">\\mathrm{stdv}</annotation></semantics></math></span>
+                                <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.69444em;vertical-align:0em;"></span><span class="base"><span class="mord"><span class="mord mathrm">s</span>
+                                <span class="mord mathrm">t</span>
+                                <span class="mord mathrm">d</span><span class="mord mathrm" style="margin-right:0.01389em;">v</span></span>
+                                </span>
+                                </span>
+                                </span>
+                            </eq> of overall time</li>
+                        <li data-line="175" class="code-line">Double click:
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mrow><mi mathvariant="normal">m</mi><mi mathvariant="normal">e</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">n</mi></mrow></mrow><annotation encoding="application/x-tex">\\mathrm{mean}</annotation></semantics></math></span>
+                                <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base"><span class="mord"><span class="mord mathrm">m</span>
+                                <span class="mord mathrm">e</span>
+                                <span class="mord mathrm">a</span><span class="mord mathrm">n</span></span>
+                                </span>
+                                </span>
+                                </span>
+                            </eq>,
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mrow><mi mathvariant="normal">s</mi><mi mathvariant="normal">t</mi><mi mathvariant="normal">d</mi><mi mathvariant="normal">v</mi></mrow></mrow><annotation encoding="application/x-tex">\\mathrm{stdv}</annotation></semantics></math></span>
+                                <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.69444em;vertical-align:0em;"></span><span class="base"><span class="mord"><span class="mord mathrm">s</span>
+                                <span class="mord mathrm">t</span>
+                                <span class="mord mathrm">d</span><span class="mord mathrm" style="margin-right:0.01389em;">v</span></span>
+                                </span>
+                                </span>
+                                </span>
+                            </eq> of overall &amp; 3 interval times</li>
+                    </ul>
+                </li>
+                <li data-line="176" class="code-line">Movement speed
+                    <ul>
+                        <li data-line="177" class="code-line">Average movement speed for different types of mouse movement</li>
+                        <li data-line="178" class="code-line">24 types: 8 directions, 3 distance ranges</li>
+                    </ul>
+                </li>
+                <li data-line="179" class="code-line">Movement acceleration
+                    <ul>
+                        <li data-line="180" class="code-line">Average acceleration for different types of mouse movement</li>
+                        <li data-line="181" class="code-line">Similar to movement speed</li>
+                    </ul>
+                </li>
+                <li data-line="182" class="code-line">Relative position of extreme speed
+                    <ul>
+                        <li data-line="183" class="code-line">Example: 0.5 for middle position of movement speed curve</li>
+                    </ul>
+                </li>
+                <li data-line="184" class="code-line"><strong>Total: 92 features</strong>
+                    <ul>
+                        <li data-line="185" class="code-line">20 click-related features</li>
+                        <li data-line="186" class="code-line">24 movement-related features
+                            <ul>
+                                <li data-line="187" class="code-line">Only from common &amp; point-and-click movements</li>
+                            </ul>
+                        </li>
+                        <li data-line="188" class="code-line">24 acceleration-related features</li>
+                        <li data-line="189" class="code-line">24 extreme-speed-related features</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li data-line="190" class="code-line">Empirical Feature Study
+            <ul>
+                <li data-line="191" class="code-line">Stability of Features in Behavior Pattern
+                    <ul>
+                        <li data-line="192" class="code-line">Feature can be skewed by
+                            <ul>
+                                <li data-line="193" class="code-line">Environmental variables</li>
+                                <li data-line="194" class="code-line">Human factors</li>
+                            </ul>
+                        </li>
+                        <li data-line="195" class="code-line">Example
+                            <ul>
+                                <li data-line="196" class="code-line">Finding documents</li>
+                            </ul>
+                        </li>
+                        <li data-line="197" class="code-line">Kernel density estimation
+                            <ul>
+                                <li data-line="198" class="code-line">a non-parametric way of estimating the probability density function (PDF) of a random variable</li>
+                            </ul>
+                        </li>
+                        <li data-line="199" class="code-line">Compute PDF for each feature
+                            <ul>
+                                <li data-line="200" class="code-line">Behavior patterns</li>
+                                <li data-line="201" class="code-line">holistic behavior</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+                <li data-line="202" class="code-line">Discriminability of Features in Behavior Patterns
+                    <ul>
+                        <li data-line="203" class="code-line">The features extracted from behavior pattern evidently superior to those extracted from holistic behavior</li>
+                    </ul>
+                </li>
+                <li data-line="204" class="code-line">Statistical Dispersion of Features Across Subjects</li>
+            </ul>
+        </li>
+    </ul>
+    <h2 data-line="206" class="code-line" id="detection">Detection</h2>
+    <ul>
+        <li data-line="208" class="code-line">Nearest-Neighbor
+            <ul>
+                <li data-line="209" class="code-line">
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>k</mi><mo>=</mo><mn>3</mn></mrow><annotation encoding="application/x-tex">k = 3</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span>
+                        <span class="strut bottom" style="height:0.69444em;vertical-align:0em;"></span><span class="base"><span class="mord mathit" style="margin-right:0.03148em;">k</span><span class="mrel">=</span><span class="mord mathrm">3</span></span>
+                        </span>
+                        </span>
+                    </eq>
+                </li>
+                <li data-line="210" class="code-line">Anomaly score
+                    <ul>
+                        <li data-line="211" class="code-line">Mahalanobis distance between test &amp; training feature vectors</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li data-line="212" class="code-line">Neural Network
+            <ul>
+                <li data-line="213" class="code-line">Single hidden layer
+                    <ul>
+                        <li data-line="214" class="code-line">Input nodes,
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>p</mi></mrow><annotation encoding="application/x-tex">p</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span>
+                                <span class="strut bottom" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="base"><span class="mord mathit">p</span></span>
+                                </span>
+                                </span>
+                            </eq>
+                        </li>
+                        <li data-line="215" class="code-line">Hidden nodes,
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>⌊</mo><mn>2</mn><mi>p</mi><mi mathvariant="normal">/</mi><mn>3</mn><mo>⌋</mo></mrow><annotation encoding="application/x-tex">\\lfloor2p/3\\rfloor</annotation></semantics></math></span>
+                                <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base"><span class="mopen">⌊</span>
+                                <span class="mord mathrm">2</span><span class="mord mathit">p</span>
+                                <span class="mord mathrm">/</span><span class="mord mathrm">3</span><span class="mclose">⌋</span></span>
+                                </span>
+                                </span>
+                            </eq>
+                        </li>
+                        <li data-line="216" class="code-line">Output node,
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mn>1</mn></mrow><annotation encoding="application/x-tex">1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.64444em;"></span>
+                                <span class="strut bottom" style="height:0.64444em;vertical-align:0em;"></span><span class="base"><span class="mord mathrm">1</span></span>
+                                </span>
+                                </span>
+                            </eq>
+                        </li>
+                    </ul>
+                </li>
+                <li data-line="217" class="code-line">Train with every input feature vector &amp; output
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>=</mo><mn>1</mn><mi mathvariant="normal">.</mi><mn>0</mn></mrow><annotation encoding="application/x-tex">=1.0</annotation></semantics></math></span><span class="katex-html"
+                            aria-hidden="true"><span class="strut" style="height:0.64444em;"></span><span class="strut bottom" style="height:0.64444em;vertical-align:0em;"></span><span class="base"><span class="mrel">=</span><span class="mord mathrm">1</span>
+                        <span class="mord mathrm">.</span><span class="mord mathrm">0</span></span>
+                        </span>
+                        </span>
+                    </eq>
+                </li>
+                <li data-line="218" class="code-line">Test-vector fed into network, output
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>∼</mo></mrow><annotation encoding="application/x-tex">\\sim</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.36687em;"></span>
+                        <span class="strut bottom" style="height:0.36687em;vertical-align:0em;"></span><span class="base"><span class="mrel">∼</span></span>
+                        </span>
+                        </span>
+                    </eq>
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mn>1</mn><mi mathvariant="normal">.</mi><mn>0</mn></mrow><annotation encoding="application/x-tex">1.0</annotation></semantics></math></span><span class="katex-html"
+                            aria-hidden="true"><span class="strut" style="height:0.64444em;"></span><span class="strut bottom" style="height:0.64444em;vertical-align:0em;"></span><span class="base"><span class="mord mathrm">1</span><span class="mord mathrm">.</span>
+                        <span class="mord mathrm">0</span>
+                        </span>
+                        </span>
+                        </span>
+                    </eq> or
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>−</mo><mn>1</mn><mi mathvariant="normal">.</mi><mn>0</mn></mrow><annotation encoding="application/x-tex">-1.0</annotation></semantics></math></span><span class="katex-html"
+                            aria-hidden="true"><span class="strut" style="height:0.64444em;"></span><span class="strut bottom" style="height:0.72777em;vertical-align:-0.08333em;"></span><span class="base"><span class="mord">−</span><span class="mord mathrm">1</span>
+                        <span class="mord mathrm">.</span><span class="mord mathrm">0</span></span>
+                        </span>
+                        </span>
+                    </eq>
+                </li>
+            </ul>
+        </li>
+        <li data-line="219" class="code-line">One-class SVM
+            <ul>
+                <li data-line="220" class="code-line">RBF kernel</li>
+            </ul>
+        </li>
+    </ul>
+    <h2 data-line="222" class="code-line" id="limitation">Limitation</h2>
+    <ul>
+        <li data-line="224" class="code-line">Since
+            <ul>
+                <li data-line="225" class="code-line">Samples are only come from the college</li>
+                <li data-line="226" class="code-line">No impostors' samples</li>
+                <li data-line="227" class="code-line">One-class classification</li>
+            </ul>
+        </li>
+        <li data-line="228" class="code-line">
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>⇒</mo></mrow><annotation encoding="application/x-tex">\\Rightarrow</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.36687em;"></span>
+                <span class="strut bottom" style="height:0.36687em;vertical-align:0em;"></span><span class="base"><span class="mrel">⇒</span></span>
+                </span>
+                </span>
+            </eq> For every time to deploy this user authentication method need to
+            <ul>
+                <li data-line="229" class="code-line">Collect new samples</li>
+                <li data-line="230" class="code-line">Traning</li>
+            </ul>
+        </li>
+    </ul>
+    <h2 data-line="232" class="code-line" id="reference">Reference</h2>
+    <ul>
+        <li data-line="234" class="code-line">Continuous Authentication for Mouse Dynamics: A Pattern-Growth Approach (C. Shen et al., 2012)</li>
+        <li data-line="235" class="code-line">CS 259D Lecture 5</li>
+    </ul>
+
+</body>
+
+</html>

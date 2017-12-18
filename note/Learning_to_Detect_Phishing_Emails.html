@@ -1,0 +1,250 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.4.1/github-markdown.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/styles/default.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.8.3/katex.min.css">
+    <link rel="stylesheet" href="https://gitcdn.xyz/repo/goessner/mdmath/master/css/texmath.css">
+    <link rel="stylesheet" href="https://gitcdn.xyz/repo/goessner/mdmath/master/css/vscode-texmath.css">
+    <title>Learning to Detect Phishing Emails</title>
+
+</head>
+
+<body class="markdown-body">
+    <h1 data-line="0" class="code-line" id="learning-to-detect-phishing-emails">Learning to Detect Phishing Emails</h1>
+    <!-- TOC -->
+    <ul>
+        <li data-line="4" class="code-line"><a href="#background-knowledge-and-insight">Background Knowledge and Insight</a></li>
+        <li data-line="5" class="code-line"><a href="#goal-and-contribution">Goal and Contribution</a></li>
+        <li data-line="6" class="code-line"><a href="#data">Data</a></li>
+        <li data-line="7" class="code-line"><a href="#feature">Feature</a></li>
+        <li data-line="8" class="code-line"><a href="#features-in-webpage-classification">Features in Webpage Classification</a></li>
+        <li data-line="9" class="code-line"><a href="#machine-learning-implementation">Machine Learning Implementation</a></li>
+        <li data-line="10" class="code-line"><a href="#reference">Reference</a></li>
+    </ul>
+    <!-- /TOC -->
+    <h2 data-line="14" class="code-line" id="background-knowledge-and-insight">Background Knowledge and Insight</h2>
+    <ul>
+        <li data-line="16" class="code-line">Phishing
+            <ul>
+                <li data-line="17" class="code-line">Goal:
+                    <ul>
+                        <li data-line="18" class="code-line">Account information</li>
+                        <li data-line="19" class="code-line">Logon credentials</li>
+                        <li data-line="20" class="code-line">Identity information</li>
+                    </ul>
+                </li>
+                <li data-line="21" class="code-line">Attack vectors:
+                    <ul>
+                        <li data-line="22" class="code-line">Legitimate-looking emails</li>
+                        <li data-line="23" class="code-line">Legitimate-looking websites</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li data-line="24" class="code-line">Detection
+            <ul>
+                <li data-line="25" class="code-line">Toolbars
+                    <ul>
+                        <li data-line="26" class="code-line">Examples
+                            <ul>
+                                <li data-line="27" class="code-line">Spoofguard</li>
+                                <li data-line="28" class="code-line">Netcraft</li>
+                            </ul>
+                        </li>
+                        <li data-line="29" class="code-line">Disadvantages
+                            <ul>
+                                <li data-line="30" class="code-line">Decreased amount of contextual information</li>
+                                <li data-line="31" class="code-line">Involve users in decision making process</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+                <li data-line="32" class="code-line">Email filtering
+                    <ul>
+                        <li data-line="33" class="code-line">Examples
+                            <ul>
+                                <li data-line="34" class="code-line">SpamAssassin</li>
+                                <li data-line="35" class="code-line">Spamato</li>
+                            </ul>
+                        </li>
+                        <li data-line="36" class="code-line">Advantages
+                            <ul>
+                                <li data-line="37" class="code-line">More complete context (content, headers, etc.)</li>
+                                <li data-line="38" class="code-line">Completely shield user from decision-making process</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+    </ul>
+    <h2 data-line="40" class="code-line" id="goal-and-contribution">Goal and Contribution</h2>
+    <ul>
+        <li data-line="42" class="code-line">A machine-learning based phishing e-mail filter</li>
+    </ul>
+    <h2 data-line="44" class="code-line" id="data">Data</h2>
+    <ul>
+        <li data-line="46" class="code-line">SpamAssassin ham corpora
+            <ul>
+                <li data-line="47" class="code-line">~6950 non-phishing non-spam</li>
+            </ul>
+        </li>
+        <li data-line="48" class="code-line">Publicly available phishingcorpus
+            <ul>
+                <li data-line="49" class="code-line">~ 860 phishing messages</li>
+                <li data-line="50" class="code-line">Challenge with WHOIS queries
+                    <ul>
+                        <li data-line="51" class="code-line">Only 505 domains out of 870 domains</li>
+                        <li data-line="52" class="code-line">Increases false negative rate</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+    </ul>
+    <h2 data-line="54" class="code-line" id="feature">Feature</h2>
+    <ul>
+        <li data-line="56" class="code-line">IP-based URLs
+            <ul>
+                <li data-line="57" class="code-line">Example:
+                    <ul>
+                        <li data-line="58" class="code-line"><code>http://192.168.0.1/paypal.cgi?fix_account</code></li>
+                    </ul>
+                </li>
+                <li data-line="59" class="code-line">Compromised PCs with no DNS entries</li>
+                <li data-line="60" class="code-line">Not popular</li>
+                <li data-line="61" class="code-line">Binary feature</li>
+            </ul>
+        </li>
+        <li data-line="62" class="code-line">Age of linked-to domain names
+            <ul>
+                <li data-line="63" class="code-line">Registered legitimate-sounding domain names
+                    <ul>
+                        <li data-line="64" class="code-line">Example: <code>playpal.com</code>, <code>paypal-update.com</code></li>
+                    </ul>
+                </li>
+                <li data-line="65" class="code-line">Typically short life-span
+                    <ul>
+                        <li data-line="66" class="code-line">Registered using stolen credit cards, canceled by registrar</li>
+                        <li data-line="67" class="code-line">Domain caught by anti-phishing monitors</li>
+                        <li data-line="68" class="code-line">Often lasting only ~ 48 hours</li>
+                    </ul>
+                </li>
+                <li data-line="69" class="code-line">Obtained using a WHOIS query</li>
+                <li data-line="70" class="code-line">Binary feature: Lifetime &lt; 60 days</li>
+            </ul>
+        </li>
+        <li data-line="71" class="code-line">Non-matching URLs
+            <ul>
+                <li data-line="72" class="code-line">Example: <code>&lt;a href=&quot;badsite.com&quot;&gt; paypal.com&lt;/a&gt;</code></li>
+                <li data-line="73" class="code-line">Binary feature: URL text different from HREF</li>
+            </ul>
+        </li>
+        <li data-line="74" class="code-line">&quot;Here&quot; links to non-modal domain
+            <ul>
+                <li data-line="75" class="code-line">Example: Click here to restore your account</li>
+                <li data-line="76" class="code-line">Modal domain: domain most frequently linked to</li>
+                <li data-line="77" class="code-line">Binary feature: link with text &quot;link&quot;, &quot;click&quot;, &quot;here&quot; that links to a domain other than modal domain</li>
+            </ul>
+        </li>
+        <li data-line="78" class="code-line">HTML emails
+            <ul>
+                <li data-line="79" class="code-line">Binary feature: email section with MIME type text/html</li>
+            </ul>
+        </li>
+        <li data-line="80" class="code-line">Number of links
+            <ul>
+                <li data-line="81" class="code-line">Continuous feature(Numeric feature): # links in HTML part(s) of email</li>
+                <li data-line="82" class="code-line">Link defined by an <code>&lt;a&gt;</code> tag with href attribute
+                    <ul>
+                        <li data-line="83" class="code-line">Including <code>mailto:</code> links</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li data-line="84" class="code-line">Number of domains
+            <ul>
+                <li data-line="85" class="code-line">Domain names for URLs starting with http/ https</li>
+                <li data-line="86" class="code-line">Only the main part of the domain name
+                    <ul>
+                        <li data-line="87" class="code-line">What registrar gets paid for
+                            <ul>
+                                <li data-line="88" class="code-line">Not necessarily same as combination of top- &amp; 2nd-level domain</li>
+                            </ul>
+                        </li>
+                        <li data-line="89" class="code-line">Example:
+                            <ul>
+                                <li data-line="90" class="code-line"><code>university.edu</code> for <code>www.cs.university.edu</code></li>
+                                <li data-line="91" class="code-line"><code>company.co.jp</code> for <code>www.company.co.jp</code>
+                                    <ul>
+                                        <li data-line="92" class="code-line">Top-level: <code>.jp</code></li>
+                                        <li data-line="93" class="code-line">second-level: <code>.co</code></li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+                <li data-line="94" class="code-line">Numeric feature: # distinct domains</li>
+            </ul>
+        </li>
+        <li data-line="95" class="code-line">Number of dots
+            <ul>
+                <li data-line="96" class="code-line">Subdomains: <code>http://www.my-bank.update.data.com</code></li>
+                <li data-line="97" class="code-line">Redirection script: <code>http://www.google.com/url?q=http://www.badsite.com</code>
+                    <ul>
+                        <li data-line="98" class="code-line">Looks to naive user to be from <code>google.com</code></li>
+                        <li data-line="99" class="code-line">Redirects browser to <code>badsite.com</code></li>
+                    </ul>
+                </li>
+                <li data-line="100" class="code-line">Numeric feature: Maximum number of dots in any of the links in the email</li>
+            </ul>
+        </li>
+        <li data-line="101" class="code-line">Contains javascript
+            <ul>
+                <li data-line="102" class="code-line">Binary feature: string &quot;javascript&quot; appears in email</li>
+                <li data-line="103" class="code-line">In <code>&lt;script&gt;</code> or <code>&lt;a&gt;</code> tag</li>
+            </ul>
+        </li>
+        <li data-line="104" class="code-line">Spam filter output
+            <ul>
+                <li data-line="105" class="code-line">Binary feature: class assigned to email by SpamAssassin</li>
+            </ul>
+        </li>
+    </ul>
+    <h2 data-line="107" class="code-line" id="features-in-webpage-classification">Features in Webpage Classification</h2>
+    <ul>
+        <li data-line="109" class="code-line">Site in browser history
+            <ul>
+                <li data-line="110" class="code-line">A site never previously visited(not in the history) is more likely to be a phishing website</li>
+            </ul>
+        </li>
+        <li data-line="111" class="code-line">Redirected site</li>
+        <li data-line="112" class="code-line">tf-idf
+            <ul>
+                <li data-line="113" class="code-line">Identify key terms of a page</li>
+            </ul>
+        </li>
+    </ul>
+    <h2 data-line="115" class="code-line" id="machine-learning-implementation">Machine Learning Implementation</h2>
+    <ul>
+        <li data-line="117" class="code-line">10-fold cross validation</li>
+        <li data-line="118" class="code-line">Classifier: Random forest
+            <ul>
+                <li data-line="119" class="code-line">10 decision trees</li>
+                <li data-line="120" class="code-line">Each decision made on a random attribute</li>
+                <li data-line="121" class="code-line">Trees pruned</li>
+            </ul>
+        </li>
+    </ul>
+    <h2 data-line="123" class="code-line" id="reference">Reference</h2>
+    <ul>
+        <li data-line="125" class="code-line">Learning to Detect Phishing Emails, Fette et al, 2007</li>
+        <li data-line="126" class="code-line">CS 259D Lecture 16</li>
+    </ul>
+
+</body>
+
+</html>

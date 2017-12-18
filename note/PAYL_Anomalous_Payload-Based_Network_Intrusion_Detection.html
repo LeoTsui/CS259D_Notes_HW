@@ -1,0 +1,417 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.4.1/github-markdown.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/styles/default.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.8.3/katex.min.css">
+    <link rel="stylesheet" href="https://gitcdn.xyz/repo/goessner/mdmath/master/css/texmath.css">
+    <link rel="stylesheet" href="https://gitcdn.xyz/repo/goessner/mdmath/master/css/vscode-texmath.css">
+    <title>PAYL: Anomalous Payload-based Network Intrusion Detection</title>
+
+</head>
+
+<body class="markdown-body">
+    <h1 data-line="0" class="code-line" id="payl-anomalous-payload-based-network-intrusion-detection">PAYL: Anomalous Payload-based Network Intrusion Detection</h1>
+    <!-- TOC -->
+    <ul>
+        <li data-line="4" class="code-line"><a href="#background-knowledge-and-insight">Background Knowledge and Insight</a></li>
+        <li data-line="5" class="code-line"><a href="#goal">Goal</a></li>
+        <li data-line="6" class="code-line"><a href="#data">Data</a></li>
+        <li data-line="7" class="code-line"><a href="#feature">Feature</a></li>
+        <li data-line="8" class="code-line"><a href="#payl-payload-modeling-and-anomaly-detection">PAYL (Payload Modeling and Anomaly Detection)</a>
+            <ul>
+                <li data-line="9" class="code-line"><a href="#length-conditioned-n-gram-payload-model">Length Conditioned n-Gram Payload Model</a></li>
+                <li data-line="10" class="code-line"><a href="#simplified-mahalanobis-distance">Simplified Mahalanobis Distance</a></li>
+                <li data-line="11" class="code-line"><a href="#incremental-learning">Incremental Learning</a></li>
+                <li data-line="12" class="code-line"><a href="#reduced-model-size-by-clustering">Reduced Model Size by Clustering</a></li>
+                <li data-line="13" class="code-line"><a href="#unsupervised-learning">Unsupervised learning</a></li>
+                <li data-line="14" class="code-line"><a href="#z-string">Z-string</a></li>
+            </ul>
+        </li>
+        <li data-line="15" class="code-line"><a href="#limitation">Limitation</a></li>
+        <li data-line="16" class="code-line"><a href="#reference">Reference</a></li>
+    </ul>
+    <!-- /TOC -->
+    <h2 data-line="20" class="code-line" id="background-knowledge-and-insight">Background Knowledge and Insight</h2>
+    <ul>
+        <li data-line="22" class="code-line">Available IDS failed on
+            <ul>
+                <li data-line="23" class="code-line">0-day</li>
+                <li data-line="24" class="code-line">Slow and stealthy worm propagation</li>
+            </ul>
+        </li>
+    </ul>
+    <h2 data-line="26" class="code-line" id="goal">Goal</h2>
+    <ul>
+        <li data-line="28" class="code-line">Detect first occurrences of zero-day worms or new malicious codes delivered via network
+            <ul>
+                <li data-line="29" class="code-line">Signatures not effective</li>
+                <li data-line="30" class="code-line">Slow/stealthy worm propagation can avoid bursts in network traffic flows or probes</li>
+                <li data-line="31" class="code-line">Requires payload based detection</li>
+            </ul>
+        </li>
+    </ul>
+    <h2 data-line="33" class="code-line" id="data">Data</h2>
+    <ul>
+        <li data-line="35" class="code-line">1999 DARPA IDS dataset</li>
+        <li data-line="36" class="code-line">CUCS dataset</li>
+        <li data-line="37" class="code-line">Smoothing factor = 0.001</li>
+        <li data-line="38" class="code-line">Data units
+            <ul>
+                <li data-line="39" class="code-line">Full packet</li>
+                <li data-line="40" class="code-line">First 100 bytes of packet</li>
+                <li data-line="41" class="code-line">Last 100 bytes of packet</li>
+                <li data-line="42" class="code-line">Full connection</li>
+                <li data-line="43" class="code-line">First 1000 bytes of connection</li>
+            </ul>
+        </li>
+    </ul>
+    <h2 data-line="45" class="code-line" id="feature">Feature</h2>
+    <ul>
+        <li data-line="47" class="code-line">Mean and variance of each frequency</li>
+    </ul>
+    <h2 data-line="49" class="code-line" id="payl-payload-modeling-and-anomaly-detection">PAYL (Payload Modeling and Anomaly Detection)</h2>
+    <ul>
+        <li data-line="51" class="code-line">Design criteria and operating objectives
+            <ul>
+                <li data-line="52" class="code-line">Hands-free</li>
+                <li data-line="53" class="code-line">Generality for any service or system</li>
+                <li data-line="54" class="code-line">Incremental update to accommodate changing or drifting environments</li>
+                <li data-line="55" class="code-line">Low FP</li>
+                <li data-line="56" class="code-line">High bandwidth environments, low latency, efficient real-time operation</li>
+            </ul>
+        </li>
+    </ul>
+    <h3 data-line="58" class="code-line" id="length-conditioned-n-gram-payload-model">Length Conditioned n-Gram Payload Model</h3>
+    <ul>
+        <li data-line="60" class="code-line">Cluster streams
+            <ul>
+                <li data-line="61" class="code-line">Port number
+                    <ul>
+                        <li data-line="62" class="code-line">Proxy for application
+                            <ul>
+                                <li data-line="63" class="code-line">21, 22, 80, etc.</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+                <li data-line="64" class="code-line">Packet length range
+                    <ul>
+                        <li data-line="65" class="code-line">Proxy for type of payload
+                            <ul>
+                                <li data-line="66" class="code-line">Larger payloads contain media or binary data</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+                <li data-line="67" class="code-line">Direction of stream
+                    <ul>
+                        <li data-line="68" class="code-line">Inbound</li>
+                        <li data-line="69" class="code-line">Outbound</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li data-line="70" class="code-line">Measurement: n-gram frequencies
+            <ul>
+                <li data-line="71" class="code-line">Length
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>L</mi></mrow><annotation encoding="application/x-tex">L</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span>
+                        <span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base"><span class="mord mathit">L</span></span>
+                        </span>
+                        </span>
+                    </eq>: frequency
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>=</mo><mi mathvariant="normal">#</mi></mrow><annotation encoding="application/x-tex">= \\#</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span>
+                        <span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base"><span class="mrel">=</span><span class="mord mathrm">#</span></span>
+                        </span>
+                        </span>
+                    </eq> of occurrences
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">/</mi><mo>(</mo><mi>L</mi><mo>−</mo><mi>n</mi><mo>+</mo><mn>1</mn><mo>)</mo></mrow><annotation encoding="application/x-tex">/ (L-n+1)</annotation></semantics></math></span>
+                        <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base"><span class="mord mathrm">/</span>
+                        <span class="mopen">(</span><span class="mord mathit">L</span>
+                        <span class="mbin">−</span><span class="mord mathit">n</span><span class="mbin">+</span><span class="mord mathrm">1</span><span class="mclose">)</span></span>
+                        </span>
+                        </span>
+                    </eq>
+                </li>
+                <li data-line="72" class="code-line">Use
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>n</mi><mo>=</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">n = 1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.64444em;"></span>
+                        <span class="strut bottom" style="height:0.64444em;vertical-align:0em;"></span><span class="base"><span class="mord mathit">n</span><span class="mrel">=</span><span class="mord mathrm">1</span></span>
+                        </span>
+                        </span>
+                    </eq>: 256 ASCII characters</li>
+            </ul>
+        </li>
+        <li data-line="73" class="code-line">
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>i</mi></mrow><annotation encoding="application/x-tex">i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.65952em;"></span>
+                <span class="strut bottom" style="height:0.65952em;vertical-align:0em;"></span><span class="base"><span class="mord mathit">i</span></span>
+                </span>
+                </span>
+            </eq>, observed length bin</li>
+        <li data-line="74" class="code-line">
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>j</mi></mrow><annotation encoding="application/x-tex">j</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.65952em;"></span>
+                <span class="strut bottom" style="height:0.85396em;vertical-align:-0.19444em;"></span><span class="base"><span class="mord mathit" style="margin-right:0.05724em;">j</span></span>
+                </span>
+                </span>
+            </eq>, port number</li>
+        <li data-line="75" class="code-line">
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>M</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub></mrow><annotation encoding="application/x-tex">M\_{ij}</annotation></semantics></math></span><span class="katex-html"
+                    aria-hidden="true"><span class="strut" style="height:0.68333em;"></span><span class="strut bottom" style="height:0.969438em;vertical-align:-0.286108em;"></span><span class="base"><span class="mord"><span class="mord mathit" style="margin-right:0.10903em;">M</span>
+                <span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.311664em;"><span style="top:-2.5500000000000003em;margin-left:-0.10903em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathit mtight">i</span><span class="mord mathit mtight" style="margin-right:0.05724em;">j</span></span>
+                </span>
+                </span>
+                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"></span></span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span>
+            </eq>, average byte frequency and the standard deviation of each byte’s frequency</li>
+    </ul>
+    <h3 data-line="78" class="code-line" id="simplified-mahalanobis-distance">Simplified Mahalanobis Distance</h3>
+    <ul>
+        <li data-line="80" class="code-line">Simplifications
+            <ul>
+                <li data-line="81" class="code-line">Naïve assumption: Byte frequencies independent
+                    <ul>
+                        <li data-line="82" class="code-line">Covariance matrix becomes diagonal</li>
+                    </ul>
+                </li>
+                <li data-line="83" class="code-line">Replace variance with standard deviation
+                    <ul>
+                        <li data-line="84" class="code-line">Avoid time-consuming square and square-root computations</li>
+                    </ul>
+                </li>
+                <li data-line="85" class="code-line">Add smoothing factor
+                    <ul>
+                        <li data-line="86" class="code-line">Avoid zero SD and infinite distance</li>
+                        <li data-line="87" class="code-line">Avoid same frequency</li>
+                        <li data-line="88" class="code-line">Reflect statistical confidence of sampled training data
+                            <ul>
+                                <li data-line="89" class="code-line">larger smoothing factor, less confidence</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li data-line="90" class="code-line">
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>x</mi></mrow><annotation encoding="application/x-tex">x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span>
+                <span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base"><span class="mord mathit">x</span></span>
+                </span>
+                </span>
+            </eq>, feature vector of the new observation</li>
+        <li data-line="91" class="code-line">
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mover accent="true"><mrow><mi>y</mi></mrow><mo stretchy="true">‾</mo></mover></mrow><annotation encoding="application/x-tex">\\overline{y}</annotation></semantics></math></span>
+                <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.63056em;"></span><span class="strut bottom" style="height:0.825em;vertical-align:-0.19444em;"></span><span class="base"><span class="mord overline"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.63056em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span>
+                <span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">y</span></span>
+                </span><span style="top:-3.55056em;"><span class="pstrut" style="height:3em;"></span><span class="overline-line" style="border-bottom-width:0.04em;"></span></span>
+                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.19444em;"></span></span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span>
+            </eq>, averaged feature vector computed from the training dataset</li>
+        <li data-line="92" class="code-line">
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mover accent="true"><mrow><mi>σ</mi></mrow><mo stretchy="true">‾</mo></mover></mrow><annotation encoding="application/x-tex">\\overline{\\sigma}</annotation></semantics></math></span>
+                <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.63056em;"></span><span class="strut bottom" style="height:0.63056em;vertical-align:0em;"></span><span class="base"><span class="mord overline"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.63056em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span>
+                <span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">σ</span></span>
+                </span><span style="top:-3.55056em;"><span class="pstrut" style="height:3em;"></span><span class="overline-line" style="border-bottom-width:0.04em;"></span></span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span>
+            </eq>, standard deviation</li>
+        <li data-line="93" class="code-line">
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>d</mi><mo>(</mo><mi>x</mi><mo separator="true">,</mo><mover accent="true"><mrow><mi>y</mi></mrow><mo stretchy="true">‾</mo></mover><mo>)</mo><mo>=</mo><msubsup><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>0</mn></mrow><mrow><mi>n</mi><mo>−</mo><mn>1</mn></mrow></msubsup><mrow><mi mathvariant="normal">∣</mi><msub><mi>x</mi><mi>i</mi></msub><mo>−</mo><mover accent="true"><mrow><msub><mi>y</mi><mi>i</mi></msub></mrow><mo stretchy="true">‾</mo></mover><mi mathvariant="normal">∣</mi><mi mathvariant="normal">/</mi><mo>(</mo><mrow><mover accent="true"><mrow><mi>σ</mi></mrow><mo stretchy="true">‾</mo></mover><mo>+</mo><mi>α</mi></mrow><mo>)</mo></mrow></mrow><annotation encoding="application/x-tex">d(x, \\overline{y}) = \\sum\_{i = 0}^{n - 1}{|x\_i - \\overline{y\_i}| / ({\\overline{\\sigma} + \\alpha})}</annotation></semantics></math></span>
+                <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.954008em;"></span><span class="strut bottom" style="height:1.253718em;vertical-align:-0.29971000000000003em;"></span><span class="base"><span class="mord mathit">d</span>
+                <span class="mopen">(</span>
+                <span class="mord mathit">x</span><span class="mpunct">,</span><span class="mord overline"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.63056em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span>
+                <span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">y</span></span>
+                </span><span style="top:-3.55056em;"><span class="pstrut" style="height:3em;"></span><span class="overline-line" style="border-bottom-width:0.04em;"></span></span>
+                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.19444em;"></span></span>
+                </span>
+                </span><span class="mclose">)</span><span class="mrel">=</span><span class="mop"><span class="mop op-symbol small-op" style="position:relative;top:-0.0000050000000000050004em;">∑</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.954008em;"><span style="top:-2.40029em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathit mtight">i</span><span class="mrel mtight">=</span><span class="mord mathrm mtight">0</span></span>
+                </span>
+                </span><span style="top:-3.2029em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathit mtight">n</span><span class="mbin mtight">−</span>
+                <span class="mord mathrm mtight">1</span>
+                </span>
+                </span>
+                </span>
+                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.29971000000000003em;"></span></span>
+                </span>
+                </span>
+                </span><span class="mord"><span class="mord mathrm">∣</span><span class="mord"><span class="mord mathit">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight">i</span></span>
+                </span>
+                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                </span>
+                </span>
+                </span><span class="mbin">−</span><span class="mord overline"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.63056em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span>
+                <span class="mord"><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">y</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight">i</span></span>
+                </span>
+                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span><span style="top:-3.55056em;"><span class="pstrut" style="height:3em;"></span><span class="overline-line" style="border-bottom-width:0.04em;"></span></span>
+                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.19444em;"></span></span>
+                </span>
+                </span><span class="mord mathrm">∣</span><span class="mord mathrm">/</span><span class="mopen">(</span><span class="mord"><span class="mord overline"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.63056em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span>
+                <span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">σ</span></span>
+                </span><span style="top:-3.55056em;"><span class="pstrut" style="height:3em;"></span><span class="overline-line" style="border-bottom-width:0.04em;"></span></span>
+                </span>
+                </span>
+                </span>
+                </span><span class="mbin">+</span><span class="mord mathit" style="margin-right:0.0037em;">α</span></span><span class="mclose">)</span></span>
+                </span>
+                </span>
+                </span>
+            </eq>
+        </li>
+        <li data-line="94" class="code-line">Intuitive Explanation
+            <ul>
+                <li data-line="95" class="code-line"><strong>A kind of &quot;normalization&quot; observation examples by &quot;length bin&quot;, and summing the results</strong></li>
+                <li data-line="96" class="code-line">For each dimension (observed length bin,
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>i</mi></mrow><annotation encoding="application/x-tex">i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.65952em;"></span>
+                        <span class="strut bottom" style="height:0.65952em;vertical-align:0em;"></span><span class="base"><span class="mord mathit">i</span></span>
+                        </span>
+                        </span>
+                    </eq>)
+                    <ul>
+                        <li data-line="97" class="code-line">Measure the Euclidean distance between a sample data and the center point</li>
+                        <li data-line="98" class="code-line">Normalize with smoothed SD</li>
+                    </ul>
+                </li>
+                <li data-line="99" class="code-line">Summation</li>
+            </ul>
+        </li>
+    </ul>
+    <h3 data-line="101" class="code-line" id="incremental-learning">Incremental Learning</h3>
+    <ul>
+        <li data-line="103" class="code-line">Adapt to concept Drift</li>
+        <li data-line="104" class="code-line">Use streaming measurements for mean and standard deviation</li>
+        <li data-line="105" class="code-line">
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mover accent="true"><mrow><mi>x</mi></mrow><mo stretchy="true">‾</mo></mover><mo>=</mo><mover accent="true"><mrow><mi>x</mi></mrow><mo stretchy="true">‾</mo></mover><mo>+</mo><mrow><mo>(</mo><msub><mi>x</mi><mrow><mi>N</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>−</mo><mover accent="true"><mrow><mi>x</mi></mrow><mo stretchy="true">‾</mo></mover><mo>)</mo></mrow><mi mathvariant="normal">/</mi><mrow><mo>(</mo><mi>N</mi><mo>+</mo><mn>1</mn><mo>)</mo></mrow></mrow><annotation encoding="application/x-tex">\\overline{x} = \\overline{x} + {(x\_{N + 1} - \\overline{x})} / {(N + 1)}</annotation></semantics></math></span>
+                <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base"><span class="mord overline"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.63056em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span>
+                <span class="mord"><span class="mord mathit">x</span></span>
+                </span><span style="top:-3.55056em;"><span class="pstrut" style="height:3em;"></span><span class="overline-line" style="border-bottom-width:0.04em;"></span></span>
+                </span>
+                </span>
+                </span>
+                </span><span class="mrel">=</span><span class="mord overline"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.63056em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathit">x</span></span>
+                </span><span style="top:-3.55056em;"><span class="pstrut" style="height:3em;"></span><span class="overline-line" style="border-bottom-width:0.04em;"></span></span>
+                </span>
+                </span>
+                </span>
+                </span><span class="mbin">+</span><span class="mord"><span class="mopen">(</span><span class="mord"><span class="mord mathit">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.328331em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathit mtight" style="margin-right:0.10903em;">N</span><span class="mbin mtight">+</span><span class="mord mathrm mtight">1</span></span>
+                </span>
+                </span>
+                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.208331em;"></span></span>
+                </span>
+                </span>
+                </span><span class="mbin">−</span><span class="mord overline"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.63056em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span>
+                <span class="mord"><span class="mord mathit">x</span></span>
+                </span><span style="top:-3.55056em;"><span class="pstrut" style="height:3em;"></span><span class="overline-line" style="border-bottom-width:0.04em;"></span></span>
+                </span>
+                </span>
+                </span>
+                </span><span class="mclose">)</span></span><span class="mord mathrm">/</span><span class="mord"><span class="mopen">(</span><span class="mord mathit" style="margin-right:0.10903em;">N</span><span class="mbin">+</span><span class="mord mathrm">1</span>
+                <span class="mclose">)</span>
+                </span>
+                </span>
+                </span>
+                </span>
+            </eq>
+        </li>
+        <li data-line="106" class="code-line">Store the average of
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msubsup><mi>x</mi><mi>i</mi><mn>2</mn></msubsup></mrow><annotation encoding="application/x-tex">x\_i^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.8141079999999999em;"></span>
+                <span class="strut bottom" style="height:1.072772em;vertical-align:-0.258664em;"></span><span class="base"><span class="mord"><span class="mord mathit">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8141079999999999em;"><span style="top:-2.441336em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight">i</span></span>
+                </span><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathrm mtight">2</span></span>
+                </span>
+                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.258664em;"></span></span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span>
+            </eq>, 256-element array</li>
+    </ul>
+    <h3 data-line="108" class="code-line" id="reduced-model-size-by-clustering">Reduced Model Size by Clustering</h3>
+    <ul>
+        <li data-line="110" class="code-line">Fine-grained model problem:
+            <ul>
+                <li data-line="111" class="code-line">Large total size of model
+                    <ul>
+                        <li data-line="112" class="code-line">Similar distributions for near lengths</li>
+                    </ul>
+                </li>
+                <li data-line="113" class="code-line">Insufficient training data for some lengths</li>
+            </ul>
+        </li>
+        <li data-line="114" class="code-line">Solution:
+            <ul>
+                <li data-line="115" class="code-line">Merge neighboring models
+                    <ul>
+                        <li data-line="116" class="code-line">Manhattan distance</li>
+                    </ul>
+                </li>
+                <li data-line="117" class="code-line">Borrow data from neighboring bins</li>
+            </ul>
+        </li>
+        <li data-line="118" class="code-line">For lengths not observed in training data
+            <ul>
+                <li data-line="119" class="code-line">Use closest length range</li>
+                <li data-line="120" class="code-line">Alert on unusual length</li>
+            </ul>
+        </li>
+    </ul>
+    <h3 data-line="122" class="code-line" id="unsupervised-learning">Unsupervised learning</h3>
+    <ul>
+        <li data-line="124" class="code-line">Assumption: Attacks are rare and their payload distribution is substantially different from normal traffic</li>
+        <li data-line="125" class="code-line">Remove training data noise
+            <ul>
+                <li data-line="126" class="code-line">Apply the learned models to training data</li>
+                <li data-line="127" class="code-line">Remove anomalous training samples</li>
+                <li data-line="128" class="code-line">Update models</li>
+            </ul>
+        </li>
+    </ul>
+    <h3 data-line="130" class="code-line" id="z-string">Z-string</h3>
+    <ul>
+        <li data-line="132" class="code-line">Distribution ordered by Zipf law can represent the signature</li>
+        <li data-line="133" class="code-line">Z-strings of payloads from different match each other
+            <ul>
+                <li data-line="134" class="code-line">A worm has appeared</li>
+            </ul>
+        </li>
+    </ul>
+    <h2 data-line="136" class="code-line" id="limitation">Limitation</h2>
+    <ul>
+        <li data-line="138" class="code-line">Curse of dimensionality (Maybe not today)</li>
+        <li data-line="139" class="code-line">Spurious features</li>
+        <li data-line="140" class="code-line">Not robust against adversaries</li>
+        <li data-line="141" class="code-line">No focused scope</li>
+    </ul>
+    <h2 data-line="143" class="code-line" id="reference">Reference</h2>
+    <ul>
+        <li data-line="145" class="code-line">Anomalous payload-based network intrusion detection, Wang-Stolfo 2004</li>
+        <li data-line="146" class="code-line">CS 259D Session 12</li>
+    </ul>
+
+</body>
+
+</html>

@@ -1,0 +1,765 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.4.1/github-markdown.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/styles/default.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.8.3/katex.min.css">
+    <link rel="stylesheet" href="https://gitcdn.xyz/repo/goessner/mdmath/master/css/texmath.css">
+    <link rel="stylesheet" href="https://gitcdn.xyz/repo/goessner/mdmath/master/css/vscode-texmath.css">
+    <title>Polymorphic Blending Attacks</title>
+
+</head>
+
+<body class="markdown-body">
+    <h1 data-line="0" class="code-line" id="polymorphic-blending-attacks">Polymorphic Blending Attacks</h1>
+    <!-- TOC -->
+    <ul>
+        <li data-line="4" class="code-line"><a href="#goal">Goal</a></li>
+        <li data-line="5" class="code-line"><a href="#related-work">Related Work</a></li>
+        <li data-line="6" class="code-line"><a href="#blending-attacks">Blending Attacks</a>
+            <ul>
+                <li data-line="7" class="code-line"><a href="#scheme-of-a-polymorphic-blending-attack-pba">Scheme of a polymorphic blending attack (PBA)</a></li>
+                <li data-line="8" class="code-line"><a href="#polymorphism-attacks">Polymorphism Attacks</a></li>
+                <li data-line="9" class="code-line"><a href="#polymorphic-blending-attacks">Polymorphic Blending Attacks</a></li>
+                <li data-line="10" class="code-line"><a href="#steps-of-polymorphic-blending-attacks">Steps of Polymorphic Blending Attacks</a></li>
+                <li data-line="11" class="code-line"><a href="#attack-packet-design">Attack Packet Design</a></li>
+            </ul>
+        </li>
+        <li data-line="12" class="code-line"><a href="#evading-payl">Evading PAYL</a>
+            <ul>
+                <li data-line="13" class="code-line"><a href="#evading-1-gram">Evading 1-gram</a></li>
+                <li data-line="14" class="code-line"><a href="#evading-2-gram">Evading 2-gram</a></li>
+            </ul>
+        </li>
+        <li data-line="15" class="code-line"><a href="#experiment-setup">Experiment Setup</a>
+            <ul>
+                <li data-line="16" class="code-line"><a href="#attack-vector">Attack vector</a></li>
+                <li data-line="17" class="code-line"><a href="#dataset">Dataset</a></li>
+            </ul>
+        </li>
+        <li data-line="18" class="code-line"><a href="#evaluation">Evaluation</a> - <a href="#payl-training">PAYL Training</a>
+            <ul>
+                <li data-line="20" class="code-line"><a href="#traditional-polymorphic-attacks-clet">Traditional Polymorphic Attacks (CLET)</a></li>
+                <li data-line="21" class="code-line"><a href="#artificial-profile">Artificial Profile</a></li>
+                <li data-line="22" class="code-line"><a href="#1-gram-and-2-gram-attacks">1-gram and 2-gram Attacks</a></li>
+            </ul>
+        </li>
+        <li data-line="23" class="code-line"><a href="#countermeasures">Countermeasures</a></li>
+        <li data-line="24" class="code-line"><a href="#limitations-and-improvements">Limitations and Improvements</a></li>
+        <li data-line="25" class="code-line"><a href="#reference">Reference</a></li>
+    </ul>
+    <!-- /TOC -->
+    <h2 data-line="29" class="code-line" id="goal">Goal</h2>
+    <ul>
+        <li data-line="31" class="code-line">Study polymorphic blending attack</li>
+        <li data-line="32" class="code-line">Why network anomaly IDS based on payload statistics not work</li>
+        <li data-line="33" class="code-line">Case study: 1-gram and 2-gram PAYL</li>
+    </ul>
+    <h2 data-line="35" class="code-line" id="related-work">Related Work</h2>
+    <ul>
+        <li data-line="37" class="code-line">Polymorphic attacks:
+            <ul>
+                <li data-line="38" class="code-line">IP/TCP transformations</li>
+                <li data-line="39" class="code-line">Mutation exploits (Vigna et al.)</li>
+                <li data-line="40" class="code-line">Fragroute, Whisker, AGENT, Mistfall, tPE, EXPO, DINA, ADMutate, PHATBOT, JempiScodes</li>
+                <li data-line="41" class="code-line">CLET</li>
+            </ul>
+        </li>
+        <li data-line="42" class="code-line">Defenses against polymorphism
+            <ul>
+                <li data-line="43" class="code-line">Looking for executable code (Toth et al.)</li>
+                <li data-line="44" class="code-line">Looking for similar structure in multiple code instances (Kruegel et al.)</li>
+                <li data-line="45" class="code-line">Looking for common substrings present in multiple code instances (Polygraph) - defeated by noise</li>
+                <li data-line="46" class="code-line">Looking for any exploit of a known vulnerability (Shield)</li>
+            </ul>
+        </li>
+        <li data-line="47" class="code-line">Defenses against polymorphism
+            <ul>
+                <li data-line="48" class="code-line">Looking for instruction semantics, detect known code transformations (Cristodorescu et al.)</li>
+                <li data-line="49" class="code-line">Detect sequence of anomalous system calls (Forest et al.) - can be defeated through mimicry attacks.
+                    <ul>
+                        <li data-line="50" class="code-line">New approaches use stack information but they can also be defeated</li>
+                    </ul>
+                </li>
+                <li data-line="51" class="code-line">Payload-based anomaly detection: use length, character distribution, probabilistic grammar and tokens to model HTTP traffic (Kruegel et al.); record byte frequency for each port's traffic (PAYL)</li>
+            </ul>
+        </li>
+    </ul>
+    <h2 data-line="53" class="code-line" id="blending-attacks">Blending Attacks</h2>
+    <h3 data-line="55" class="code-line" id="scheme-of-a-polymorphic-blending-attack-pba">Scheme of a polymorphic blending attack (PBA)</h3>
+    <p data-line="57" class="code-line"><img src="images/Scheme-of-a-Polymorphic-Blending-Attack-PBA.png" alt="Scheme-of-a-Polymorphic-Blending-Attack-PBA" title="Scheme of a polymorphic blending attack (PBA)"></p>
+    <h3 data-line="59" class="code-line" id="polymorphism-attacks">Polymorphism Attacks</h3>
+    <ul>
+        <li data-line="61" class="code-line">Polymorphism
+            <ul>
+                <li data-line="62" class="code-line">Disguise the packets as normal traffic</li>
+                <li data-line="63" class="code-line">Change the contents of packets to make it look different</li>
+                <li data-line="64" class="code-line">Exploit code, not used in normal</li>
+                <li data-line="65" class="code-line"><strong>Making attacks look different from each other rather than normal</strong></li>
+            </ul>
+        </li>
+        <li data-line="66" class="code-line">Attack Vector
+            <ul>
+                <li data-line="67" class="code-line">Modified part, invariant part</li>
+                <li data-line="68" class="code-line">Attack invariant could be
+                    <ul>
+                        <li data-line="69" class="code-line">Small</li>
+                        <li data-line="70" class="code-line">Existing in the normal traffic</li>
+                    </ul>
+                </li>
+                <li data-line="71" class="code-line">Could cause high FP</li>
+            </ul>
+        </li>
+        <li data-line="72" class="code-line">Attack Body (shellcode)
+            <ul>
+                <li data-line="73" class="code-line">Register shuffling</li>
+                <li data-line="74" class="code-line">Equivalent instruction substitution</li>
+                <li data-line="75" class="code-line">Instruction reordering</li>
+                <li data-line="76" class="code-line">Garbage insertions</li>
+                <li data-line="77" class="code-line">Encryption</li>
+            </ul>
+        </li>
+        <li data-line="78" class="code-line">Polymorphic Decryptor
+            <ul>
+                <li data-line="79" class="code-line">Decrypt shellcode</li>
+                <li data-line="80" class="code-line">Code obfuscation</li>
+            </ul>
+        </li>
+        <li data-line="81" class="code-line">Detection of Polymorphic Attacks
+            <ul>
+                <li data-line="82" class="code-line">Exploit code and/or input data contain some characters that have very low probability of appearing in a normal packet</li>
+                <li data-line="83" class="code-line">This deviation can be detected</li>
+            </ul>
+        </li>
+    </ul>
+    <h3 data-line="85" class="code-line" id="polymorphic-blending-attacks">Polymorphic Blending Attacks</h3>
+    <ul>
+        <li data-line="87" class="code-line">Making attacks looks different from each other rather</li>
+        <li data-line="88" class="code-line"><strong>Adjust their byte frequency to match that of legitimate traffic (look like normal)</strong></li>
+        <li data-line="89" class="code-line">Assumption
+            <ul>
+                <li data-line="90" class="code-line">The adversary has already compromised a host X inside a network A which communicates with the target host Y inside network B.</li>
+                <li data-line="91" class="code-line">The adversary has knowledge of the IDS<sub>B</sub> that monitors the victim host network.</li>
+                <li data-line="92" class="code-line">A typical anomaly IDS has a threshold setting that can be adjusted to obtain a desired false positive rate.
+                    <ul>
+                        <li data-line="93" class="code-line">Adversary knows the learning algorithm used by IDS of Network B</li>
+                        <li data-line="94" class="code-line">IDS of Network B is a payload statistics based system</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li data-line="95" class="code-line">Adversary's trade-off
+            <ul>
+                <li data-line="96" class="code-line">Attack size
+                    <ul>
+                        <li data-line="97" class="code-line">Monitor network flow size</li>
+                    </ul>
+                </li>
+                <li data-line="98" class="code-line">Process speed
+                    <ul>
+                        <li data-line="99" class="code-line">Attack should be economical in time and space</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+    </ul>
+    <h3 data-line="101" class="code-line" id="steps-of-polymorphic-blending-attacks">Steps of Polymorphic Blending Attacks</h3>
+    <ol>
+        <li data-line="103" class="code-line">Learning The IDS Normal Profile
+            <ul>
+                <li data-line="104" class="code-line">Sniffing the network traffic</li>
+                <li data-line="105" class="code-line">Generates artificial profile</li>
+                <li data-line="106" class="code-line">More normal packets captured more closer to the normal profile</li>
+                <li data-line="107" class="code-line">Profile
+                    <ul>
+                        <li data-line="108" class="code-line">Average size</li>
+                        <li data-line="109" class="code-line">Rate of packets</li>
+                        <li data-line="110" class="code-line">Byte frequency distribution</li>
+                        <li data-line="111" class="code-line">Range of tokens at different offsets</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li data-line="112" class="code-line">Attack Body Encryption
+            <ul>
+                <li data-line="113" class="code-line">To match the normal profile
+                    <ul>
+                        <li data-line="114" class="code-line">Substituting every character</li>
+                        <li data-line="115" class="code-line">Padded with some garbage data</li>
+                    </ul>
+                </li>
+                <li data-line="116" class="code-line">Reversible operation</li>
+                <li data-line="117" class="code-line">Generated suitable substitution table</li>
+            </ul>
+        </li>
+        <li data-line="118" class="code-line">Polymorphic Decryptor
+            <ul>
+                <li data-line="119" class="code-line">Remove padding</li>
+                <li data-line="120" class="code-line">re-substitute characters</li>
+                <li data-line="121" class="code-line">The decryptor routine is not encrypted but mutated using shellcode polymorphism processing</li>
+            </ul>
+        </li>
+    </ol>
+    <h3 data-line="123" class="code-line" id="attack-packet-design">Attack Packet Design</h3>
+    <ul>
+        <li data-line="125" class="code-line">Find a normal profile that similar to the attack packet
+            <ul>
+                <li data-line="126" class="code-line">Character frequency (substitution table)
+                    <ul>
+                        <li data-line="127" class="code-line">If no significantly different between new and old substitution tables, replace old by new</li>
+                    </ul>
+                </li>
+                <li data-line="128" class="code-line">Packet length
+                    <ul>
+                        <li data-line="129" class="code-line">Longer than the attack packet</li>
+                        <li data-line="130" class="code-line">Plan B: divide attack body into multiple small packets</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+    </ul>
+    <h2 data-line="133" class="code-line" id="evading-payl">Evading PAYL</h2>
+    <h3 data-line="135" class="code-line" id="evading-1-gram">Evading 1-gram</h3>
+    <ul>
+        <li data-line="137" class="code-line"><strong>Minimize the maximum frequency difference</strong></li>
+        <li data-line="138" class="code-line">Padding
+            <ul>
+                <li data-line="139" class="code-line">
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mover accent="true"><mrow><mi>ω</mi></mrow><mo>^</mo></mover></mrow><annotation encoding="application/x-tex">\\hat{\\omega}</annotation></semantics></math></span>
+                        <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.69444em;vertical-align:0em;"></span><span class="base"><span class="mord accent"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.69444em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span>
+                        <span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">ω</span></span>
+                        </span><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="margin-left:0em;"><span>^</span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                    </eq>, substituted attack body before padding</li>
+                <li data-line="140" class="code-line">
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mover accent="true"><mrow><mi>ω</mi></mrow><mo>´</mo></mover></mrow><annotation encoding="application/x-tex">\\acute{\\omega}</annotation></semantics></math></span>
+                        <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.69444em;vertical-align:0em;"></span><span class="base"><span class="mord accent"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.69444em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span>
+                        <span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">ω</span></span>
+                        </span><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="margin-left:0em;"><span>´</span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                    </eq>, substituted attack body after padding</li>
+                <li data-line="141" class="code-line">
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">∥</mi><mi>ω</mi><mi mathvariant="normal">∥</mi></mrow><annotation encoding="application/x-tex">\\|\\omega\\|</annotation></semantics></math></span>
+                        <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base"><span class="mord mathrm">∥</span>
+                        <span class="mord mathit" style="margin-right:0.03588em;">ω</span>
+                        <span class="mord mathrm">∥</span>
+                        </span>
+                        </span>
+                        </span>
+                    </eq>, length of
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>ω</mi></mrow><annotation encoding="application/x-tex">\\omega</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span>
+                        <span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base"><span class="mord mathit" style="margin-right:0.03588em;">ω</span></span>
+                        </span>
+                        </span>
+                    </eq>
+                </li>
+                <li data-line="142" class="code-line">
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>i</mi></mrow><annotation encoding="application/x-tex">i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.65952em;"></span>
+                        <span class="strut bottom" style="height:0.65952em;vertical-align:0em;"></span><span class="base"><span class="mord mathit">i</span></span>
+                        </span>
+                        </span>
+                    </eq>, idx of characters</li>
+                <li data-line="143" class="code-line">
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>x</mi></mrow><annotation encoding="application/x-tex">x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span>
+                        <span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base"><span class="mord mathit">x</span></span>
+                        </span>
+                        </span>
+                    </eq>, characters
+                    <ul>
+                        <li data-line="144" class="code-line">
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>x</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">x\_i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span>
+                                <span class="strut bottom" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="base"><span class="mord"><span class="mord mathit">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                                <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight">i</span></span>
+                                </span>
+                                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                            </eq>, the
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msup><mi>i</mi><mrow><mi>t</mi><mi>h</mi></mrow></msup></mrow><annotation encoding="application/x-tex">i^{th}</annotation></semantics></math></span>
+                                <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.849108em;"></span><span class="strut bottom" style="height:0.849108em;vertical-align:0em;"></span><span class="base"><span class="mord"><span class="mord mathit">i</span>
+                                <span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.849108em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                                <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathit mtight">t</span><span class="mord mathit mtight">h</span></span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                            </eq> of the characters</li>
+                    </ul>
+                </li>
+                <li data-line="145" class="code-line">
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>λ</mi></mrow><annotation encoding="application/x-tex">\\lambda</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span>
+                        <span class="strut bottom" style="height:0.69444em;vertical-align:0em;"></span><span class="base"><span class="mord mathit">λ</span></span>
+                        </span>
+                        </span>
+                    </eq>,
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">#</mi></mrow><annotation encoding="application/x-tex">\\#</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span>
+                        <span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base"><span class="mord mathrm">#</span></span>
+                        </span>
+                        </span>
+                    </eq> occurrences
+                    <ul>
+                        <li data-line="146" class="code-line">
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>λ</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">\\lambda\_i</annotation></semantics></math></span><span class="katex-html"
+                                    aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.84444em;vertical-align:-0.15em;"></span><span class="base"><span class="mord"><span class="mord mathit">λ</span>
+                                <span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                                <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight">i</span></span>
+                                </span>
+                                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                            </eq>,
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">#</mi></mrow><annotation encoding="application/x-tex">\\#</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span>
+                                <span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base"><span class="mord mathrm">#</span></span>
+                                </span>
+                                </span>
+                            </eq> occurrences of
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>x</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">x\_i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span>
+                                <span class="strut bottom" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="base"><span class="mord"><span class="mord mathit">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                                <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight">i</span></span>
+                                </span>
+                                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                            </eq>
+                        </li>
+                    </ul>
+                </li>
+                <li data-line="147" class="code-line">
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">∥</mi><mover accent="true"><mrow><mi>ω</mi></mrow><mo>´</mo></mover><mi mathvariant="normal">∥</mi><mo>=</mo><mi mathvariant="normal">∥</mi><mover accent="true"><mrow><mi>ω</mi></mrow><mo>^</mo></mover><mi mathvariant="normal">∥</mi><mo>+</mo><msubsup><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></msubsup><mrow><msub><mi>λ</mi><mi>i</mi></msub></mrow></mrow><annotation encoding="application/x-tex">\\|\\acute{\\omega}\\| = \\|\\hat{\\omega}\\| + \\sum\_{i=1}^n{\\lambda\_i}</annotation></semantics></math></span>
+                        <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.804292em;"></span><span class="strut bottom" style="height:1.104002em;vertical-align:-0.29971000000000003em;"></span><span class="base"><span class="mord mathrm">∥</span>
+                        <span class="mord accent"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.69444em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span>
+                        <span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">ω</span></span>
+                        </span><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="margin-left:0em;"><span>´</span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span><span class="mord mathrm">∥</span><span class="mrel">=</span><span class="mord mathrm">∥</span><span class="mord accent"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.69444em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span>
+                        <span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">ω</span></span>
+                        </span><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="margin-left:0em;"><span>^</span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span><span class="mord mathrm">∥</span><span class="mbin">+</span><span class="mop"><span class="mop op-symbol small-op" style="position:relative;top:-0.0000050000000000050004em;">∑</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.804292em;"><span style="top:-2.40029em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathit mtight">i</span><span class="mrel mtight">=</span><span class="mord mathrm mtight">1</span></span>
+                        </span>
+                        </span><span style="top:-3.2029em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight">n</span></span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.29971000000000003em;"></span></span>
+                        </span>
+                        </span>
+                        </span><span class="mord"><span class="mord"><span class="mord mathit">λ</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight">i</span></span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                    </eq>
+                </li>
+                <li data-line="148" class="code-line">
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>f</mi><mo>(</mo><msub><mi>x</mi><mi>i</mi></msub><mo>)</mo></mrow><annotation encoding="application/x-tex">f(x\_i)</annotation></semantics></math></span>
+                        <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base"><span class="mord mathit" style="margin-right:0.10764em;">f</span>
+                        <span class="mopen">(</span>
+                        <span class="mord"><span class="mord mathit">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight">i</span></span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                        </span>
+                        </span>
+                        </span><span class="mclose">)</span></span>
+                        </span>
+                        </span>
+                    </eq>, relative frequency of character
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>x</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">x\_i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span>
+                        <span class="strut bottom" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="base"><span class="mord"><span class="mord mathit">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight">i</span></span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                    </eq> in normal traffic</li>
+                <li data-line="149" class="code-line">
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mover accent="true"><mrow><mi>f</mi></mrow><mo>^</mo></mover><mo>(</mo><msub><mi>x</mi><mi>i</mi></msub><mo>)</mo></mrow><annotation encoding="application/x-tex">\\hat{f}(x\_i)</annotation></semantics></math></span>
+                        <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.9578799999999998em;"></span><span class="strut bottom" style="height:1.2078799999999998em;vertical-align:-0.25em;"></span><span class="base"><span class="mord accent"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.9578799999999998em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span>
+                        <span class="mord"><span class="mord mathit" style="margin-right:0.10764em;">f</span></span>
+                        </span><span style="top:-3.26344em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="margin-left:0.33334em;"><span>^</span></span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.19444em;"></span></span>
+                        </span>
+                        </span><span class="mopen">(</span><span class="mord"><span class="mord mathit">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight">i</span></span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                        </span>
+                        </span>
+                        </span><span class="mclose">)</span></span>
+                        </span>
+                        </span>
+                    </eq>, relative frequency of character
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>x</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">x\_i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span>
+                        <span class="strut bottom" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="base"><span class="mord"><span class="mord mathit">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight">i</span></span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                    </eq> in substituted attack traffic</li>
+                <li data-line="150" class="code-line">
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>λ</mi><mi>i</mi></msub><mo>=</mo><mi mathvariant="normal">∥</mi><mover accent="true"><mrow><mi>ω</mi></mrow><mo>´</mo></mover><mi mathvariant="normal">∥</mi><mi>f</mi><mo>(</mo><msub><mi>x</mi><mi>i</mi></msub><mo>)</mo><mo>−</mo><mi mathvariant="normal">∥</mi><mover accent="true"><mrow><mi>ω</mi></mrow><mo>^</mo></mover><mi mathvariant="normal">∥</mi><mover accent="true"><mrow><mi>f</mi></mrow><mo>^</mo></mover><mo>(</mo><msub><mi>x</mi><mi>i</mi></msub><mo>)</mo></mrow><annotation encoding="application/x-tex">\\lambda\_i = \\|\\acute{\\omega}\\|f(x\_i) - \\|\\hat{\\omega}\\|\\hat{f}(x\_i)</annotation></semantics></math></span>
+                        <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.9578799999999998em;"></span><span class="strut bottom" style="height:1.2078799999999998em;vertical-align:-0.25em;"></span><span class="base"><span class="mord"><span class="mord mathit">λ</span>
+                        <span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight">i</span></span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                        </span>
+                        </span>
+                        </span><span class="mrel">=</span><span class="mord mathrm">∥</span><span class="mord accent"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.69444em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span>
+                        <span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">ω</span></span>
+                        </span><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="margin-left:0em;"><span>´</span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span><span class="mord mathrm">∥</span><span class="mord mathit" style="margin-right:0.10764em;">f</span><span class="mopen">(</span><span class="mord"><span class="mord mathit">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight">i</span></span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                        </span>
+                        </span>
+                        </span><span class="mclose">)</span><span class="mbin">−</span><span class="mord mathrm">∥</span><span class="mord accent"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.69444em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span>
+                        <span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">ω</span></span>
+                        </span><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="margin-left:0em;"><span>^</span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span><span class="mord mathrm">∥</span><span class="mord accent"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.9578799999999998em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span>
+                        <span class="mord"><span class="mord mathit" style="margin-right:0.10764em;">f</span></span>
+                        </span><span style="top:-3.26344em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="margin-left:0.33334em;"><span>^</span></span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.19444em;"></span></span>
+                        </span>
+                        </span><span class="mopen">(</span><span class="mord"><span class="mord mathit">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight">i</span></span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                        </span>
+                        </span>
+                        </span><span class="mclose">)</span></span>
+                        </span>
+                        </span>
+                    </eq>
+                </li>
+                <li data-line="151" class="code-line">For some characters,
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>f</mi><mrow><msub><mi>x</mi><mi>i</mi></msub></mrow><mo>&lt;</mo><mover accent="true"><mrow><mi>f</mi></mrow><mo>^</mo></mover><mo>(</mo><msub><mi>x</mi><mi>i</mi></msub><mo>)</mo></mrow><annotation encoding="application/x-tex">f{x\_i} &lt; \\hat{f}(x\_i)</annotation></semantics></math></span>
+                        <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.9578799999999998em;"></span><span class="strut bottom" style="height:1.2078799999999998em;vertical-align:-0.25em;"></span><span class="base"><span class="mord mathit" style="margin-right:0.10764em;">f</span>
+                        <span class="mord"><span class="mord"><span class="mord mathit">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight">i</span></span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span><span class="mrel">&lt;</span><span class="mord accent"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.9578799999999998em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span>
+                        <span class="mord"><span class="mord mathit" style="margin-right:0.10764em;">f</span></span>
+                        </span><span style="top:-3.26344em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="margin-left:0.33334em;"><span>^</span></span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.19444em;"></span></span>
+                        </span>
+                        </span><span class="mopen">(</span><span class="mord"><span class="mord mathit">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight">i</span></span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                        </span>
+                        </span>
+                        </span><span class="mclose">)</span></span>
+                        </span>
+                        </span>
+                    </eq>
+                </li>
+                <li data-line="152" class="code-line"><strong>The most frequent such character need not be padded</strong></li>
+                <li data-line="153" class="code-line">Let
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>δ</mi><mo>=</mo><mi>max</mi><mrow><mo>(</mo><mover accent="true"><mrow><mi>f</mi></mrow><mo>^</mo></mover><mo>(</mo><msub><mi>x</mi><mi>i</mi></msub><mo>)</mo><mi mathvariant="normal">/</mi><mi>f</mi><mo>(</mo><msub><mi>x</mi><mi>i</mi></msub><mo>)</mo><mo>)</mo></mrow></mrow><annotation encoding="application/x-tex">\\delta = \\max{(\\hat{f}(x\_i) / f(x\_i))}</annotation></semantics></math></span>
+                        <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.9578799999999998em;"></span><span class="strut bottom" style="height:1.2078799999999998em;vertical-align:-0.25em;"></span><span class="base"><span class="mord mathit" style="margin-right:0.03785em;">δ</span>
+                        <span class="mrel">=</span><span class="mop">max</span><span class="mord"><span class="mopen">(</span><span class="mord accent"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.9578799999999998em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span>
+                        <span class="mord"><span class="mord mathit" style="margin-right:0.10764em;">f</span></span>
+                        </span><span style="top:-3.26344em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="margin-left:0.33334em;"><span>^</span></span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.19444em;"></span></span>
+                        </span>
+                        </span><span class="mopen">(</span><span class="mord"><span class="mord mathit">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight">i</span></span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                        </span>
+                        </span>
+                        </span><span class="mclose">)</span><span class="mord mathrm">/</span><span class="mord mathit" style="margin-right:0.10764em;">f</span><span class="mopen">(</span><span class="mord"><span class="mord mathit">x</span>
+                        <span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight">i</span></span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                        </span>
+                        </span>
+                        </span><span class="mclose">)</span><span class="mclose">)</span></span>
+                        </span>
+                        </span>
+                        </span>
+                    </eq> be the maximum overuse</li>
+                <li data-line="154" class="code-line">
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>λ</mi><mi>i</mi></msub><mo>=</mo><mi mathvariant="normal">∥</mi><mover accent="true"><mrow><mi>ω</mi></mrow><mo>^</mo></mover><mi mathvariant="normal">∥</mi><mo>(</mo><mi>δ</mi><mi>f</mi><mo>(</mo><msub><mi>x</mi><mi>i</mi></msub><mo>)</mo><mo>−</mo><mover accent="true"><mrow><mi>f</mi></mrow><mo>^</mo></mover><mo>(</mo><msub><mi>x</mi><mi>i</mi></msub><mo>)</mo><mo>)</mo></mrow><annotation encoding="application/x-tex">\\lambda\_i = \\|\\hat{\\omega}\\|(\\delta f(x\_i) - \\hat{f}(x\_i))</annotation></semantics></math></span>
+                        <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.9578799999999998em;"></span><span class="strut bottom" style="height:1.2078799999999998em;vertical-align:-0.25em;"></span><span class="base"><span class="mord"><span class="mord mathit">λ</span>
+                        <span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight">i</span></span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                        </span>
+                        </span>
+                        </span><span class="mrel">=</span><span class="mord mathrm">∥</span><span class="mord accent"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.69444em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span>
+                        <span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">ω</span></span>
+                        </span><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="margin-left:0em;"><span>^</span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span><span class="mord mathrm">∥</span><span class="mopen">(</span><span class="mord mathit" style="margin-right:0.03785em;">δ</span><span class="mord mathit" style="margin-right:0.10764em;">f</span><span class="mopen">(</span>
+                        <span class="mord"><span class="mord mathit">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight">i</span></span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                        </span>
+                        </span>
+                        </span><span class="mclose">)</span><span class="mbin">−</span><span class="mord accent"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.9578799999999998em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span>
+                        <span class="mord"><span class="mord mathit" style="margin-right:0.10764em;">f</span></span>
+                        </span><span style="top:-3.26344em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="margin-left:0.33334em;"><span>^</span></span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.19444em;"></span></span>
+                        </span>
+                        </span><span class="mopen">(</span><span class="mord"><span class="mord mathit">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight">i</span></span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                        </span>
+                        </span>
+                        </span><span class="mclose">)</span><span class="mclose">)</span></span>
+                        </span>
+                        </span>
+                    </eq>
+                </li>
+            </ul>
+        </li>
+        <li data-line="155" class="code-line">Substitution
+            <ul>
+                <li data-line="156" class="code-line">To minimize padding we need to minimize
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>δ</mi></mrow><annotation encoding="application/x-tex">\\delta</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span>
+                        <span class="strut bottom" style="height:0.69444em;vertical-align:0em;"></span><span class="base"><span class="mord mathit" style="margin-right:0.03785em;">δ</span></span>
+                        </span>
+                        </span>
+                    </eq>
+                </li>
+                <li data-line="157" class="code-line">Case 1: attack chars are less numerous than legitimate chars
+                    <ul>
+                        <li data-line="158" class="code-line">A greedy algorithm that generates one-to-many mapping</li>
+                        <li data-line="159" class="code-line">Sort characters by frequency in attack and legitimate Traffic</li>
+                        <li data-line="160" class="code-line">Match frequencies in decreasing order</li>
+                        <li data-line="161" class="code-line">Remaining legitimate characters are assigned to attack characters that have highest to bring it down</li>
+                    </ul>
+                </li>
+                <li data-line="162" class="code-line">Case 2: attack chars are more numerous than legitimate chars
+                    <ul>
+                        <li data-line="163" class="code-line">A greedy algorithm that generates n-gram-to-one mapping</li>
+                        <li data-line="164" class="code-line">Construct a Huffman tree where leaves are characters in the attack traffic, and smallest two nodes are iteratively connected (thus most frequent characters have shortest n-gram length)</li>
+                        <li data-line="165" class="code-line">We must choose the labels for the links so to preserve the original legitimate character frequency
+                            <ul>
+                                <li data-line="166" class="code-line">Sort vertices in the tree by weight</li>
+                                <li data-line="167" class="code-line">Sort legitimate characters by their frequency</li>
+                                <li data-line="168" class="code-line">Choose the highest frequency character for the highest weight vertex</li>
+                                <li data-line="169" class="code-line">Remove the vertex from the list and remove the given portion of the character's frequency from further consideration; then resort the characters</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+    </ul>
+    <h3 data-line="171" class="code-line" id="evading-2-gram">Evading 2-gram</h3>
+    <ul>
+        <li data-line="173" class="code-line">Must match all 2-byte pairs</li>
+        <li data-line="174" class="code-line">Represent valid 2-grams as states in FSM</li>
+        <li data-line="175" class="code-line">A simple approach will enumerate valid paths in FSM and map attack characters to paths randomly but this generates large code size
+            <ul>
+                <li data-line="176" class="code-line">Better mapping can be obtained by using entropy information, i.e., mapping frequent characters to short paths</li>
+            </ul>
+        </li>
+        <li data-line="177" class="code-line">Another approach will attempt to find single byte mappings so that 2-grams are also matched
+            <ul>
+                <li data-line="178" class="code-line">Greedy algorithm sorts 2-grams by frequencies in legitimate and attack traffic and matches them greedily taking care not to violate any existing mappings</li>
+            </ul>
+        </li>
+        <li data-line="179" class="code-line">Generate padding so to match the target distribution greedily</li>
+    </ul>
+    <h2 data-line="181" class="code-line" id="experiment-setup">Experiment Setup</h2>
+    <h3 data-line="183" class="code-line" id="attack-vector">Attack vector</h3>
+    <ul>
+        <li data-line="185" class="code-line">Windows Media Services (MS03-022)
+            <ul>
+                <li data-line="186" class="code-line">Exploits a vulnerability with logging of user requests</li>
+            </ul>
+        </li>
+        <li data-line="187" class="code-line">Attacker vector 99 bytes
+            <ul>
+                <li data-line="188" class="code-line">Presented at the start of the HTTP request</li>
+            </ul>
+        </li>
+        <li data-line="189" class="code-line">For buffer overflow attack must send 10KB of data</li>
+        <li data-line="190" class="code-line">Attack body opens a TCP connection and sends registry files</li>
+        <li data-line="191" class="code-line">Size of attack body is 558B and contains 109 unique characters</li>
+        <li data-line="192" class="code-line">Attack was divided into multiple packets
+            <ul>
+                <li data-line="193" class="code-line">Divide decryptor into several packets</li>
+            </ul>
+        </li>
+        <li data-line="194" class="code-line">After padding, if final blending attack packet not up to 10KB
+            <ul>
+                <li data-line="195" class="code-line">Send normal packets</li>
+            </ul>
+        </li>
+    </ul>
+    <h3 data-line="197" class="code-line" id="dataset">Dataset</h3>
+    <ul>
+        <li data-line="199" class="code-line">Captured 15 days of HTTP traffic
+            <ul>
+                <li data-line="200" class="code-line">From one department</li>
+                <li data-line="201" class="code-line">14 days' traffic to train the IDS (4,356,565 packets, 1.9GB)</li>
+                <li data-line="202" class="code-line">Last day's traffic is used by the attacker to learn character distributions</li>
+                <li data-line="203" class="code-line">Only TCP data packets are used that do not contain known attacks</li>
+            </ul>
+        </li>
+        <li data-line="204" class="code-line">IDS builds profiles per packet length</li>
+        <li data-line="205" class="code-line">Selected three frequent packet sizes for the attack</li>
+    </ul>
+    <h2 data-line="207" class="code-line" id="evaluation">Evaluation</h2>
+    <h4 data-line="209" class="code-line" id="payl-training">PAYL Training</h4>
+    <ul>
+        <li data-line="211" class="code-line">PAYL training time increases with the size of the training data because new packets carry more unique n-grams</li>
+    </ul>
+    <h3 data-line="213" class="code-line" id="traditional-polymorphic-attacks-clet">Traditional Polymorphic Attacks (CLET)</h3>
+    <ul>
+        <li data-line="215" class="code-line">Tested CLET-generated polymorphic attacks against PAYL
+            <ul>
+                <li data-line="216" class="code-line">CLET only adds padding to match byte frequency</li>
+                <li data-line="217" class="code-line">Other polymorphic engines perform worse than CLET against PAYL</li>
+                <li data-line="218" class="code-line">CLET attack sequence will avoid PAYL detection only if all packets have an anomaly score above the threshold</li>
+                <li data-line="219" class="code-line">Both 1-gram and 2-gram PAYL detected all attacks with chosen threshold setting</li>
+            </ul>
+        </li>
+    </ul>
+    <h3 data-line="221" class="code-line" id="artificial-profile">Artificial Profile</h3>
+    <ul>
+        <li data-line="223" class="code-line">Training of the artificial profile is stopped when there is no significant improvement over existing profile (measured using Manhattan distance) within two packets</li>
+        <li data-line="224" class="code-line">Number of packets required for convergence</li>
+    </ul>
+    <h3 data-line="226" class="code-line" id="1-gram-and-2-gram-attacks">1-gram and 2-gram Attacks</h3>
+    <ul>
+        <li data-line="228" class="code-line">For 1-gram attacks used one-to-one substitution cipher</li>
+        <li data-line="229" class="code-line">For 2-gram attacks used single byte encoding scheme
+            <ul>
+                <li data-line="230" class="code-line">Two types of transformations were tested</li>
+                <li data-line="231" class="code-line">Substitution table is constructed for entire attack body - global substitution</li>
+                <li data-line="232" class="code-line">Substitution table is constructed for each packet separately - local substitution</li>
+                <li data-line="233" class="code-line">If attack characters are more numerous than those in legitimate traffic, non-existing characters were used</li>
+            </ul>
+        </li>
+        <li data-line="234" class="code-line">2-gram IDS had consistently higher anomaly scores for attacks but it also had higher thresholds to avoid false positives
+            <ul>
+                <li data-line="235" class="code-line">Overall similar performance as 1-gram IDS</li>
+                <li data-line="236" class="code-line">More costly for IDS</li>
+            </ul>
+        </li>
+        <li data-line="237" class="code-line">Local substitution always outperformed global substitution</li>
+    </ul>
+    <h2 data-line="239" class="code-line" id="countermeasures">Countermeasures</h2>
+    <ul>
+        <li data-line="241" class="code-line">Models
+            <ul>
+                <li data-line="242" class="code-line">More complex models</li>
+                <li data-line="243" class="code-line">Blend more models</li>
+            </ul>
+        </li>
+        <li data-line="244" class="code-line">Features
+            <ul>
+                <li data-line="245" class="code-line">syntactic and semantic information</li>
+            </ul>
+        </li>
+        <li data-line="246" class="code-line">High speed hardware</li>
+        <li data-line="247" class="code-line">Introduce randomness
+            <ul>
+                <li data-line="248" class="code-line">Random feature</li>
+            </ul>
+        </li>
+    </ul>
+    <h2 data-line="250" class="code-line" id="limitations-and-improvements">Limitations and Improvements</h2>
+    <ul>
+        <li data-line="252" class="code-line">PAYL is the only case study</li>
+        <li data-line="253" class="code-line">Are the assumption of PBA are realistic</li>
+        <li data-line="254" class="code-line">Explore techniques for continuous data streams</li>
+    </ul>
+    <h2 data-line="256" class="code-line" id="reference">Reference</h2>
+    <ul>
+        <li data-line="258" class="code-line">Polymorphic Blending Attacks, Fogla et al, 2006</li>
+        <li data-line="259" class="code-line"><a href="http://www.cs.ucf.edu/~czou/CDA6938/Polymorphic_blending_attacks_Himanshu_Pagey.ppt">CDA6938 Special Topic:Research in Computer and Network Security (Spring 2007)</a></li>
+        <li data-line="260" class="code-line"><a href="https://www.eecis.udel.edu/~sunshine/courses/S07/CIS864/blend.ppt">CIS 864 - Advanced Topics in Network Security - Spring 2007</a></li>
+        <li data-line="261" class="code-line">Sergio Pastrana, Agustin Orfila, Juan E. Tapiador, Pedro Peris-Lopez, Randomized Anagram revisited, In Journal of Network and Computer Applications, Volume 41, 2014, Pages 182-196, ISSN 1084-8045,</li>
+        <li data-line="262" class="code-line">CS 259D Lecture 14</li>
+    </ul>
+
+</body>
+
+</html>

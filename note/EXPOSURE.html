@@ -1,0 +1,783 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.4.1/github-markdown.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/styles/default.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.8.3/katex.min.css">
+    <link rel="stylesheet" href="https://gitcdn.xyz/repo/goessner/mdmath/master/css/texmath.css">
+    <link rel="stylesheet" href="https://gitcdn.xyz/repo/goessner/mdmath/master/css/vscode-texmath.css">
+    <title>EXPOSURE: Finding Malicious Domains Using Passive DNS Analysis</title>
+
+</head>
+
+<body class="markdown-body">
+    <h1 data-line="0" class="code-line" id="exposure-finding-malicious-domains-using-passive-dns-analysis">EXPOSURE: Finding Malicious Domains Using Passive DNS Analysis</h1>
+    <!-- TOC -->
+    <ul>
+        <li data-line="4" class="code-line"><a href="#background-knowledge-and-insight">Background Knowledge and Insight</a></li>
+        <li data-line="5" class="code-line"><a href="#goal-and-contribution">Goal and Contribution</a></li>
+        <li data-line="6" class="code-line"><a href="#overview-of-exposure">Overview of EXPOSURE</a></li>
+        <li data-line="7" class="code-line"><a href="#collect-training-data">Collect Training Data</a></li>
+        <li data-line="8" class="code-line"><a href="#features">Features</a>
+            <ul>
+                <li data-line="9" class="code-line"><a href="#time-based-features">Time-Based Features</a>
+                    <ul>
+                        <li data-line="10" class="code-line"><a href="#change-point-detection-cpd">Change Point Detection (CPD)</a></li>
+                        <li data-line="11" class="code-line"><a href="#detecting-similar-daily-behavior">Detecting Similar Daily Behavior</a></li>
+                    </ul>
+                </li>
+                <li data-line="12" class="code-line"><a href="#dns-answer-based-features">DNS Answer-Based Features</a></li>
+                <li data-line="13" class="code-line"><a href="#ttl-value-based-features">TTL Value-Based Features</a></li>
+                <li data-line="14" class="code-line"><a href="#domain-name-based-features">Domain Name-Based Features</a></li>
+            </ul>
+        </li>
+        <li data-line="15" class="code-line"><a href="#training">Training</a>
+            <ul>
+                <li data-line="16" class="code-line"><a href="#the-classifier">The Classifier</a>
+                    <ul>
+                        <li data-line="17" class="code-line"><a href="#c45-decision-tree-algorithm">C4.5 decision tree algorithm</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li data-line="18" class="code-line"><a href="#evaluation">Evaluation</a></li>
+        <li data-line="19" class="code-line"><a href="#limitation-evasion">Limitation (Evasion)</a></li>
+        <li data-line="20" class="code-line"><a href="#reference">Reference</a></li>
+    </ul>
+    <!-- /TOC -->
+    <h2 data-line="24" class="code-line" id="background-knowledge-and-insight">Background Knowledge and Insight</h2>
+    <ul>
+        <li data-line="26" class="code-line">Typical Internet attacks
+            <ul>
+                <li data-line="27" class="code-line">Botnet</li>
+                <li data-line="28" class="code-line">Phishing</li>
+            </ul>
+        </li>
+        <li data-line="29" class="code-line">Attachers face same engineering challenges with global enterprises
+            <ul>
+                <li data-line="30" class="code-line">Implement a reliable and flexible server infrastructure</li>
+                <li data-line="31" class="code-line">Advantage of DNS
+                    <ul>
+                        <li data-line="32" class="code-line">Change IP</li>
+                        <li data-line="33" class="code-line">Hide critical servers</li>
+                        <li data-line="34" class="code-line">Migrate servers flexibly</li>
+                        <li data-line="35" class="code-line">Server more &quot;fault-tolerant&quot; than IP</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+    </ul>
+    <h2 data-line="37" class="code-line" id="goal-and-contribution">Goal and Contribution</h2>
+    <ul>
+        <li data-line="39" class="code-line">Detect malicious domains
+            <ul>
+                <li data-line="40" class="code-line">Passive</li>
+                <li data-line="41" class="code-line">Without prior knowledge</li>
+            </ul>
+        </li>
+        <li data-line="42" class="code-line">15 behavioral features
+            <ul>
+                <li data-line="43" class="code-line">9 new features</li>
+            </ul>
+        </li>
+    </ul>
+    <h2 data-line="45" class="code-line" id="overview-of-exposure">Overview of EXPOSURE</h2>
+    <p data-line="47" class="code-line"><img src="images/EXPOSURE.png" alt="Overview of EXPOSURE"></p>
+    <ul>
+        <li data-line="49" class="code-line">Five main components
+            <ul>
+                <li data-line="50" class="code-line">Data Collector</li>
+                <li data-line="51" class="code-line">Feature Attribution</li>
+                <li data-line="52" class="code-line">Malicious and Benign Domains Collector (Label data)
+                    <ul>
+                        <li data-line="53" class="code-line">Malicious</li>
+                        <li data-line="54" class="code-line">Benign</li>
+                    </ul>
+                </li>
+                <li data-line="55" class="code-line">Learning Module</li>
+                <li data-line="56" class="code-line">Classifier
+                    <ul>
+                        <li data-line="57" class="code-line">Classify unlabeled domains</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+    </ul>
+    <h2 data-line="59" class="code-line" id="collect-training-data">Collect Training Data</h2>
+    <ul>
+        <li data-line="61" class="code-line">DNS traffic from the Security Information Exchange (SIE)
+            <ul>
+                <li data-line="62" class="code-line">Response data from authoritative name servers in North America &amp; Europe</li>
+                <li data-line="63" class="code-line">2.5 months</li>
+                <li data-line="64" class="code-line">
+                    <blockquote data-line="64" class="code-line">
+                        <p data-line="64" class="code-line">100 billion DNS queries (1 million queries/minute on average)</p>
+                    </blockquote>
+                </li>
+                <li data-line="65" class="code-line">4.8 million distinct domain names</li>
+                <li data-line="66" class="code-line">Filtering
+                    <ul>
+                        <li data-line="67" class="code-line">Alexa top 1000 (20% reduction)</li>
+                        <li data-line="68" class="code-line">Domains older than 1 year (50% more reduction)</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li data-line="69" class="code-line">Malicious domains
+            <ul>
+                <li data-line="70" class="code-line">3500 domains</li>
+                <li data-line="71" class="code-line">Types
+                    <ul>
+                        <li data-line="72" class="code-line">Botnet C&amp;C</li>
+                        <li data-line="73" class="code-line">drive-by-download sites</li>
+                        <li data-line="74" class="code-line">phishing/scam pages</li>
+                    </ul>
+                </li>
+                <li data-line="75" class="code-line">Example Sources
+                    <ul>
+                        <li data-line="76" class="code-line"><a href="http://malwaredomains.com">malwaredomains.com</a></li>
+                        <li data-line="77" class="code-line">Zeus Block List</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li data-line="78" class="code-line">Benign domains
+            <ul>
+                <li data-line="79" class="code-line">3000 domains</li>
+                <li data-line="80" class="code-line">Example Source
+                    <ul>
+                        <li data-line="81" class="code-line">Alexa top 1000</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+    </ul>
+    <h2 data-line="83" class="code-line" id="features">Features</h2>
+    <ul>
+        <li data-line="85" class="code-line">F1: Time-based features
+            <ul>
+                <li data-line="86" class="code-line">Short life</li>
+                <li data-line="87" class="code-line">Daily similarity</li>
+                <li data-line="88" class="code-line">Repeating patterns</li>
+                <li data-line="89" class="code-line">Access ratio</li>
+            </ul>
+        </li>
+        <li data-line="90" class="code-line">F2: DNS answer-based features
+            <ul>
+                <li data-line="91" class="code-line">
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">#</mi></mrow><annotation encoding="application/x-tex">\\#</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span>
+                        <span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base"><span class="mord mathrm">#</span></span>
+                        </span>
+                        </span>
+                    </eq> distinct IP addresses</li>
+                <li data-line="92" class="code-line">
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">#</mi></mrow><annotation encoding="application/x-tex">\\#</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span>
+                        <span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base"><span class="mord mathrm">#</span></span>
+                        </span>
+                        </span>
+                    </eq> distinct countries</li>
+                <li data-line="93" class="code-line">
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">#</mi></mrow><annotation encoding="application/x-tex">\\#</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span>
+                        <span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base"><span class="mord mathrm">#</span></span>
+                        </span>
+                        </span>
+                    </eq> domains IP shared with</li>
+                <li data-line="94" class="code-line">Reverse DNS query results</li>
+            </ul>
+        </li>
+        <li data-line="95" class="code-line">F3: TTL value-based features
+            <ul>
+                <li data-line="96" class="code-line">
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>A</mi><mi>v</mi><mi>g</mi></mrow><annotation encoding="application/x-tex">Avg</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span>
+                        <span class="strut bottom" style="height:0.8777699999999999em;vertical-align:-0.19444em;"></span><span class="base"><span class="mord mathit">A</span><span class="mord mathit" style="margin-right:0.03588em;">v</span><span class="mord mathit"
+                            style="margin-right:0.03588em;">g</span></span>
+                        </span>
+                        </span>
+                    </eq> TTL</li>
+                <li data-line="97" class="code-line">
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>S</mi><mi>D</mi></mrow><annotation encoding="application/x-tex">SD</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span>
+                        <span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base"><span class="mord mathit" style="margin-right:0.05764em;">S</span><span class="mord mathit" style="margin-right:0.02778em;">D</span></span>
+                        </span>
+                        </span>
+                    </eq> of TTL</li>
+                <li data-line="98" class="code-line">
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">#</mi></mrow><annotation encoding="application/x-tex">\\#</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span>
+                        <span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base"><span class="mord mathrm">#</span></span>
+                        </span>
+                        </span>
+                    </eq> distinct TTL values</li>
+                <li data-line="99" class="code-line">
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">#</mi></mrow><annotation encoding="application/x-tex">\\#</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span>
+                        <span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base"><span class="mord mathrm">#</span></span>
+                        </span>
+                        </span>
+                    </eq> TTL changes</li>
+                <li data-line="100" class="code-line">
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">%</mi></mrow><annotation encoding="application/x-tex">\\%</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span>
+                        <span class="strut bottom" style="height:0.80556em;vertical-align:-0.05556em;"></span><span class="base"><span class="mord mathrm">%</span></span>
+                        </span>
+                        </span>
+                    </eq> usage of specific TTL ranges</li>
+            </ul>
+        </li>
+        <li data-line="101" class="code-line">F4: Domain name-based features
+            <ul>
+                <li data-line="102" class="code-line">
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">%</mi></mrow><annotation encoding="application/x-tex">\\%</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span>
+                        <span class="strut bottom" style="height:0.80556em;vertical-align:-0.05556em;"></span><span class="base"><span class="mord mathrm">%</span></span>
+                        </span>
+                        </span>
+                    </eq> of numerical characters</li>
+                <li data-line="103" class="code-line">
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">%</mi></mrow><annotation encoding="application/x-tex">\\%</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span>
+                        <span class="strut bottom" style="height:0.80556em;vertical-align:-0.05556em;"></span><span class="base"><span class="mord mathrm">%</span></span>
+                        </span>
+                        </span>
+                    </eq> of the length of the LMS</li>
+            </ul>
+        </li>
+    </ul>
+    <h3 data-line="105" class="code-line" id="time-based-features">Time-Based Features</h3>
+    <ul>
+        <li data-line="107" class="code-line">Insight
+            <ul>
+                <li data-line="108" class="code-line">Malicious domains often increase suddenly and decrease suddenly in the number of requests</li>
+            </ul>
+        </li>
+        <li data-line="109" class="code-line">Analyse method
+            <ul>
+                <li data-line="110" class="code-line">Divide period into fixed length intervals</li>
+                <li data-line="111" class="code-line">Count queries</li>
+            </ul>
+        </li>
+        <li data-line="112" class="code-line">Global scope
+            <ul>
+                <li data-line="113" class="code-line">Short life
+                    <ul>
+                        <li data-line="114" class="code-line">DGA(domain generation algorithm) generate domains</li>
+                    </ul>
+                </li>
+                <li data-line="115" class="code-line">Change behavior</li>
+            </ul>
+        </li>
+        <li data-line="116" class="code-line">Local scope
+            <ul>
+                <li data-line="117" class="code-line">Main idea
+                    <ul>
+                        <li data-line="118" class="code-line">Zoom into the life time of a domain</li>
+                        <li data-line="119" class="code-line">Study behavioral characteristics</li>
+                    </ul>
+                </li>
+                <li data-line="120" class="code-line">Daily similarity
+                    <ul>
+                        <li data-line="121" class="code-line">An increase or decrease of request count at same intervals everyday</li>
+                    </ul>
+                </li>
+                <li data-line="122" class="code-line">Regularly repeating patterns
+                    <ul>
+                        <li data-line="123" class="code-line">Instance of change point detection (CPD)</li>
+                        <li data-line="124" class="code-line">
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">#</mi></mrow><annotation encoding="application/x-tex">\\#</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span>
+                                <span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base"><span class="mord mathrm">#</span></span>
+                                </span>
+                                </span>
+                            </eq> changes</li>
+                        <li data-line="125" class="code-line">
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>S</mi><mi>D</mi></mrow><annotation encoding="application/x-tex">SD</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span>
+                                <span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base"><span class="mord mathit" style="margin-right:0.05764em;">S</span><span class="mord mathit" style="margin-right:0.02778em;">D</span></span>
+                                </span>
+                                </span>
+                            </eq> the durations of detected changes</li>
+                    </ul>
+                </li>
+                <li data-line="126" class="code-line">Access ratio
+                    <ul>
+                        <li data-line="127" class="code-line">Idle vs popular</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+    </ul>
+    <h4 data-line="129" class="code-line" id="change-point-detection-cpd">Change Point Detection (CPD)</h4>
+    <ul>
+        <li data-line="131" class="code-line">Operate on time series</li>
+        <li data-line="132" class="code-line">Goal to find points, which data values change abruptly</li>
+        <li data-line="133" class="code-line">Detecting abrupt changes
+            <ul>
+                <li data-line="134" class="code-line">Time series for each domain
+                    <ul>
+                        <li data-line="135" class="code-line">
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>P</mi><mo>(</mo><mi>t</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">P(t)</annotation></semantics></math></span><span class="katex-html"
+                                    aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base"><span class="mord mathit" style="margin-right:0.13889em;">P</span>
+                                <span class="mopen">(</span><span class="mord mathit">t</span><span class="mclose">)</span></span>
+                                </span>
+                                </span>
+                            </eq>, Request count at hour
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>t</mi></mrow><annotation encoding="application/x-tex">t</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.61508em;"></span>
+                                <span class="strut bottom" style="height:0.61508em;vertical-align:0em;"></span><span class="base"><span class="mord mathit">t</span></span>
+                                </span>
+                                </span>
+                            </eq>, normalized by max count</li>
+                        <li data-line="136" class="code-line">Iterate time interval
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>t</mi><mo>=</mo><mn>3</mn><mn>6</mn><mn>0</mn><mn>0</mn><mi>s</mi></mrow><annotation encoding="application/x-tex">t = 3600s</annotation></semantics></math></span>
+                                <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.64444em;"></span><span class="strut bottom" style="height:0.64444em;vertical-align:0em;"></span><span class="base"><span class="mord mathit">t</span>
+                                <span class="mrel">=</span><span class="mord mathrm">3</span>
+                                <span class="mord mathrm">6</span><span class="mord mathrm">0</span><span class="mord mathrm">0</span><span class="mord mathit">s</span></span>
+                                </span>
+                                </span>
+                            </eq>
+                        </li>
+                        <li data-line="137" class="code-line">
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msup><mi>P</mi><mo>−</mo></msup><mo>(</mo><mi>t</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">P^-(t)</annotation></semantics></math></span>
+                                <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.771331em;"></span><span class="strut bottom" style="height:1.021331em;vertical-align:-0.25em;"></span><span class="base"><span class="mord"><span class="mord mathit" style="margin-right:0.13889em;">P</span>
+                                <span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.771331em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mbin mtight">−</span></span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                                </span><span class="mopen">(</span><span class="mord mathit">t</span><span class="mclose">)</span></span>
+                                </span>
+                                </span>
+                            </eq>, Average of past
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mn>8</mn></mrow><annotation encoding="application/x-tex">8</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.64444em;"></span>
+                                <span class="strut bottom" style="height:0.64444em;vertical-align:0em;"></span><span class="base"><span class="mord mathrm">8</span></span>
+                                </span>
+                                </span>
+                            </eq> time intervals</li>
+                        <li data-line="138" class="code-line">
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msup><mi>P</mi><mo>+</mo></msup><mo>(</mo><mi>t</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">P^+(t)</annotation></semantics></math></span>
+                                <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.771331em;"></span><span class="strut bottom" style="height:1.021331em;vertical-align:-0.25em;"></span><span class="base"><span class="mord"><span class="mord mathit" style="margin-right:0.13889em;">P</span>
+                                <span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.771331em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mbin mtight">+</span></span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                                </span><span class="mopen">(</span><span class="mord mathit">t</span><span class="mclose">)</span></span>
+                                </span>
+                                </span>
+                            </eq>, Average of next
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mn>8</mn></mrow><annotation encoding="application/x-tex">8</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.64444em;"></span>
+                                <span class="strut bottom" style="height:0.64444em;vertical-align:0em;"></span><span class="base"><span class="mord mathrm">8</span></span>
+                                </span>
+                                </span>
+                            </eq> time intervals</li>
+                        <li data-line="139" class="code-line">
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>d</mi><mo>(</mo><mi>t</mi><mo>)</mo><mo>=</mo><mi mathvariant="normal">∣</mi><msup><mi>P</mi><mo>+</mo></msup><mo>(</mo><mi>t</mi><mo>)</mo><mo>−</mo><msup><mi>P</mi><mo>−</mo></msup><mo>(</mo><mi>t</mi><mo>)</mo><mi mathvariant="normal">∣</mi></mrow><annotation encoding="application/x-tex">d(t) = |P^+(t) - P^-(t)|</annotation></semantics></math></span>
+                                <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.771331em;"></span><span class="strut bottom" style="height:1.021331em;vertical-align:-0.25em;"></span><span class="base"><span class="mord mathit">d</span>
+                                <span class="mopen">(</span>
+                                <span class="mord mathit">t</span><span class="mclose">)</span><span class="mrel">=</span><span class="mord mathrm">∣</span><span class="mord"><span class="mord mathit" style="margin-right:0.13889em;">P</span>
+                                <span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.771331em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                                <span class="sizing reset-size6 size3 mtight"><span class="mbin mtight">+</span></span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                                </span><span class="mopen">(</span><span class="mord mathit">t</span><span class="mclose">)</span><span class="mbin">−</span><span class="mord"><span class="mord mathit" style="margin-right:0.13889em;">P</span>
+                                <span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.771331em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                                <span class="sizing reset-size6 size3 mtight"><span class="mbin mtight">−</span></span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                                </span><span class="mopen">(</span><span class="mord mathit">t</span><span class="mclose">)</span><span class="mord mathrm">∣</span></span>
+                                </span>
+                                </span>
+                            </eq>
+                        </li>
+                    </ul>
+                </li>
+                <li data-line="140" class="code-line">Apply Cumulative Sum (CUSUM) algorithm to
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>d</mi><mo>(</mo><mi>t</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">d(t)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span>
+                        <span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base"><span class="mord mathit">d</span><span class="mopen">(</span><span class="mord mathit">t</span><span class="mclose">)</span></span>
+                        </span>
+                        </span>
+                    </eq>
+                    <ul>
+                        <li data-line="141" class="code-line">Detect times
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>t</mi></mrow><annotation encoding="application/x-tex">t</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.61508em;"></span>
+                                <span class="strut bottom" style="height:0.61508em;vertical-align:0em;"></span><span class="base"><span class="mord mathit">t</span></span>
+                                </span>
+                                </span>
+                            </eq>, when
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>d</mi><mo>(</mo><mi>t</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">d(t)</annotation></semantics></math></span><span class="katex-html"
+                                    aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base"><span class="mord mathit">d</span><span class="mopen">(</span>
+                                <span class="mord mathit">t</span><span class="mclose">)</span></span>
+                                </span>
+                                </span>
+                            </eq> is large and is a
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>l</mi><mi>o</mi><mi>c</mi><mi>a</mi><msub><mi>l</mi><mrow><mi>m</mi><mi>a</mi><mi>x</mi></mrow></msub></mrow><annotation encoding="application/x-tex">local\_{max}</annotation></semantics></math></span>
+                                <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.84444em;vertical-align:-0.15em;"></span><span class="base"><span class="mord mathit" style="margin-right:0.01968em;">l</span>
+                                <span class="mord mathit">o</span><span class="mord mathit">c</span><span class="mord mathit">a</span><span class="mord"><span class="mord mathit" style="margin-right:0.01968em;">l</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:-0.01968em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                                <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathit mtight">m</span><span class="mord mathit mtight">a</span><span class="mord mathit mtight">x</span></span>
+                                </span>
+                                </span>
+                                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                            </eq>
+                        </li>
+                        <li data-line="142" class="code-line">
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>C</mi><mi>U</mi><mi>S</mi><mi>U</mi><mi>M</mi><mo>(</mo><mi>t</mi><mo>)</mo><mo>=</mo><mi>M</mi><mi>a</mi><mi>x</mi><mo>{</mo><mn>0</mn><mo separator="true">,</mo><mi>C</mi><mi>U</mi><mi>S</mi><mi>U</mi><mi>M</mi><mo>(</mo><mi>t</mi><mo>−</mo><mn>1</mn><mo>)</mo><mo>+</mo><mi>d</mi><mo>(</mo><mi>t</mi><mo>)</mo><mo>−</mo><mi>l</mi><mi>o</mi><mi>c</mi><mi>a</mi><msub><mi>l</mi><mrow><mi>m</mi><mi>a</mi><mi>x</mi></mrow></msub><mo>}</mo></mrow><annotation encoding="application/x-tex">CUSUM(t) = Max\\{0, CUSUM(t-1) + d(t) - local\_{max}\\}</annotation></semantics></math></span>
+                                <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base"><span class="mord mathit" style="margin-right:0.07153em;">C</span>
+                                <span class="mord mathit" style="margin-right:0.10903em;">U</span><span class="mord mathit" style="margin-right:0.05764em;">S</span><span class="mord mathit" style="margin-right:0.10903em;">U</span><span class="mord mathit"
+                                    style="margin-right:0.10903em;">M</span>
+                                <span class="mopen">(</span><span class="mord mathit">t</span><span class="mclose">)</span><span class="mrel">=</span><span class="mord mathit" style="margin-right:0.10903em;">M</span><span class="mord mathit">a</span>
+                                <span class="mord mathit">x</span>
+                                <span class="mopen">{</span><span class="mord mathrm">0</span><span class="mpunct">,</span><span class="mord mathit" style="margin-right:0.07153em;">C</span><span class="mord mathit" style="margin-right:0.10903em;">U</span>
+                                <span class="mord mathit" style="margin-right:0.05764em;">S</span><span class="mord mathit" style="margin-right:0.10903em;">U</span><span class="mord mathit" style="margin-right:0.10903em;">M</span><span class="mopen">(</span>
+                                <span class="mord mathit">t</span>
+                                <span class="mbin">−</span><span class="mord mathrm">1</span><span class="mclose">)</span><span class="mbin">+</span><span class="mord mathit">d</span><span class="mopen">(</span><span class="mord mathit">t</span>
+                                <span class="mclose">)</span>
+                                <span class="mbin">−</span><span class="mord mathit" style="margin-right:0.01968em;">l</span><span class="mord mathit">o</span><span class="mord mathit">c</span><span class="mord mathit">a</span><span class="mord"><span class="mord mathit" style="margin-right:0.01968em;">l</span>
+                                <span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:-0.01968em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                                <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathit mtight">m</span><span class="mord mathit mtight">a</span><span class="mord mathit mtight">x</span></span>
+                                </span>
+                                </span>
+                                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                                </span>
+                                </span>
+                                </span><span class="mclose">}</span></span>
+                                </span>
+                                </span>
+                            </eq>
+                        </li>
+                        <li data-line="143" class="code-line">Report
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>t</mi></mrow><annotation encoding="application/x-tex">t</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.61508em;"></span>
+                                <span class="strut bottom" style="height:0.61508em;vertical-align:0em;"></span><span class="base"><span class="mord mathit">t</span></span>
+                                </span>
+                                </span>
+                            </eq> as change point if:
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>C</mi><mi>U</mi><mi>S</mi><mi>U</mi><mi>M</mi><mo>(</mo><mi>t</mi><mo>)</mo><mo>&gt;</mo><mi>c</mi><mi>u</mi><mi>s</mi><mi>u</mi><msub><mi>m</mi><mrow><mi>m</mi><mi>a</mi><mi>x</mi></mrow></msub></mrow><annotation encoding="application/x-tex">CUSUM(t) &gt; cusum\_{max}</annotation></semantics></math></span>
+                                <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base"><span class="mord mathit" style="margin-right:0.07153em;">C</span>
+                                <span class="mord mathit" style="margin-right:0.10903em;">U</span><span class="mord mathit" style="margin-right:0.05764em;">S</span><span class="mord mathit" style="margin-right:0.10903em;">U</span><span class="mord mathit"
+                                    style="margin-right:0.10903em;">M</span>
+                                <span class="mopen">(</span><span class="mord mathit">t</span><span class="mclose">)</span><span class="mrel">&gt;</span><span class="mord mathit">c</span><span class="mord mathit">u</span><span class="mord mathit">s</span>
+                                <span class="mord mathit">u</span>
+                                <span class="mord"><span class="mord mathit">m</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                                <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathit mtight">m</span><span class="mord mathit mtight">a</span><span class="mord mathit mtight">x</span></span>
+                                </span>
+                                </span>
+                                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                            </eq>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+    </ul>
+    <h4 data-line="145" class="code-line" id="detecting-similar-daily-behavior">Detecting Similar Daily Behavior</h4>
+    <ul>
+        <li data-line="147" class="code-line">Compute distances of all pairs of daily time series
+            <ul>
+                <li data-line="148" class="code-line">Normalized each time series by its
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>A</mi><mi>v</mi><mi>g</mi></mrow><annotation encoding="application/x-tex">Avg</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span>
+                        <span class="strut bottom" style="height:0.8777699999999999em;vertical-align:-0.19444em;"></span><span class="base"><span class="mord mathit">A</span><span class="mord mathit" style="margin-right:0.03588em;">v</span><span class="mord mathit"
+                            style="margin-right:0.03588em;">g</span></span>
+                        </span>
+                        </span>
+                    </eq> and
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>S</mi><mi>D</mi></mrow><annotation encoding="application/x-tex">SD</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span>
+                        <span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base"><span class="mord mathit" style="margin-right:0.05764em;">S</span><span class="mord mathit" style="margin-right:0.02778em;">D</span></span>
+                        </span>
+                        </span>
+                    </eq>
+                </li>
+                <li data-line="149" class="code-line">Use Euclidian distance</li>
+            </ul>
+        </li>
+        <li data-line="150" class="code-line">
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>d</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub></mrow><annotation encoding="application/x-tex">d\_{ij}</annotation></semantics></math></span><span class="katex-html"
+                    aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.980548em;vertical-align:-0.286108em;"></span><span class="base"><span class="mord"><span class="mord mathit">d</span>
+                <span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.311664em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathit mtight">i</span>
+                <span class="mord mathit mtight" style="margin-right:0.05724em;">j</span>
+                </span>
+                </span>
+                </span>
+                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"></span></span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span>
+            </eq>, Euclidian distance between
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msup><mi>i</mi><mrow><mi>t</mi><mi>h</mi></mrow></msup></mrow><annotation encoding="application/x-tex">i^{th}</annotation></semantics></math></span><span class="katex-html"
+                    aria-hidden="true"><span class="strut" style="height:0.849108em;"></span><span class="strut bottom" style="height:0.849108em;vertical-align:0em;"></span><span class="base"><span class="mord"><span class="mord mathit">i</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.849108em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathit mtight">t</span><span class="mord mathit mtight">h</span></span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span>
+            </eq> &amp;
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msup><mi>j</mi><mrow><mi>t</mi><mi>h</mi></mrow></msup></mrow><annotation encoding="application/x-tex">j^{th}</annotation></semantics></math></span><span class="katex-html"
+                    aria-hidden="true"><span class="strut" style="height:0.849108em;"></span><span class="strut bottom" style="height:1.043548em;vertical-align:-0.19444em;"></span><span class="base"><span class="mord"><span class="mord mathit" style="margin-right:0.05724em;">j</span>
+                <span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.849108em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathit mtight">t</span>
+                <span class="mord mathit mtight">h</span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span>
+            </eq> days</li>
+        <li data-line="151" class="code-line">
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>D</mi></mrow><annotation encoding="application/x-tex">D</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span>
+                <span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base"><span class="mord mathit" style="margin-right:0.02778em;">D</span></span>
+                </span>
+                </span>
+            </eq>,
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>A</mi><mi>v</mi><mi>g</mi></mrow><annotation encoding="application/x-tex">Avg</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span>
+                <span class="strut bottom" style="height:0.8777699999999999em;vertical-align:-0.19444em;"></span><span class="base"><span class="mord mathit">A</span><span class="mord mathit" style="margin-right:0.03588em;">v</span><span class="mord mathit"
+                    style="margin-right:0.03588em;">g</span></span>
+                </span>
+                </span>
+            </eq> of all
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>d</mi><mrow><mi>i</mi><mi>j</mi></mrow></msub></mrow><annotation encoding="application/x-tex">d\_{ij}</annotation></semantics></math></span><span class="katex-html"
+                    aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.980548em;vertical-align:-0.286108em;"></span><span class="base"><span class="mord"><span class="mord mathit">d</span>
+                <span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.311664em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathit mtight">i</span>
+                <span class="mord mathit mtight" style="margin-right:0.05724em;">j</span>
+                </span>
+                </span>
+                </span>
+                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"></span></span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span>
+            </eq> values</li>
+    </ul>
+    <h3 data-line="153" class="code-line" id="dns-answer-based-features">DNS Answer-Based Features</h3>
+    <ul>
+        <li data-line="155" class="code-line">Domains map to multiple IPs, and IPs be shared across different domains</li>
+        <li data-line="156" class="code-line">Number of distinct IP addresses</li>
+        <li data-line="157" class="code-line">Resolved for a domain during the experiment</li>
+        <li data-line="158" class="code-line">Number of distinct countries</li>
+        <li data-line="159" class="code-line">Number of domains share the IP with
+            <ul>
+                <li data-line="160" class="code-line">Can be large for web hosting providers as well</li>
+                <li data-line="161" class="code-line">Reduce false positives by looking for reverse DNS query results on Google top 3 search results</li>
+            </ul>
+        </li>
+        <li data-line="162" class="code-line">Reverse DNS query results</li>
+        <li data-line="163" class="code-line">Reduce false positives</li>
+        <li data-line="164" class="code-line">Reverse DNS answer from Google</li>
+    </ul>
+    <h3 data-line="166" class="code-line" id="ttl-value-based-features">TTL Value-Based Features</h3>
+    <ul>
+        <li data-line="168" class="code-line">TTL(Time To Live): Length of time to cache a DNS response
+            <ul>
+                <li data-line="169" class="code-line">Recommended between 1-5 days</li>
+            </ul>
+        </li>
+        <li data-line="170" class="code-line">Insight
+            <ul>
+                <li data-line="171" class="code-line">Sophisticated infrastructure of malicious networks cause frequent TTL changes</li>
+                <li data-line="172" class="code-line">Setting lower TTL values to the less reliable hosts</li>
+            </ul>
+        </li>
+        <li data-line="173" class="code-line">Average TTL
+            <ul>
+                <li data-line="174" class="code-line">High availability systems
+                    <ul>
+                        <li data-line="175" class="code-line">Low TTL values</li>
+                        <li data-line="176" class="code-line">Round Robin DNS</li>
+                        <li data-line="177" class="code-line">Example: CDNs, Fast Flux botnets</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li data-line="178" class="code-line">Standard Deviation of TTL
+            <ul>
+                <li data-line="179" class="code-line">Compromised home computers (dynamic IP) assigned much shorter TTL than compromised servers (static IP)</li>
+            </ul>
+        </li>
+        <li data-line="180" class="code-line">Number of distinct TTL values</li>
+        <li data-line="181" class="code-line">Number of TTL change
+            <ul>
+                <li data-line="182" class="code-line">Higher in malicious domains</li>
+            </ul>
+        </li>
+        <li data-line="183" class="code-line">Percentage usage of specific TTL ranges
+            <ul>
+                <li data-line="184" class="code-line">Considered ranges:
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>[</mo><mn>0</mn><mo separator="true">,</mo><mn>1</mn><mo>)</mo><mo separator="true">,</mo><mo>[</mo><mn>1</mn><mo separator="true">,</mo><mn>1</mn><mn>0</mn><mo>)</mo><mo separator="true">,</mo><mo>[</mo><mn>1</mn><mn>0</mn><mo separator="true">,</mo><mn>1</mn><mn>0</mn><mn>0</mn><mo>)</mo><mo separator="true">,</mo><mo>[</mo><mn>1</mn><mn>0</mn><mn>0</mn><mo separator="true">,</mo><mn>3</mn><mn>0</mn><mn>0</mn><mo>)</mo><mo separator="true">,</mo><mo>[</mo><mn>3</mn><mn>0</mn><mn>0</mn><mo separator="true">,</mo><mn>9</mn><mn>0</mn><mn>0</mn><mo>)</mo><mo separator="true">,</mo><mo>[</mo><mn>9</mn><mn>0</mn><mn>0</mn><mo separator="true">,</mo><mi>i</mi><mi>n</mi><mi>f</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">[0,1), [1,10), [10,100), [100,300), [300,900), [900, inf)</annotation></semantics></math></span>
+                        <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base"><span class="mopen">[</span><span class="mord mathrm">0</span>
+                        <span class="mpunct">,</span>
+                        <span class="mord mathrm">1</span><span class="mclose">)</span><span class="mpunct">,</span><span class="mopen">[</span><span class="mord mathrm">1</span><span class="mpunct">,</span><span class="mord mathrm">1</span>
+                        <span class="mord mathrm">0</span>
+                        <span class="mclose">)</span><span class="mpunct">,</span><span class="mopen">[</span><span class="mord mathrm">1</span><span class="mord mathrm">0</span><span class="mpunct">,</span><span class="mord mathrm">1</span>
+                        <span class="mord mathrm">0</span>
+                        <span class="mord mathrm">0</span><span class="mclose">)</span><span class="mpunct">,</span><span class="mopen">[</span><span class="mord mathrm">1</span><span class="mord mathrm">0</span><span class="mord mathrm">0</span>
+                        <span class="mpunct">,</span>
+                        <span class="mord mathrm">3</span><span class="mord mathrm">0</span><span class="mord mathrm">0</span><span class="mclose">)</span><span class="mpunct">,</span><span class="mopen">[</span><span class="mord mathrm">3</span>
+                        <span class="mord mathrm">0</span>
+                        <span class="mord mathrm">0</span><span class="mpunct">,</span><span class="mord mathrm">9</span><span class="mord mathrm">0</span><span class="mord mathrm">0</span><span class="mclose">)</span><span class="mpunct">,</span>
+                        <span class="mopen">[</span>
+                        <span class="mord mathrm">9</span><span class="mord mathrm">0</span><span class="mord mathrm">0</span><span class="mpunct">,</span><span class="mord mathit">i</span><span class="mord mathit">n</span>
+                        <span class="mord mathit" style="margin-right:0.10764em;">f</span>
+                        <span class="mclose">)</span>
+                        </span>
+                        </span>
+                        </span>
+                    </eq>
+                </li>
+                <li data-line="185" class="code-line">Malicious domains peak at
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>[</mo><mn>0</mn><mo separator="true">,</mo><mn>1</mn><mn>0</mn><mn>0</mn><mo>)</mo></mrow><annotation encoding="application/x-tex">[0, 100)</annotation></semantics></math></span>
+                        <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base"><span class="mopen">[</span><span class="mord mathrm">0</span>
+                        <span class="mpunct">,</span>
+                        <span class="mord mathrm">1</span><span class="mord mathrm">0</span><span class="mord mathrm">0</span><span class="mclose">)</span></span>
+                        </span>
+                        </span>
+                    </eq> ranges</li>
+            </ul>
+        </li>
+    </ul>
+    <h3 data-line="187" class="code-line" id="domain-name-based-features">Domain Name-Based Features</h3>
+    <ul>
+        <li data-line="189" class="code-line">Insight
+            <ul>
+                <li data-line="190" class="code-line">Easy-to-remember names</li>
+                <li data-line="191" class="code-line">Important for benign services
+                    <ul>
+                        <li data-line="192" class="code-line">Main purpose of DNS</li>
+                    </ul>
+                </li>
+                <li data-line="193" class="code-line">Unimportant for attackers (e.g., DGA-generated)</li>
+            </ul>
+        </li>
+        <li data-line="194" class="code-line">Ratio of numerical characters to name length</li>
+        <li data-line="195" class="code-line">Ratio of length of the longest meaningful substring to length of domain name</li>
+        <li data-line="196" class="code-line">Query name on Google &amp; check # of hits vs a threshold</li>
+        <li data-line="197" class="code-line">Combined to decrease false positives</li>
+        <li data-line="198" class="code-line">Features applied to only second-level domains(SLD)</li>
+        <li data-line="199" class="code-line">Other possible feature: entropy of the domain name
+            <ul>
+                <li data-line="200" class="code-line">DGA-generated names more random than human-generated</li>
+            </ul>
+        </li>
+    </ul>
+    <h2 data-line="202" class="code-line" id="training">Training</h2>
+    <ul>
+        <li data-line="204" class="code-line">Training period
+            <ul>
+                <li data-line="205" class="code-line">Initial period of 7 days (for time-based features)</li>
+                <li data-line="206" class="code-line">Retraining every day</li>
+            </ul>
+        </li>
+    </ul>
+    <h3 data-line="208" class="code-line" id="the-classifier">The Classifier</h3>
+    <ul>
+        <li data-line="210" class="code-line">J48 decision tree
+            <ul>
+                <li data-line="211" class="code-line">C4.5</li>
+            </ul>
+        </li>
+        <li data-line="212" class="code-line">Feature selection
+            <ul>
+                <li data-line="213" class="code-line">Percentage of miss-classified instances</li>
+            </ul>
+        </li>
+    </ul>
+    <h4 data-line="215" class="code-line" id="c45-decision-tree-algorithm">C4.5 decision tree algorithm</h4>
+    <ul>
+        <li data-line="217" class="code-line">Check for base cases</li>
+        <li data-line="218" class="code-line">For each attribute
+            <ul>
+                <li data-line="219" class="code-line">Compute attribute's normalized information gain</li>
+            </ul>
+        </li>
+        <li data-line="220" class="code-line">Split over attribute with highest gain</li>
+        <li data-line="221" class="code-line">Recurse</li>
+        <li data-line="222" class="code-line">Normalized information gain = difference in entropy of class values</li>
+    </ul>
+    <h2 data-line="224" class="code-line" id="evaluation">Evaluation</h2>
+    <ul>
+        <li data-line="226" class="code-line">Evaluation of the Detection Rate
+            <ul>
+                <li data-line="227" class="code-line">216 domains reported by <a href="http://malwareurls.com">malwareurls.com</a> &amp; present in dataset</li>
+                <li data-line="228" class="code-line">5 had less than 20 queries
+                    <ul>
+                        <li data-line="229" class="code-line">be filtered</li>
+                    </ul>
+                </li>
+                <li data-line="230" class="code-line">211 detected malicious</li>
+                <li data-line="231" class="code-line">Detection rate: 98%</li>
+            </ul>
+        </li>
+        <li data-line="232" class="code-line">Evaluation of the False Positives
+            <ul>
+                <li data-line="233" class="code-line">Filter out domains with &lt; 20 requests in 2.5 months (300,000 domains remaining)</li>
+                <li data-line="234" class="code-line">17,686 detected as malicious (5.9%)</li>
+                <li data-line="235" class="code-line">Unlabeled domains
+                    <ul>
+                        <li data-line="236" class="code-line">Hard to verify manually</li>
+                    </ul>
+                </li>
+                <li data-line="237" class="code-line">Verification
+                    <ul>
+                        <li data-line="238" class="code-line">Google searches</li>
+                        <li data-line="239" class="code-line">Well-known spam lists</li>
+                        <li data-line="240" class="code-line">Norton Safe Web</li>
+                        <li data-line="241" class="code-line">McAfee Site Advisor</li>
+                    </ul>
+                </li>
+                <li data-line="242" class="code-line">False positive rate: 7.9%</li>
+            </ul>
+        </li>
+    </ul>
+    <h2 data-line="244" class="code-line" id="limitation-evasion">Limitation (Evasion)</h2>
+    <ul>
+        <li data-line="246" class="code-line">Attackers have prior information about EXPOSURE</li>
+        <li data-line="247" class="code-line">Assign uniform TTL values across all compromised machines
+            <ul>
+                <li data-line="248" class="code-line">Reduces attacker's infrastructure reliability</li>
+            </ul>
+        </li>
+        <li data-line="249" class="code-line">Reduce number of DNS lookups of malicious domain
+            <ul>
+                <li data-line="250" class="code-line">Not trivial to implement</li>
+                <li data-line="251" class="code-line">Reduces attacker's impact</li>
+                <li data-line="252" class="code-line">Requires high degree of coordination</li>
+            </ul>
+        </li>
+    </ul>
+    <h2 data-line="254" class="code-line" id="reference">Reference</h2>
+    <ul>
+        <li data-line="256" class="code-line">EXPOSURE: Finding Malicious Domains Using Passive DNS Analysis (2011)</li>
+        <li data-line="257" class="code-line">CS 259D Lecture 3</li>
+    </ul>
+
+</body>
+
+</html>

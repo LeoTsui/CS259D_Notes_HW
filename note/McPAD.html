@@ -1,0 +1,227 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.4.1/github-markdown.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/styles/default.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.8.3/katex.min.css">
+    <link rel="stylesheet" href="https://gitcdn.xyz/repo/goessner/mdmath/master/css/texmath.css">
+    <link rel="stylesheet" href="https://gitcdn.xyz/repo/goessner/mdmath/master/css/vscode-texmath.css">
+    <title>McPAD : A Multiple Classifier System for Accurate Payload-based Anomaly Detection</title>
+
+</head>
+
+<body class="markdown-body">
+    <h1 data-line="0" class="code-line" id="mcpad-a-multiple-classifier-system-for-accurate-payload-based-anomaly-detection">McPAD : A Multiple Classifier System for Accurate Payload-based Anomaly Detection</h1>
+    <!-- TOC -->
+    <ul>
+        <li data-line="4" class="code-line"><a href="#goal-and-contribution">Goal and Contribution</a></li>
+        <li data-line="5" class="code-line"><a href="#architecture">Architecture</a>
+            <ul>
+                <li data-line="6" class="code-line"><a href="#one-class-svm">One-class SVM</a></li>
+                <li data-line="7" class="code-line"><a href="#fusion-rules">Fusion rules</a></li>
+                <li data-line="8" class="code-line"><a href="#mcpad">McPAD</a></li>
+                <li data-line="9" class="code-line"><a href="#attacks">Attacks</a></li>
+            </ul>
+        </li>
+        <li data-line="10" class="code-line"><a href="#data">Data</a></li>
+        <li data-line="11" class="code-line"><a href="#limitation">Limitation</a></li>
+        <li data-line="12" class="code-line"><a href="#reference">Reference</a></li>
+    </ul>
+    <!-- /TOC -->
+    <h2 data-line="16" class="code-line" id="goal-and-contribution">Goal and Contribution</h2>
+    <ul>
+        <li data-line="18" class="code-line">Improve
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mn>2</mn></mrow><annotation encoding="application/x-tex">2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.64444em;"></span>
+                <span class="strut bottom" style="height:0.64444em;vertical-align:0em;"></span><span class="base"><span class="mord mathrm">2</span></span>
+                </span>
+                </span>
+            </eq>-grams</li>
+    </ul>
+    <h2 data-line="20" class="code-line" id="architecture">Architecture</h2>
+    <h3 data-line="22" class="code-line" id="one-class-svm">One-class SVM</h3>
+    <ul>
+        <li data-line="24" class="code-line"><a href="http://rvlasveld.github.io/blog/2013/07/12/introduction-to-one-class-support-vector-machines/">Introduction to One-class Support Vector Machines</a></li>
+    </ul>
+    <h3 data-line="26" class="code-line" id="fusion-rules">Fusion rules</h3>
+    <ul>
+        <li data-line="28" class="code-line">Combine all different One-Class SVM</li>
+        <li data-line="29" class="code-line">Min, Max, Mean, Product, Majority voting</li>
+        <li data-line="30" class="code-line">Apply for every
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>p</mi><mi>i</mi></msub><mo>(</mo><mrow><mi mathvariant="normal">x</mi></mrow><mi mathvariant="normal">∣</mi><mi>ω</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">p\_i(\\mathrm{x}|\\omega)</annotation></semantics></math></span>
+                <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base"><span class="mord"><span class="mord mathit">p</span>
+                <span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight">i</span></span>
+                </span>
+                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                </span>
+                </span>
+                </span><span class="mopen">(</span><span class="mord"><span class="mord mathrm">x</span></span><span class="mord mathrm">∣</span><span class="mord mathit" style="margin-right:0.03588em;">ω</span><span class="mclose">)</span></span>
+                </span>
+                </span>
+            </eq>
+        </li>
+        <li data-line="31" class="code-line">Assume uniform distribution for outliers</li>
+    </ul>
+    <h3 data-line="33" class="code-line" id="mcpad">McPAD</h3>
+    <p data-line="35" class="code-line"><img src="images/McPAD.png" alt="Overview of McPAD"></p>
+    <ul>
+        <li data-line="37" class="code-line">Feature Extraction
+            <ul>
+                <li data-line="38" class="code-line">
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mn>2</mn><mi>v</mi></msub></mrow><annotation encoding="application/x-tex">2\_v</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.64444em;"></span>
+                        <span class="strut bottom" style="height:0.79444em;vertical-align:-0.15em;"></span><span class="base"><span class="mord"><span class="mord mathrm">2</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight" style="margin-right:0.03588em;">v</span></span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                    </eq>-grams,
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mn>6</mn><mn>5</mn><mn>5</mn><mn>3</mn><mn>6</mn></mrow><annotation encoding="application/x-tex">65536</annotation></semantics></math></span><span class="katex-html"
+                            aria-hidden="true"><span class="strut" style="height:0.64444em;"></span><span class="strut bottom" style="height:0.64444em;vertical-align:0em;"></span><span class="base"><span class="mord mathrm">6</span><span class="mord mathrm">5</span>
+                        <span class="mord mathrm">5</span><span class="mord mathrm">3</span><span class="mord mathrm">6</span></span>
+                        </span>
+                        </span>
+                    </eq> dimensions
+                    <ul>
+                        <li data-line="39" class="code-line">
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>n</mi></mrow><annotation encoding="application/x-tex">n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span>
+                                <span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base"><span class="mord mathit">n</span></span>
+                                </span>
+                                </span>
+                            </eq>-grams,
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mn>2</mn><mn>5</mn><msup><mn>6</mn><mi>n</mi></msup></mrow><annotation encoding="application/x-tex">256^n</annotation></semantics></math></span><span class="katex-html"
+                                    aria-hidden="true"><span class="strut" style="height:0.664392em;"></span><span class="strut bottom" style="height:0.664392em;vertical-align:0em;"></span><span class="base"><span class="mord mathrm">2</span><span class="mord mathrm">5</span>
+                                <span class="mord"><span class="mord mathrm">6</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.664392em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                                <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight">n</span></span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                            </eq> dimensions</li>
+                        <li data-line="40" class="code-line">For
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>v</mi><mo>=</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">v = 0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.64444em;"></span>
+                                <span class="strut bottom" style="height:0.64444em;vertical-align:0em;"></span><span class="base"><span class="mord mathit" style="margin-right:0.03588em;">v</span><span class="mrel">=</span><span class="mord mathrm">0</span></span>
+                                </span>
+                                </span>
+                            </eq>,
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mn>2</mn></mrow><annotation encoding="application/x-tex">2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.64444em;"></span>
+                                <span class="strut bottom" style="height:0.64444em;vertical-align:0em;"></span><span class="base"><span class="mord mathrm">2</span></span>
+                                </span>
+                                </span>
+                            </eq>-gram</li>
+                        <li data-line="41" class="code-line">Size of sliding window,
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>v</mi><mo>+</mo><mn>2</mn></mrow><annotation encoding="application/x-tex">v + 2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.64444em;"></span>
+                                <span class="strut bottom" style="height:0.72777em;vertical-align:-0.08333em;"></span><span class="base"><span class="mord mathit" style="margin-right:0.03588em;">v</span><span class="mbin">+</span><span class="mord mathrm">2</span></span>
+                                </span>
+                                </span>
+                            </eq>
+                        </li>
+                    </ul>
+                </li>
+                <li data-line="42" class="code-line">No auto way to derive
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mn>2</mn><mo>(</mo></msub><mi>v</mi><mo>−</mo><mn>1</mn><mo>)</mo></mrow><annotation encoding="application/x-tex">2\_(v-1)</annotation></semantics></math></span>
+                        <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1.1052em;vertical-align:-0.3551999999999999em;"></span><span class="base"><span class="mord"><span class="mord mathrm">2</span>
+                        <span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.34480000000000005em;"><span style="top:-2.5198em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mopen mtight">(</span></span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.3551999999999999em;"></span></span>
+                        </span>
+                        </span>
+                        </span><span class="mord mathit" style="margin-right:0.03588em;">v</span><span class="mbin">−</span><span class="mord mathrm">1</span><span class="mclose">)</span></span>
+                        </span>
+                        </span>
+                    </eq>-grams,
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mn>2</mn><mo>(</mo></msub><mi>v</mi><mo>−</mo><mn>2</mn><mo>)</mo></mrow><annotation encoding="application/x-tex">2\_(v-2)</annotation></semantics></math></span>
+                        <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1.1052em;vertical-align:-0.3551999999999999em;"></span><span class="base"><span class="mord"><span class="mord mathrm">2</span>
+                        <span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.34480000000000005em;"><span style="top:-2.5198em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mopen mtight">(</span></span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.3551999999999999em;"></span></span>
+                        </span>
+                        </span>
+                        </span><span class="mord mathit" style="margin-right:0.03588em;">v</span><span class="mbin">−</span><span class="mord mathrm">2</span><span class="mclose">)</span></span>
+                        </span>
+                        </span>
+                    </eq>-grams from
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mn>2</mn><mi>v</mi></msub></mrow><annotation encoding="application/x-tex">2\_v</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.64444em;"></span>
+                        <span class="strut bottom" style="height:0.79444em;vertical-align:-0.15em;"></span><span class="base"><span class="mord"><span class="mord mathrm">2</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight" style="margin-right:0.03588em;">v</span></span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                    </eq>-grams
+                    <ul>
+                        <li data-line="43" class="code-line">Not like
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>n</mi></mrow><annotation encoding="application/x-tex">n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span>
+                                <span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base"><span class="mord mathit">n</span></span>
+                                </span>
+                                </span>
+                            </eq>-grams</li>
+                        <li data-line="44" class="code-line">Different
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>v</mi></mrow><annotation encoding="application/x-tex">v</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span>
+                                <span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base"><span class="mord mathit" style="margin-right:0.03588em;">v</span></span>
+                                </span>
+                                </span>
+                            </eq> cause different structural information about the payload</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li data-line="45" class="code-line">Feature Reduction
+            <ul>
+                <li data-line="46" class="code-line">Cluster</li>
+            </ul>
+        </li>
+    </ul>
+    <h3 data-line="48" class="code-line" id="attacks">Attacks</h3>
+    <ul>
+        <li data-line="50" class="code-line">Generic attacks</li>
+        <li data-line="51" class="code-line">Shell-code attacks</li>
+        <li data-line="52" class="code-line">CLET attacks</li>
+        <li data-line="53" class="code-line">PBA attacks</li>
+    </ul>
+    <h2 data-line="55" class="code-line" id="data">Data</h2>
+    <ul>
+        <li data-line="57" class="code-line">Normal
+            <ul>
+                <li data-line="58" class="code-line">DARPA</li>
+                <li data-line="59" class="code-line">GATECH</li>
+            </ul>
+        </li>
+        <li data-line="60" class="code-line">Attacks
+            <ul>
+                <li data-line="61" class="code-line">Public non-polymorphic HTTP attack</li>
+                <li data-line="62" class="code-line">Create polymorphic HTTP attack</li>
+                <li data-line="63" class="code-line">Hard to collect a sufficient amount of attack traffic</li>
+            </ul>
+        </li>
+    </ul>
+    <h2 data-line="65" class="code-line" id="limitation">Limitation</h2>
+    <ul>
+        <li data-line="67" class="code-line"><a href="http://www.cse.chalmers.se/edu/course/DAT285B/SLIDESNOTES/NGramPresentation.pptx">High FP rate</a></li>
+    </ul>
+    <h2 data-line="69" class="code-line" id="reference">Reference</h2>
+    <ul>
+        <li data-line="71" class="code-line">McPAD : A Multiple Classifier System for Accurate Payload-based Anomaly Detection, Perdisci et al, 2009</li>
+        <li data-line="72" class="code-line">CS 259D Lecture 15</li>
+    </ul>
+
+</body>
+
+</html>

@@ -1,0 +1,188 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.4.1/github-markdown.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/styles/default.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.8.3/katex.min.css">
+    <link rel="stylesheet" href="https://gitcdn.xyz/repo/goessner/mdmath/master/css/texmath.css">
+    <link rel="stylesheet" href="https://gitcdn.xyz/repo/goessner/mdmath/master/css/vscode-texmath.css">
+    <title>One-Class Training for Masquerade Detection</title>
+
+</head>
+
+<body class="markdown-body">
+    <h1 data-line="0" class="code-line" id="one-class-training-for-masquerade-detection">One-Class Training for Masquerade Detection</h1>
+    <!-- TOC -->
+    <ul>
+        <li data-line="4" class="code-line"><a href="#background-knowledge-and-insight">Background Knowledge and Insight</a></li>
+        <li data-line="5" class="code-line"><a href="#schonlau-dataset">Schonlau Dataset</a></li>
+        <li data-line="6" class="code-line"><a href="#machine-learning-methods">Machine learning methods</a></li>
+        <li data-line="7" class="code-line"><a href="#limitation">Limitation</a></li>
+        <li data-line="8" class="code-line"><a href="#reference">Reference</a></li>
+    </ul>
+    <!-- /TOC -->
+    <h2 data-line="12" class="code-line" id="background-knowledge-and-insight">Background Knowledge and Insight</h2>
+    <ul>
+        <li data-line="14" class="code-line">Modeling user behaviors</li>
+        <li data-line="15" class="code-line">Detect anomalous misbehaviors</li>
+        <li data-line="16" class="code-line">Masquerade problem is a challenging problem
+            <ul>
+                <li data-line="17" class="code-line">False alarms</li>
+            </ul>
+        </li>
+        <li data-line="18" class="code-line">Multi-class classification
+            <ul>
+                <li data-line="19" class="code-line">Data from each user as samples from one class</li>
+                <li data-line="20" class="code-line">Self vs non-self</li>
+                <li data-line="21" class="code-line">Require retraining as users join/leave organization</li>
+                <li data-line="22" class="code-line">Non-self samples bias model's view of masquerader</li>
+            </ul>
+        </li>
+        <li data-line="23" class="code-line">Single-class classification
+            <ul>
+                <li data-line="24" class="code-line">Builds a profile for user only using that user's data</li>
+                <li data-line="25" class="code-line">Requires less data</li>
+                <li data-line="26" class="code-line">Distributed implementation</li>
+            </ul>
+        </li>
+    </ul>
+    <h2 data-line="28" class="code-line" id="schonlau-dataset">Schonlau Dataset</h2>
+    <ul>
+        <li data-line="30" class="code-line">Unix shall commands of 70 users
+            <ul>
+                <li data-line="31" class="code-line">Collected using Unix acct</li>
+                <li data-line="32" class="code-line">50 random users as intrusion targets</li>
+                <li data-line="33" class="code-line">20 masquerade users</li>
+            </ul>
+        </li>
+        <li data-line="34" class="code-line">15,000 commands per user
+            <ul>
+                <li data-line="35" class="code-line">Over days or months</li>
+                <li data-line="36" class="code-line">First 5,000 commands clean</li>
+                <li data-line="37" class="code-line">Next 10,000 commands randomly injected with 100-command intrusion blocks</li>
+                <li data-line="38" class="code-line">Blocks of size 100: clean or dirty</li>
+            </ul>
+        </li>
+        <li data-line="39" class="code-line">Issues
+            <ul>
+                <li data-line="40" class="code-line">Widely different time periods for different users</li>
+                <li data-line="41" class="code-line">Different number of login sessions per user</li>
+                <li data-line="42" class="code-line">Different number (0-24) of intrusion blocks per users</li>
+                <li data-line="43" class="code-line">User job functions unknown</li>
+                <li data-line="44" class="code-line">Acct logs commands in the order they finished</li>
+            </ul>
+        </li>
+    </ul>
+    <h2 data-line="46" class="code-line" id="machine-learning-methods">Machine learning methods</h2>
+    <ul>
+        <li data-line="48" class="code-line">Learning task
+            <ul>
+                <li data-line="49" class="code-line">Identify masqueraders positively, not identify particular user</li>
+            </ul>
+        </li>
+        <li data-line="50" class="code-line">One-class or two class
+            <ul>
+                <li data-line="51" class="code-line">One-class Naïve Bayes</li>
+                <li data-line="52" class="code-line">One-class SVM</li>
+            </ul>
+        </li>
+        <li data-line="53" class="code-line">Naïve Bayes Classifier
+            <ul>
+                <li data-line="54" class="code-line">Bayes rule</li>
+                <li data-line="55" class="code-line">Different commands assumed independent</li>
+                <li data-line="56" class="code-line">Multi-variate Bernoulli model
+                    <ul>
+                        <li data-line="57" class="code-line">Total unique commands(Unix), 856</li>
+                        <li data-line="58" class="code-line">Each block as a binary N-dimensional vector</li>
+                        <li data-line="59" class="code-line">Each dimension with Bernoulli model</li>
+                        <li data-line="60" class="code-line">Performs better at small vocabulary sizes</li>
+                    </ul>
+                </li>
+                <li data-line="61" class="code-line">Multinomial model
+                    <ul>
+                        <li data-line="62" class="code-line">Each black as N-dimensional vector</li>
+                        <li data-line="63" class="code-line">Each feature = # of occurrences of command</li>
+                        <li data-line="64" class="code-line">Performs better at large vocabulary sizes</li>
+                    </ul>
+                </li>
+                <li data-line="65" class="code-line">One-class Naïve Bayes
+                    <ul>
+                        <li data-line="66" class="code-line">Compute
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>p</mi><mo>(</mo><msub><mi>c</mi><mi>i</mi></msub><mi mathvariant="normal">∣</mi><mi>u</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">p(c\_i|u)</annotation></semantics></math></span>
+                                <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base"><span class="mord mathit">p</span>
+                                <span class="mopen">(</span><span class="mord"><span class="mord mathit">c</span>
+                                <span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                                <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight">i</span></span>
+                                </span>
+                                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                                </span>
+                                </span>
+                                </span><span class="mord mathrm">∣</span><span class="mord mathit">u</span><span class="mclose">)</span></span>
+                                </span>
+                                </span>
+                            </eq> only for user's self profile</li>
+                        <li data-line="67" class="code-line">For masquerader, assume each command has probability
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mn>1</mn><mi mathvariant="normal">/</mi><mi>N</mi></mrow><annotation encoding="application/x-tex">1/N</annotation></semantics></math></span><span class="katex-html"
+                                    aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base"><span class="mord mathrm">1</span><span class="mord mathrm">/</span>
+                                <span class="mord mathit" style="margin-right:0.10903em;">N</span>
+                                </span>
+                                </span>
+                                </span>
+                            </eq> (completely random)
+                            <ul>
+                                <li data-line="68" class="code-line">Makes no assumption about masquerader</li>
+                            </ul>
+                        </li>
+                        <li data-line="69" class="code-line">Given a block
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>d</mi></mrow><annotation encoding="application/x-tex">d</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span>
+                                <span class="strut bottom" style="height:0.69444em;vertical-align:0em;"></span><span class="base"><span class="mord mathit">d</span></span>
+                                </span>
+                                </span>
+                            </eq>, compute:
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>p</mi><mo>(</mo><mi>d</mi><mi mathvariant="normal">∣</mi><mi>s</mi><mi>e</mi><mi>l</mi><mi>f</mi><mo>)</mo><mi mathvariant="normal">/</mi><mi>p</mi><mo>(</mo><mi>d</mi><mi mathvariant="normal">∣</mi><mi>n</mi><mi>o</mi><mi>n</mi><mo>−</mo><mi>s</mi><mi>e</mi><mi>l</mi><mi>f</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">p(d|self)/p(d|non-self)</annotation></semantics></math></span>
+                                <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base"><span class="mord mathit">p</span>
+                                <span class="mopen">(</span><span class="mord mathit">d</span>
+                                <span class="mord mathrm">∣</span><span class="mord mathit">s</span><span class="mord mathit">e</span><span class="mord mathit" style="margin-right:0.01968em;">l</span><span class="mord mathit" style="margin-right:0.10764em;">f</span>
+                                <span class="mclose">)</span>
+                                <span class="mord mathrm">/</span><span class="mord mathit">p</span><span class="mopen">(</span><span class="mord mathit">d</span><span class="mord mathrm">∣</span><span class="mord mathit">n</span><span class="mord mathit">o</span>
+                                <span class="mord mathit">n</span><span class="mbin">−</span><span class="mord mathit">s</span><span class="mord mathit">e</span><span class="mord mathit" style="margin-right:0.01968em;">l</span><span class="mord mathit"
+                                    style="margin-right:0.10764em;">f</span>
+                                <span class="mclose">)</span>
+                                </span>
+                                </span>
+                                </span>
+                            </eq>
+                        </li>
+                        <li data-line="70" class="code-line">Threshold controls false positive vs detection rate</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li data-line="71" class="code-line">One-class support vector machine
+            <ul>
+                <li data-line="72" class="code-line">Map data to a high-dimensional feature space</li>
+                <li data-line="73" class="code-line">Maximally separate data points from origin</li>
+                <li data-line="74" class="code-line">Allow some outliers, but probability of lying on the wrong side bounded by a parameter</li>
+            </ul>
+        </li>
+    </ul>
+    <h2 data-line="76" class="code-line" id="limitation">Limitation</h2>
+    <ul>
+        <li data-line="78" class="code-line">One-class SVM using binary features performs better than one-class Naïve Bayes and one-class SVM using word count features</li>
+        <li data-line="79" class="code-line">Hard problem, not achieve very high accuracy</li>
+        <li data-line="80" class="code-line">2-gram features perform worse</li>
+        <li data-line="81" class="code-line">1-gram &amp; 2-grams may improve performance</li>
+        <li data-line="82" class="code-line">This system(paper) should not be viewed as a single detector</li>
+        <li data-line="83" class="code-line">Need to include command arguments, not only truncated commands</li>
+    </ul>
+    <h2 data-line="85" class="code-line" id="reference">Reference</h2>
+    <ul>
+        <li data-line="87" class="code-line">One-class Training for Masquerade Detection (2003)</li>
+        <li data-line="88" class="code-line">CS 259D Lecture 3</li>
+    </ul>
+
+</body>
+
+</html>

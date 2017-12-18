@@ -1,0 +1,587 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.4.1/github-markdown.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/styles/default.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.8.3/katex.min.css">
+    <link rel="stylesheet" href="https://gitcdn.xyz/repo/goessner/mdmath/master/css/texmath.css">
+    <link rel="stylesheet" href="https://gitcdn.xyz/repo/goessner/mdmath/master/css/vscode-texmath.css">
+    <title>BotMiner: Clustering Analysis of Network Traffic for Protocol- and Structure-Independent Botnet Detection</title>
+
+</head>
+
+<body class="markdown-body">
+    <h1 data-line="0" class="code-line" id="botminer-clustering-analysis-of-network-traffic-for-protocol--and-structure-independent-botnet-detection">BotMiner: Clustering Analysis of Network Traffic for Protocol- and Structure-Independent Botnet Detection</h1>
+    <!-- TOC -->
+    <ul>
+        <li data-line="4" class="code-line"><a href="#background-knowledge-and-insight">Background Knowledge and Insight</a></li>
+        <li data-line="5" class="code-line"><a href="#goal-and-contribution">Goal and Contribution</a></li>
+        <li data-line="6" class="code-line"><a href="#botminer">BotMiner</a>
+            <ul>
+                <li data-line="7" class="code-line"><a href="#c-plane-monitor">C-plane Monitor</a></li>
+                <li data-line="8" class="code-line"><a href="#a-plane-monitor">A-plane Monitor</a></li>
+                <li data-line="9" class="code-line"><a href="#c-plane-clustering">C-plane Clustering</a></li>
+                <li data-line="10" class="code-line"><a href="#a-plane-clustering">A-plane Clustering</a></li>
+                <li data-line="11" class="code-line"><a href="#cross-plane-correlation">Cross-plane Correlation</a></li>
+            </ul>
+        </li>
+        <li data-line="12" class="code-line"><a href="#limitations-and-potential-solutions">Limitations and Potential Solutions</a></li>
+        <li data-line="13" class="code-line"><a href="#reference">Reference</a></li>
+    </ul>
+    <!-- /TOC -->
+    <h2 data-line="17" class="code-line" id="background-knowledge-and-insight">Background Knowledge and Insight</h2>
+    <ul>
+        <li data-line="19" class="code-line">Bot
+            <ul>
+                <li data-line="20" class="code-line">A malware instance that runs autonomously and automatically on a compromised computer (zombie) without owner's consent</li>
+            </ul>
+        </li>
+        <li data-line="21" class="code-line">Botnet (Bot Army)
+            <ul>
+                <li data-line="22" class="code-line">Network of bots controlled by criminals</li>
+                <li data-line="23" class="code-line">A coordinated group of malware instances that are controlled by a botmaster via some C&amp;C channel</li>
+            </ul>
+        </li>
+        <li data-line="24" class="code-line">Evolving and quite flexible</li>
+        <li data-line="25" class="code-line">Bots communicate with C&amp;C servers/peers
+            <ul>
+                <li data-line="26" class="code-line">Centralized
+                    <ul>
+                        <li data-line="27" class="code-line">IRC
+                            <ul>
+                                <li data-line="28" class="code-line">53% of botnet activity related to scan
+                                    <ul>
+                                        <li data-line="29" class="code-line">For DDoS or spreading</li>
+                                    </ul>
+                                </li>
+                                <li data-line="30" class="code-line">14.4% related to binary downloading</li>
+                            </ul>
+                        </li>
+                        <li data-line="31" class="code-line">HTTP
+                            <ul>
+                                <li data-line="32" class="code-line">Mostly for sending spam</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+                <li data-line="33" class="code-line">Distributed
+                    <ul>
+                        <li data-line="34" class="code-line">P2P
+                            <ul>
+                                <li data-line="35" class="code-line">Mostly for sending spam</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li data-line="36" class="code-line">Bots act a similar/correlated way
+            <ul>
+                <li data-line="37" class="code-line">Otherwise, just a group of unrelated/isolated infections</li>
+                <li data-line="38" class="code-line">Bots are non-human driven, programmed to perform C&amp;C logic/communications</li>
+            </ul>
+        </li>
+    </ul>
+    <h2 data-line="41" class="code-line" id="goal-and-contribution">Goal and Contribution</h2>
+    <ul>
+        <li data-line="43" class="code-line">Grounded on the definition and essential properties, no a priori knowledge</li>
+        <li data-line="44" class="code-line">A new &quot;aggregated communication flow&quot; (C-flow)</li>
+        <li data-line="45" class="code-line">BotMiner</li>
+    </ul>
+    <h2 data-line="47" class="code-line" id="botminer">BotMiner</h2>
+    <p data-line="49" class="code-line"><img src="images/BotMiner.png" alt="Architecture overview of our BotMiner detection framework"></p>
+    <ul>
+        <li data-line="51" class="code-line">Assume
+            <ul>
+                <li data-line="52" class="code-line">Bots within the same botnet will be characterized by similar malicious activities and similar C&amp;C communication patterns</li>
+            </ul>
+        </li>
+        <li data-line="53" class="code-line">Detection method
+            <ul>
+                <li data-line="54" class="code-line">Cluster similar communication traffic
+                    <ul>
+                        <li data-line="55" class="code-line">Who is talking to whom</li>
+                        <li data-line="56" class="code-line">C-plane (C&amp;C communication traffic)</li>
+                    </ul>
+                </li>
+                <li data-line="57" class="code-line">Cluster similar malicious traffic
+                    <ul>
+                        <li data-line="58" class="code-line">Who is doing what</li>
+                        <li data-line="59" class="code-line">A-plane (Activity traffic)</li>
+                    </ul>
+                </li>
+                <li data-line="60" class="code-line">Perform cross-cluster correlation
+                    <ul>
+                        <li data-line="61" class="code-line">Find a coordinated group pattern</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li data-line="62" class="code-line">Priori knowledge
+            <ul>
+                <li data-line="63" class="code-line">Botnet's protocol</li>
+                <li data-line="64" class="code-line">Captured bot binaries (botnet signatures)</li>
+                <li data-line="65" class="code-line">C&amp;C server names/addresses</li>
+                <li data-line="66" class="code-line">Content of the C&amp;C communication</li>
+            </ul>
+        </li>
+        <li data-line="67" class="code-line">Objectives
+            <ul>
+                <li data-line="68" class="code-line">Independent of the protocol and structure</li>
+                <li data-line="69" class="code-line">Resistant to changing location</li>
+                <li data-line="70" class="code-line">Independent of the content of communication</li>
+                <li data-line="71" class="code-line">Low false positive</li>
+                <li data-line="72" class="code-line">Low false negative</li>
+                <li data-line="73" class="code-line">Efficient</li>
+            </ul>
+        </li>
+    </ul>
+    <h3 data-line="75" class="code-line" id="c-plane-monitor">C-plane Monitor</h3>
+    <ul>
+        <li data-line="77" class="code-line"><strong>Who is talking to whom</strong></li>
+        <li data-line="78" class="code-line">Limit to TCP and UDP</li>
+        <li data-line="79" class="code-line">Each flow record contains
+            <ul>
+                <li data-line="80" class="code-line">Time</li>
+                <li data-line="81" class="code-line">Duration</li>
+                <li data-line="82" class="code-line">Source IP</li>
+                <li data-line="83" class="code-line">Source port</li>
+                <li data-line="84" class="code-line">Destination IP</li>
+                <li data-line="85" class="code-line">Destination port</li>
+                <li data-line="86" class="code-line">
+                    <h1 data-line="86" class="code-line" id="packets-both-directions">packets, both directions</h1>
+                </li>
+                <li data-line="87" class="code-line">Bytes, both directions</li>
+            </ul>
+        </li>
+    </ul>
+    <h3 data-line="89" class="code-line" id="a-plane-monitor">A-plane Monitor</h3>
+    <ul>
+        <li data-line="91" class="code-line"><strong>Who is doing what</strong></li>
+        <li data-line="92" class="code-line">Analyzes outbound traffic</li>
+        <li data-line="93" class="code-line">Based on Snort, with some modifications</li>
+        <li data-line="94" class="code-line">Detects several types of malicious activities
+            <ul>
+                <li data-line="95" class="code-line">Scanning
+                    <ul>
+                        <li data-line="96" class="code-line">SCADE (Statistical sCan Anomaly Detection Engine)</li>
+                        <li data-line="97" class="code-line">Two anomaly detection modules
+                            <ul>
+                                <li data-line="98" class="code-line">Abnormally-high scan rate</li>
+                                <li data-line="99" class="code-line">Weighted failed connection rate</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+                <li data-line="100" class="code-line">Spamming
+                    <ul>
+                        <li data-line="101" class="code-line">Developed a new Snort plug-in</li>
+                    </ul>
+                </li>
+                <li data-line="102" class="code-line">PE (Portable Executable) binary downloading
+                    <ul>
+                        <li data-line="103" class="code-line">PEHunter</li>
+                        <li data-line="104" class="code-line">BotHunter
+                            <ul>
+                                <li data-line="105" class="code-line">Egg download detection method</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+                <li data-line="106" class="code-line">Exploit</li>
+                <li data-line="107" class="code-line">Easily add others</li>
+            </ul>
+        </li>
+        <li data-line="108" class="code-line">A-plane monitoring alone is not sufficient for botnet detection purpose
+            <ul>
+                <li data-line="109" class="code-line">A-plane activities are not exclusively used in botnets</li>
+                <li data-line="110" class="code-line">Loose design will generate a lot of false positives</li>
+            </ul>
+        </li>
+    </ul>
+    <h3 data-line="112" class="code-line" id="c-plane-clustering">C-plane Clustering</h3>
+    <p data-line="114" class="code-line"><img src="images/C-plane_Clustering.png" alt="C-plane Clustering"></p>
+    <ul>
+        <li data-line="116" class="code-line">Basic-filtering (F1, F2)
+            <ul>
+                <li data-line="117" class="code-line">Irrelevant traffic flows (F1)
+                    <ul>
+                        <li data-line="118" class="code-line">Internal hosts</li>
+                        <li data-line="119" class="code-line">From external hosts to internal hosts=</li>
+                    </ul>
+                </li>
+                <li data-line="120" class="code-line">Not completely established (F2)</li>
+            </ul>
+        </li>
+        <li data-line="121" class="code-line">White-listing (F3)
+            <ul>
+                <li data-line="122" class="code-line">Flows with well-known destinations</li>
+            </ul>
+        </li>
+        <li data-line="123" class="code-line">Given an epoch
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>E</mi></mrow><annotation encoding="application/x-tex">E</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span>
+                <span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base"><span class="mord mathit" style="margin-right:0.05764em;">E</span></span>
+                </span>
+                </span>
+            </eq>, aggregate into communication flows (C-flows)
+            <ul>
+                <li data-line="124" class="code-line">
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>c</mi><mi>i</mi></msub><mo>=</mo><mo>{</mo><msub><mi>f</mi><mi>j</mi></msub><msub><mo>}</mo><mrow><mi>j</mi><mo>=</mo><mn>1</mn><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><mi>m</mi></mrow></msub></mrow><annotation encoding="application/x-tex">c\_i = \\{f\_j\\}\_{j=1..m}</annotation></semantics></math></span>
+                        <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1.036108em;vertical-align:-0.286108em;"></span><span class="base"><span class="mord"><span class="mord mathit">c</span>
+                        <span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight">i</span></span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                        </span>
+                        </span>
+                        </span><span class="mrel">=</span><span class="mopen">{</span><span class="mord"><span class="mord mathit" style="margin-right:0.10764em;">f</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.311664em;"><span style="top:-2.5500000000000003em;margin-left:-0.10764em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight" style="margin-right:0.05724em;">j</span></span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"></span></span>
+                        </span>
+                        </span>
+                        </span><span class="mclose"><span class="mclose">}</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.311664em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathit mtight" style="margin-right:0.05724em;">j</span><span class="mrel mtight">=</span><span class="mord mathrm mtight">1</span>
+                        <span class="mord mathrm mtight">.</span>
+                        <span class="mord mathrm mtight">.</span><span class="mord mathit mtight">m</span></span>
+                        </span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"></span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                    </eq>, C-flow
+                    <ul>
+                        <li data-line="125" class="code-line">Where
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>f</mi><mi>j</mi></msub></mrow><annotation encoding="application/x-tex">f\_j</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span>
+                                <span class="strut bottom" style="height:0.980548em;vertical-align:-0.286108em;"></span><span class="base"><span class="mord"><span class="mord mathit" style="margin-right:0.10764em;">f</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.311664em;"><span style="top:-2.5500000000000003em;margin-left:-0.10764em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                                <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight" style="margin-right:0.05724em;">j</span></span>
+                                </span>
+                                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"></span></span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                            </eq> have same protocol (TCP/UDP), source IP, destination IP &amp; port</li>
+                        <li data-line="126" class="code-line">
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>m</mi></mrow><annotation encoding="application/x-tex">m</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span>
+                                <span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base"><span class="mord mathit">m</span></span>
+                                </span>
+                                </span>
+                            </eq>,
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">#</mi></mrow><annotation encoding="application/x-tex">\\#</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span>
+                                <span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base"><span class="mord mathrm">#</span></span>
+                                </span>
+                                </span>
+                            </eq> TCP/UDP flows</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li data-line="127" class="code-line">Feature extraction
+            <ul>
+                <li data-line="128" class="code-line">For each C-flow
+                    <ul>
+                        <li data-line="129" class="code-line">Temporal
+                            <ul>
+                                <li data-line="130" class="code-line">
+                                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">#</mi></mrow><annotation encoding="application/x-tex">\\#</annotation></semantics></math></span><span class="katex-html"
+                                            aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base"><span class="mord mathrm">#</span></span>
+                                        </span>
+                                        </span>
+                                    </eq> flows per hour (
+                                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>f</mi><mi>p</mi><mi>h</mi></mrow><annotation encoding="application/x-tex">fph</annotation></semantics></math></span><span class="katex-html"
+                                            aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base"><span class="mord mathit" style="margin-right:0.10764em;">f</span>
+                                        <span class="mord mathit">p</span><span class="mord mathit">h</span></span>
+                                        </span>
+                                        </span>
+                                    </eq>)</li>
+                                <li data-line="131" class="code-line">
+                                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">#</mi></mrow><annotation encoding="application/x-tex">\\#</annotation></semantics></math></span><span class="katex-html"
+                                            aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base"><span class="mord mathrm">#</span></span>
+                                        </span>
+                                        </span>
+                                    </eq> bytes per second (
+                                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>b</mi><mi>p</mi><mi>s</mi></mrow><annotation encoding="application/x-tex">bps</annotation></semantics></math></span><span class="katex-html"
+                                            aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base"><span class="mord mathit">b</span>
+                                        <span class="mord mathit">p</span><span class="mord mathit">s</span></span>
+                                        </span>
+                                        </span>
+                                    </eq>)</li>
+                            </ul>
+                        </li>
+                        <li data-line="132" class="code-line">Spatial
+                            <ul>
+                                <li data-line="133" class="code-line">
+                                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">#</mi></mrow><annotation encoding="application/x-tex">\\#</annotation></semantics></math></span><span class="katex-html"
+                                            aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base"><span class="mord mathrm">#</span></span>
+                                        </span>
+                                        </span>
+                                    </eq> packets per flow (
+                                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>p</mi><mi>p</mi><mi>f</mi></mrow><annotation encoding="application/x-tex">ppf</annotation></semantics></math></span><span class="katex-html"
+                                            aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base"><span class="mord mathit">p</span>
+                                        <span class="mord mathit">p</span><span class="mord mathit" style="margin-right:0.10764em;">f</span></span>
+                                        </span>
+                                        </span>
+                                    </eq>)</li>
+                                <li data-line="134" class="code-line">
+                                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">#</mi></mrow><annotation encoding="application/x-tex">\\#</annotation></semantics></math></span><span class="katex-html"
+                                            aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base"><span class="mord mathrm">#</span></span>
+                                        </span>
+                                        </span>
+                                    </eq> bytes per packets (
+                                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>b</mi><mi>p</mi><mi>p</mi></mrow><annotation encoding="application/x-tex">bpp</annotation></semantics></math></span><span class="katex-html"
+                                            aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base"><span class="mord mathit">b</span>
+                                        <span class="mord mathit">p</span><span class="mord mathit">p</span></span>
+                                        </span>
+                                        </span>
+                                    </eq>)</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+                <li data-line="135" class="code-line">
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mn>1</mn><mn>3</mn></mrow><annotation encoding="application/x-tex">13</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.64444em;"></span>
+                        <span class="strut bottom" style="height:0.64444em;vertical-align:0em;"></span><span class="base"><span class="mord mathrm">1</span><span class="mord mathrm">3</span></span>
+                        </span>
+                        </span>
+                    </eq> bins per feature</li>
+                <li data-line="136" class="code-line">Dimension of features,
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>d</mi><mo>=</mo><mn>4</mn><mo>×</mo><mn>1</mn><mn>3</mn><mo>=</mo><mn>5</mn><mn>2</mn></mrow><annotation encoding="application/x-tex">d = 4 \\times 13 = 52</annotation></semantics></math></span>
+                        <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.77777em;vertical-align:-0.08333em;"></span><span class="base"><span class="mord mathit">d</span>
+                        <span class="mrel">=</span><span class="mord mathrm">4</span>
+                        <span class="mbin">×</span><span class="mord mathrm">1</span><span class="mord mathrm">3</span><span class="mrel">=</span><span class="mord mathrm">5</span><span class="mord mathrm">2</span></span>
+                        </span>
+                        </span>
+                    </eq>
+                </li>
+            </ul>
+        </li>
+        <li data-line="137" class="code-line">Two-step Clustering
+            <ul>
+                <li data-line="138" class="code-line">Clustering C-flows is a challenging task
+                    <ul>
+                        <li data-line="139" class="code-line">Large networks</li>
+                        <li data-line="140" class="code-line">Large feature space</li>
+                        <li data-line="141" class="code-line">Small percentage of bots</li>
+                    </ul>
+                </li>
+                <li data-line="142" class="code-line">X-means, a variant of k-means
+                    <ul>
+                        <li data-line="143" class="code-line">Not require the user to choose the number of clusters</li>
+                    </ul>
+                </li>
+                <li data-line="144" class="code-line">Feature reduction
+                    <ul>
+                        <li data-line="145" class="code-line">
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>d</mi><mo>=</mo><mn>5</mn><mn>2</mn></mrow><annotation encoding="application/x-tex">d = 52</annotation></semantics></math></span><span class="katex-html"
+                                    aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.69444em;vertical-align:0em;"></span><span class="base"><span class="mord mathit">d</span><span class="mrel">=</span>
+                                <span class="mord mathrm">5</span><span class="mord mathrm">2</span></span>
+                                </span>
+                                </span>
+                            </eq> to
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msup><mi>d</mi><mo mathvariant="normal">′</mo></msup><mo>=</mo><mn>8</mn></mrow><annotation encoding="application/x-tex">d&#x27; = 8</annotation></semantics></math></span>
+                                <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.751892em;"></span><span class="strut bottom" style="height:0.751892em;vertical-align:0em;"></span><span class="base"><span class="mord"><span class="mord mathit">d</span>
+                                <span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.751892em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                                <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathrm mtight">′</span></span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                                </span><span class="mrel">=</span><span class="mord mathrm">8</span></span>
+                                </span>
+                                </span>
+                            </eq>
+                        </li>
+                        <li data-line="146" class="code-line">
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>{</mo><mi>A</mi><mi>v</mi><mi>g</mi><mo separator="true">,</mo><mi>S</mi><mi>D</mi><mo>}</mo><mo>×</mo><mo>{</mo><mi>f</mi><mi>p</mi><mi>h</mi><mo separator="true">,</mo><mi>p</mi><mi>p</mi><mi>f</mi><mo separator="true">,</mo><mi>b</mi><mi>p</mi><mi>p</mi><mo separator="true">,</mo><mi>b</mi><mi>p</mi><mi>s</mi><mo>}</mo></mrow><annotation encoding="application/x-tex">\\{Avg, SD\\} \\times \\{fph, ppf, bpp, bps\\}</annotation></semantics></math></span>
+                                <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base"><span class="mopen">{</span>
+                                <span class="mord mathit">A</span><span class="mord mathit" style="margin-right:0.03588em;">v</span><span class="mord mathit" style="margin-right:0.03588em;">g</span><span class="mpunct">,</span><span class="mord mathit"
+                                    style="margin-right:0.05764em;">S</span>
+                                <span class="mord mathit" style="margin-right:0.02778em;">D</span><span class="mclose">}</span><span class="mbin">×</span><span class="mopen">{</span><span class="mord mathit" style="margin-right:0.10764em;">f</span>
+                                <span class="mord mathit">p</span>
+                                <span class="mord mathit">h</span><span class="mpunct">,</span><span class="mord mathit">p</span><span class="mord mathit">p</span><span class="mord mathit" style="margin-right:0.10764em;">f</span><span class="mpunct">,</span>
+                                <span class="mord mathit">b</span>
+                                <span class="mord mathit">p</span><span class="mord mathit">p</span><span class="mpunct">,</span><span class="mord mathit">b</span><span class="mord mathit">p</span><span class="mord mathit">s</span><span class="mclose">}</span></span>
+                                </span>
+                                </span>
+                            </eq>
+                        </li>
+                    </ul>
+                </li>
+                <li data-line="147" class="code-line">First-step Coarse grained clustering on entire dataset,
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msup><mi>d</mi><mo mathvariant="normal">′</mo></msup><mo>=</mo><mn>8</mn></mrow><annotation encoding="application/x-tex">d&#x27; = 8</annotation></semantics></math></span>
+                        <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.751892em;"></span><span class="strut bottom" style="height:0.751892em;vertical-align:0em;"></span><span class="base"><span class="mord"><span class="mord mathit">d</span>
+                        <span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.751892em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathrm mtight">′</span></span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span>
+                        </span><span class="mrel">=</span><span class="mord mathrm">8</span></span>
+                        </span>
+                        </span>
+                    </eq>
+                </li>
+                <li data-line="148" class="code-line">Second-step Fine-grained clustering on multiple smaller clusters using all features,
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>d</mi><mo>=</mo><mn>5</mn><mn>2</mn></mrow><annotation encoding="application/x-tex">d = 52</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span>
+                        <span class="strut bottom" style="height:0.69444em;vertical-align:0em;"></span><span class="base"><span class="mord mathit">d</span><span class="mrel">=</span><span class="mord mathrm">5</span><span class="mord mathrm">2</span></span>
+                        </span>
+                        </span>
+                    </eq>
+                </li>
+            </ul>
+        </li>
+        <li data-line="149" class="code-line">FP and FN can be reduced by A-plane</li>
+    </ul>
+    <h3 data-line="151" class="code-line" id="a-plane-clustering">A-plane Clustering</h3>
+    <p data-line="153" class="code-line"><img src="images/A-plane_clustering.png" alt="A-plane clustering"></p>
+    <ul>
+        <li data-line="155" class="code-line">Two-layer
+            <ul>
+                <li data-line="156" class="code-line">Cluster according to the activity types</li>
+                <li data-line="157" class="code-line">Cluster according to the activity features</li>
+            </ul>
+        </li>
+        <li data-line="158" class="code-line">Scan activity features
+            <ul>
+                <li data-line="159" class="code-line">Scanning ports</li>
+                <li data-line="160" class="code-line">Target subnet</li>
+            </ul>
+        </li>
+        <li data-line="161" class="code-line">Spam activity features
+            <ul>
+                <li data-line="162" class="code-line">SMTP connection destinations</li>
+            </ul>
+        </li>
+        <li data-line="163" class="code-line">Binary download
+            <ul>
+                <li data-line="164" class="code-line">First/random portion/packet of the binary</li>
+            </ul>
+        </li>
+    </ul>
+    <h3 data-line="166" class="code-line" id="cross-plane-correlation">Cross-plane Correlation</h3>
+    <ul>
+        <li data-line="168" class="code-line">Calculate botnet score,
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>s</mi><mo>(</mo><mi>h</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">s(h)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span>
+                <span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base"><span class="mord mathit">s</span><span class="mopen">(</span><span class="mord mathit">h</span><span class="mclose">)</span></span>
+                </span>
+                </span>
+            </eq>, for every host
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>h</mi></mrow><annotation encoding="application/x-tex">h</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span>
+                <span class="strut bottom" style="height:0.69444em;vertical-align:0em;"></span><span class="base"><span class="mord mathit">h</span></span>
+                </span>
+                </span>
+            </eq>
+        </li>
+        <li data-line="169" class="code-line">Similarity score between host
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>h</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">h\_i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span>
+                <span class="strut bottom" style="height:0.84444em;vertical-align:-0.15em;"></span><span class="base"><span class="mord"><span class="mord mathit">h</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight">i</span></span>
+                </span>
+                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span>
+            </eq> and
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>h</mi><mi>j</mi></msub></mrow><annotation encoding="application/x-tex">h\_j</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span>
+                <span class="strut bottom" style="height:0.980548em;vertical-align:-0.286108em;"></span><span class="base"><span class="mord"><span class="mord mathit">h</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.311664em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight" style="margin-right:0.05724em;">j</span></span>
+                </span>
+                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"></span></span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span>
+            </eq>
+            <ul>
+                <li data-line="170" class="code-line">Indication function</li>
+            </ul>
+        </li>
+        <li data-line="171" class="code-line">Hierarchical clustering</li>
+    </ul>
+    <h2 data-line="173" class="code-line" id="limitations-and-potential-solutions">Limitations and Potential Solutions</h2>
+    <ul>
+        <li data-line="175" class="code-line">Evading C-plane Monitoring and Clustering
+            <ul>
+                <li data-line="176" class="code-line">Utilize a legitimate website
+                    <ul>
+                        <li data-line="177" class="code-line">Maybe not able to hide this secondary URL and the corresponding communications</li>
+                    </ul>
+                </li>
+                <li data-line="178" class="code-line">Manipulate their communication patterns
+                    <ul>
+                        <li data-line="179" class="code-line">Still could be clustered together just like P2P</li>
+                    </ul>
+                </li>
+                <li data-line="180" class="code-line">Randomize individual communication patterns
+                    <ul>
+                        <li data-line="181" class="code-line">Measure the distribution and entropy of communication features</li>
+                        <li data-line="182" class="code-line">Normal user communications may not have such randomized patterns</li>
+                    </ul>
+                </li>
+                <li data-line="183" class="code-line">Mimic the communication patterns of normal hosts</li>
+                <li data-line="184" class="code-line">Covert channels</li>
+                <li data-line="185" class="code-line">Communication randomization, mimicry attacks and covert channel represent limitations for all traffic-based detection approaches</li>
+            </ul>
+        </li>
+        <li data-line="186" class="code-line">Evading A-plane monitoring/clustering
+            <ul>
+                <li data-line="187" class="code-line">Stealthy malicious activities
+                    <ul>
+                        <li data-line="188" class="code-line">Scan slowly</li>
+                        <li data-line="189" class="code-line">Spam slowly</li>
+                    </ul>
+                </li>
+                <li data-line="190" class="code-line">Botmaster commands each bot randomly and individually to perform different task
+                    <ul>
+                        <li data-line="191" class="code-line">Not likely a botnet</li>
+                    </ul>
+                </li>
+                <li data-line="192" class="code-line">Differentiate the bots and avoid commanding bots in the same monitored network the same way
+                    <ul>
+                        <li data-line="193" class="code-line">Distributed monitors, larger monitored space</li>
+                    </ul>
+                </li>
+                <li data-line="194" class="code-line">Use complementary systems like BotHunter</li>
+            </ul>
+        </li>
+        <li data-line="195" class="code-line">Evading cross-plane analysis
+            <ul>
+                <li data-line="196" class="code-line">Extremely delayed task
+                    <ul>
+                        <li data-line="197" class="code-line">Use multiple-day data and cross check back several days</li>
+                        <li data-line="198" class="code-line">Impedes efficiency</li>
+                        <li data-line="199" class="code-line">The bot may be offline or powered off</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li data-line="200" class="code-line">Offline system</li>
+    </ul>
+    <h2 data-line="202" class="code-line" id="reference">Reference</h2>
+    <ul>
+        <li data-line="204" class="code-line"><a href="https://www.usenix.org/legacy/event/sec08/tech/full_papers/gu/gu_html/">BotMiner: Clustering Analysis of Network Traffic for Protocol- and Structure- Independent Botnet Detection</a></li>
+        <li data-line="205" class="code-line">CS 259D Lecture 2</li>
+        <li data-line="206" class="code-line"><a href="http://faculty.cs.tamu.edu/guofei/paper/botMiner-Security08-slides.pdf">botMiner-Security08-slides</a></li>
+    </ul>
+
+</body>
+
+</html>

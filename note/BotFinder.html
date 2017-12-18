@@ -1,0 +1,533 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.4.1/github-markdown.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/styles/default.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.8.3/katex.min.css">
+    <link rel="stylesheet" href="https://gitcdn.xyz/repo/goessner/mdmath/master/css/texmath.css">
+    <link rel="stylesheet" href="https://gitcdn.xyz/repo/goessner/mdmath/master/css/vscode-texmath.css">
+    <title>BotFinder: Finding Bots in Network Traffic Without Deep Packet Inspection</title>
+
+</head>
+
+<body class="markdown-body">
+    <h1 data-line="0" class="code-line" id="botfinder-finding-bots-in-network-traffic-without-deep-packet-inspection">BotFinder: Finding Bots in Network Traffic Without Deep Packet Inspection</h1>
+    <!-- TOC -->
+    <ul>
+        <li data-line="4" class="code-line"><a href="#background-knowledge-and-insight">Background Knowledge and Insight</a></li>
+        <li data-line="5" class="code-line"><a href="#goal-and-contribution">Goal and Contribution</a></li>
+        <li data-line="6" class="code-line"><a href="#data">DATA</a></li>
+        <li data-line="7" class="code-line"><a href="#botfinder">BotFinder</a>
+            <ul>
+                <li data-line="8" class="code-line"><a href="#notation">Notation</a></li>
+                <li data-line="9" class="code-line"><a href="#input-data-processing">Input Data Processing</a></li>
+                <li data-line="10" class="code-line"><a href="#flow-reassembly">Flow Reassembly</a></li>
+                <li data-line="11" class="code-line"><a href="#trace-extraction">Trace Extraction</a></li>
+                <li data-line="12" class="code-line"><a href="#statistical-features-analysis">Statistical Features Analysis</a></li>
+                <li data-line="13" class="code-line"><a href="#model-creation-training">Model Creation (Training)</a></li>
+                <li data-line="14" class="code-line"><a href="#malware-detection">Malware Detection</a></li>
+            </ul>
+        </li>
+        <li data-line="15" class="code-line"><a href="#bot-evolution">Bot Evolution</a>
+            <ul>
+                <li data-line="16" class="code-line"><a href="#botnets-strategy">Botnet's strategy</a></li>
+                <li data-line="17" class="code-line"><a href="#cost-of-botnet">Cost of botnet</a></li>
+                <li data-line="18" class="code-line"><a href="#fail-case">Fail case</a></li>
+            </ul>
+        </li>
+        <li data-line="19" class="code-line"><a href="#reference">Reference</a></li>
+    </ul>
+    <!-- /TOC -->
+    <h2 data-line="23" class="code-line" id="background-knowledge-and-insight">Background Knowledge and Insight</h2>
+    <ul>
+        <li data-line="25" class="code-line">Three core design goals
+            <ul>
+                <li data-line="26" class="code-line">Able to detect individual bot infections</li>
+                <li data-line="27" class="code-line">Only rely on high-level/network-flow information
+                    <ul>
+                        <li data-line="28" class="code-line">Not inspect payloads</li>
+                        <li data-line="29" class="code-line">Resilient to the encrypted bot communication</li>
+                        <li data-line="30" class="code-line">Easy to obtain</li>
+                    </ul>
+                </li>
+                <li data-line="31" class="code-line">Work for stealthy bots
+                    <ul>
+                        <li data-line="32" class="code-line">Steal sensitive data</li>
+                        <li data-line="33" class="code-line">Not rely on noisy activity
+                            <ul>
+                                <li data-line="34" class="code-line">Spamming</li>
+                                <li data-line="35" class="code-line">DoS</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li data-line="36" class="code-line">Observation
+            <ul>
+                <li data-line="37" class="code-line">C&amp;C connections follow regular patterns</li>
+                <li data-line="38" class="code-line">Bots send similar traffic to C&amp;C</li>
+                <li data-line="39" class="code-line">Upload information to C&amp;C in similar way</li>
+                <li data-line="40" class="code-line">Timing patterns of communications with C&amp;C</li>
+            </ul>
+        </li>
+    </ul>
+    <h2 data-line="42" class="code-line" id="goal-and-contribution">Goal and Contribution</h2>
+    <ul>
+        <li data-line="44" class="code-line">Observe that C&amp;C traffic of different bot families exhibits regularities</li>
+        <li data-line="45" class="code-line">A learning-based approach that automatically generates bot detection models</li>
+        <li data-line="46" class="code-line">Prototype of BotFinder
+            <ul>
+                <li data-line="47" class="code-line">A system that detects individual, bot-infected machines by monitoring their network traffic</li>
+            </ul>
+        </li>
+    </ul>
+    <h2 data-line="49" class="code-line" id="data">DATA</h2>
+    <ul>
+        <li data-line="51" class="code-line">Pick active malware samples in Anubis within a window of 30 days in June 2011</li>
+        <li data-line="52" class="code-line">Average 32 samples, for each bot family</li>
+    </ul>
+    <h2 data-line="54" class="code-line" id="botfinder">BotFinder</h2>
+    <p data-line="56" class="code-line"><img src="images/BotFinder.png" alt="General architecture of BotFinder"></p>
+    <h3 data-line="58" class="code-line" id="notation">Notation</h3>
+    <ul>
+        <li data-line="60" class="code-line">
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>τ</mi></mrow><annotation encoding="application/x-tex">\\tau</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span>
+                <span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base"><span class="mord mathit" style="margin-right:0.1132em;">τ</span></span>
+                </span>
+                </span>
+            </eq>, trace, a sequence of chronologically-ordered flows between two network endpoints</li>
+        <li data-line="61" class="code-line">
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>M</mi></mrow><annotation encoding="application/x-tex">M</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span>
+                <span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base"><span class="mord mathit" style="margin-right:0.10903em;">M</span></span>
+                </span>
+                </span>
+            </eq>, model</li>
+        <li data-line="62" class="code-line">
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>τ</mi><mi>M</mi></msub></mrow><annotation encoding="application/x-tex">\\tau\_M</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span>
+                <span class="strut bottom" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="base"><span class="mord"><span class="mord mathit" style="margin-right:0.1132em;">τ</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.1132em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight" style="margin-right:0.10903em;">M</span></span>
+                </span>
+                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span>
+            </eq>, score of trace
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>τ</mi></mrow><annotation encoding="application/x-tex">\\tau</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span>
+                <span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base"><span class="mord mathit" style="margin-right:0.1132em;">τ</span></span>
+                </span>
+                </span>
+            </eq> on model
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>M</mi></mrow><annotation encoding="application/x-tex">M</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span>
+                <span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base"><span class="mord mathit" style="margin-right:0.10903em;">M</span></span>
+                </span>
+                </span>
+            </eq>
+        </li>
+        <li data-line="63" class="code-line">
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>q</mi><mrow><mi>c</mi><mi>l</mi><mi>u</mi><mi>s</mi><mi>t</mi><mi>e</mi><mi>r</mi></mrow></msub></mrow><annotation encoding="application/x-tex">q\_{cluster}</annotation></semantics></math></span>
+                <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="base"><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">q</span>
+                <span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathit mtight">c</span><span class="mord mathit mtight" style="margin-right:0.01968em;">l</span><span class="mord mathit mtight">u</span><span class="mord mathit mtight">s</span>
+                <span class="mord mathit mtight">t</span><span class="mord mathit mtight">e</span><span class="mord mathit mtight" style="margin-right:0.02778em;">r</span></span>
+                </span>
+                </span>
+                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span>
+            </eq>, quality rate</li>
+    </ul>
+    <h3 data-line="65" class="code-line" id="input-data-processing">Input Data Processing</h3>
+    <ul>
+        <li data-line="67" class="code-line">All network traffic</li>
+        <li data-line="68" class="code-line">Scanned by
+            <ul>
+                <li data-line="69" class="code-line">VirusTotal</li>
+                <li data-line="70" class="code-line">Anubis</li>
+            </ul>
+        </li>
+        <li data-line="71" class="code-line">Tolerate noise</li>
+    </ul>
+    <h3 data-line="73" class="code-line" id="flow-reassembly">Flow Reassembly</h3>
+    <ul>
+        <li data-line="75" class="code-line">Aggregate data according to NetFlow</li>
+    </ul>
+    <h3 data-line="77" class="code-line" id="trace-extraction">Trace Extraction</h3>
+    <p data-line="79" class="code-line"><img src="images/Traces_BotFinder.png" alt="Traces with different statistical behaviors"></p>
+    <ul>
+        <li data-line="81" class="code-line">Two ways to filter the traffic and identify the relevant traffic traces
+            <ul>
+                <li data-line="82" class="code-line">Whitelist</li>
+                <li data-line="83" class="code-line">Third-party knowledge</li>
+            </ul>
+        </li>
+    </ul>
+    <h3 data-line="85" class="code-line" id="statistical-features-analysis">Statistical Features Analysis</h3>
+    <ul>
+        <li data-line="87" class="code-line">Average time between the start times of two subsequent flows in the trace
+            <ul>
+                <li data-line="88" class="code-line">Botmaster has to ensure that all bots under his control</li>
+                <li data-line="89" class="code-line">Communication not following a push model
+                    <ul>
+                        <li data-line="90" class="code-line">Hosts are behind NAT boxes</li>
+                        <li data-line="91" class="code-line">Not registered with C&amp;C</li>
+                    </ul>
+                </li>
+                <li data-line="92" class="code-line">Connect under a constant time interval, and exhibit loosely periodicity</li>
+            </ul>
+        </li>
+        <li data-line="93" class="code-line">Average duration of a connection
+            <ul>
+                <li data-line="94" class="code-line">Expect the durations are similar</li>
+            </ul>
+        </li>
+        <li data-line="95" class="code-line">Number of bytes on average transferred to the source</li>
+        <li data-line="96" class="code-line">Number of bytes on average transferred to the destination</li>
+        <li data-line="97" class="code-line">Fast Fourier Transformation(FFT) over the flow start times
+            <ul>
+                <li data-line="98" class="code-line">Identify underlying frequencies of communication</li>
+            </ul>
+        </li>
+    </ul>
+    <h3 data-line="100" class="code-line" id="model-creation-training">Model Creation (Training)</h3>
+    <ul>
+        <li data-line="102" class="code-line">Cluster each feature separately
+            <ul>
+                <li data-line="103" class="code-line">Malware features uncorrelated</li>
+            </ul>
+        </li>
+        <li data-line="104" class="code-line">Drop small clusters with more diverse data(lower clustering quality)</li>
+        <li data-line="105" class="code-line">CLUES algorithm
+            <ul>
+                <li data-line="106" class="code-line">Allow non-parametric clustering</li>
+                <li data-line="107" class="code-line">Better than k-means</li>
+            </ul>
+        </li>
+        <li data-line="108" class="code-line">Cluster quality
+            <ul>
+                <li data-line="109" class="code-line">Large clusters , highly similar values</li>
+                <li data-line="110" class="code-line">
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>q</mi><mrow><mi>c</mi><mi>l</mi><mi>u</mi><mi>s</mi><mi>t</mi><mi>e</mi><mi>r</mi></mrow></msub><mo>=</mo><mi>e</mi><mi>x</mi><mi>p</mi><mo>(</mo><mo>−</mo><mi>β</mi><mfrac><mrow><mi>S</mi><mi>D</mi></mrow><mrow><mi>A</mi><mi>v</mi><mi>g</mi></mrow></mfrac><mo>)</mo></mrow><annotation encoding="application/x-tex">q\_{cluster} = exp(-\\beta \\frac{SD}{Avg})</annotation></semantics></math></span>
+                        <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.872331em;"></span><span class="strut bottom" style="height:1.3534389999999998em;vertical-align:-0.481108em;"></span><span class="base"><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">q</span>
+                        <span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathit mtight">c</span><span class="mord mathit mtight" style="margin-right:0.01968em;">l</span><span class="mord mathit mtight">u</span>
+                        <span class="mord mathit mtight">s</span>
+                        <span class="mord mathit mtight">t</span><span class="mord mathit mtight">e</span><span class="mord mathit mtight" style="margin-right:0.02778em;">r</span></span>
+                        </span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                        </span>
+                        </span>
+                        </span><span class="mrel">=</span><span class="mord mathit">e</span><span class="mord mathit">x</span><span class="mord mathit">p</span><span class="mopen">(</span><span class="mord">−</span><span class="mord mathit" style="margin-right:0.05278em;">β</span>
+                        <span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.872331em;"><span style="top:-2.6550000000000002em;"><span class="pstrut" style="height:3em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathit mtight">A</span><span class="mord mathit mtight" style="margin-right:0.03588em;">v</span><span class="mord mathit mtight" style="margin-right:0.03588em;">g</span></span>
+                        </span>
+                        </span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathit mtight" style="margin-right:0.05764em;">S</span><span class="mord mathit mtight" style="margin-right:0.02778em;">D</span></span>
+                        </span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.481108em;"></span></span>
+                        </span>
+                        </span><span class="mclose nulldelimiter"></span></span><span class="mclose">)</span></span>
+                        </span>
+                        </span>
+                    </eq>
+                    <ul>
+                        <li data-line="111" class="code-line">
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>β</mi><mo>=</mo><mn>2</mn><mi mathvariant="normal">.</mi><mn>5</mn></mrow><annotation encoding="application/x-tex">\\beta = 2.5</annotation></semantics></math></span>
+                                <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base"><span class="mord mathit" style="margin-right:0.05278em;">β</span>
+                                <span class="mrel">=</span><span class="mord mathrm">2</span><span class="mord mathrm">.</span><span class="mord mathrm">5</span></span>
+                                </span>
+                                </span>
+                            </eq> (empirical value)</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+    </ul>
+    <h3 data-line="113" class="code-line" id="malware-detection">Malware Detection</h3>
+    <ul>
+        <li data-line="115" class="code-line">Match each feature of the trace against the corresponding model's cluster</li>
+        <li data-line="116" class="code-line">
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>τ</mi></mrow><annotation encoding="application/x-tex">\\tau</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span>
+                <span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base"><span class="mord mathit" style="margin-right:0.1132em;">τ</span></span>
+                </span>
+                </span>
+            </eq> hit one feature of
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>M</mi></mrow><annotation encoding="application/x-tex">M</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span>
+                <span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base"><span class="mord mathit" style="margin-right:0.10903em;">M</span></span>
+                </span>
+                </span>
+            </eq>
+        </li>
+        <li data-line="117" class="code-line">Add
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>q</mi><mrow><mi>c</mi><mi>l</mi><mi>u</mi><mi>s</mi><mi>t</mi><mi>e</mi><mi>r</mi></mrow></msub><mo>⋅</mo><mi>e</mi><mi>x</mi><mi>p</mi><mo>(</mo><mo>−</mo><mi>β</mi><mfrac><mrow><mi>S</mi><msub><mi>D</mi><mrow><mi>t</mi><mi>r</mi><mi>a</mi><mi>c</mi><mi>e</mi></mrow></msub></mrow><mrow><mi>A</mi><mi>v</mi><msub><mi>g</mi><mrow><mi>t</mi><mi>r</mi><mi>a</mi><mi>c</mi><mi>e</mi></mrow></msub></mrow></mfrac><mo>)</mo></mrow><annotation encoding="application/x-tex">q\_{cluster} \\cdot exp(-\\beta \\frac{SD\_{trace}}{Avg\_{trace}})</annotation></semantics></math></span>
+                <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.8884309999999999em;"></span><span class="strut bottom" style="height:1.3695389999999998em;vertical-align:-0.481108em;"></span><span class="base"><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">q</span>
+                <span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathit mtight">c</span><span class="mord mathit mtight" style="margin-right:0.01968em;">l</span><span class="mord mathit mtight">u</span><span class="mord mathit mtight">s</span>
+                <span class="mord mathit mtight">t</span><span class="mord mathit mtight">e</span><span class="mord mathit mtight" style="margin-right:0.02778em;">r</span></span>
+                </span>
+                </span>
+                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                </span>
+                </span>
+                </span><span class="mbin">⋅</span><span class="mord mathit">e</span><span class="mord mathit">x</span><span class="mord mathit">p</span><span class="mopen">(</span><span class="mord">−</span><span class="mord mathit" style="margin-right:0.05278em;">β</span>
+                <span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8884309999999999em;"><span style="top:-2.6550000000000002em;"><span class="pstrut" style="height:3em;"></span>
+                <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathit mtight">A</span><span class="mord mathit mtight" style="margin-right:0.03588em;">v</span><span class="mord mtight"><span class="mord mathit mtight" style="margin-right:0.03588em;">g</span>
+                <span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.29634285714285713em;"><span style="top:-2.357em;margin-left:-0.03588em;margin-right:0.07142857142857144em;"><span class="pstrut" style="height:2.5em;"></span>
+                <span class="sizing reset-size3 size1 mtight"><span class="mord mtight"><span class="mord mathit mtight">t</span><span class="mord mathit mtight" style="margin-right:0.02778em;">r</span><span class="mord mathit mtight">a</span><span class="mord mathit mtight">c</span>
+                <span class="mord mathit mtight">e</span>
+                </span>
+                </span>
+                </span>
+                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.143em;"></span></span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.4101em;"><span class="pstrut" style="height:3em;"></span>
+                <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathit mtight" style="margin-right:0.05764em;">S</span><span class="mord mtight"><span class="mord mathit mtight" style="margin-right:0.02778em;">D</span>
+                <span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.29634285714285713em;"><span style="top:-2.357em;margin-left:-0.02778em;margin-right:0.07142857142857144em;"><span class="pstrut" style="height:2.5em;"></span>
+                <span class="sizing reset-size3 size1 mtight"><span class="mord mtight"><span class="mord mathit mtight">t</span><span class="mord mathit mtight" style="margin-right:0.02778em;">r</span><span class="mord mathit mtight">a</span><span class="mord mathit mtight">c</span>
+                <span class="mord mathit mtight">e</span>
+                </span>
+                </span>
+                </span>
+                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.143em;"></span></span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.481108em;"></span></span>
+                </span>
+                </span><span class="mclose nulldelimiter"></span></span><span class="mclose">)</span></span>
+                </span>
+                </span>
+            </eq> to
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>τ</mi><mi>M</mi></msub></mrow><annotation encoding="application/x-tex">\\tau\_M</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span>
+                <span class="strut bottom" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="base"><span class="mord"><span class="mord mathit" style="margin-right:0.1132em;">τ</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.1132em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight" style="margin-right:0.10903em;">M</span></span>
+                </span>
+                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span>
+            </eq>
+            <ul>
+                <li data-line="118" class="code-line">
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>β</mi><mo>=</mo><mn>2</mn><mi mathvariant="normal">.</mi><mn>5</mn></mrow><annotation encoding="application/x-tex">\\beta = 2.5</annotation></semantics></math></span>
+                        <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base"><span class="mord mathit" style="margin-right:0.05278em;">β</span>
+                        <span class="mrel">=</span><span class="mord mathrm">2</span><span class="mord mathrm">.</span><span class="mord mathrm">5</span></span>
+                        </span>
+                        </span>
+                    </eq> (empirical value)</li>
+            </ul>
+        </li>
+        <li data-line="119" class="code-line">Maintain a
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>τ</mi><mi>M</mi></msub></mrow><annotation encoding="application/x-tex">\\tau\_M</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span>
+                <span class="strut bottom" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="base"><span class="mord"><span class="mord mathit" style="margin-right:0.1132em;">τ</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.1132em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight" style="margin-right:0.10903em;">M</span></span>
+                </span>
+                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span>
+            </eq> for each model</li>
+        <li data-line="120" class="code-line">Compare highest
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>τ</mi><mi>M</mi></msub></mrow><annotation encoding="application/x-tex">\\tau\_M</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span>
+                <span class="strut bottom" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="base"><span class="mord"><span class="mord mathit" style="margin-right:0.1132em;">τ</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.1132em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight" style="margin-right:0.10903em;">M</span></span>
+                </span>
+                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span>
+            </eq> with threshold
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>a</mi></mrow><annotation encoding="application/x-tex">a</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span>
+                <span class="strut bottom" style="height:0.43056em;vertical-align:0em;"></span><span class="base"><span class="mord mathit">a</span></span>
+                </span>
+                </span>
+            </eq>
+        </li>
+        <li data-line="121" class="code-line">Minimal number of feature hits,
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>h</mi></mrow><annotation encoding="application/x-tex">h</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span>
+                <span class="strut bottom" style="height:0.69444em;vertical-align:0em;"></span><span class="base"><span class="mord mathit">h</span></span>
+                </span>
+                </span>
+            </eq>
+        </li>
+    </ul>
+    <h2 data-line="123" class="code-line" id="bot-evolution">Bot Evolution</h2>
+    <h3 data-line="125" class="code-line" id="botnets-strategy">Botnet's strategy</h3>
+    <ul>
+        <li data-line="127" class="code-line">Adding Randomness
+            <ul>
+                <li data-line="128" class="code-line">BotFinder's detection rate remains 60%, when 100% randomization</li>
+            </ul>
+        </li>
+        <li data-line="129" class="code-line">Introducing Larger Gaps
+            <ul>
+                <li data-line="130" class="code-line">Fast Fourier Transformation</li>
+            </ul>
+        </li>
+        <li data-line="131" class="code-line">High Fluctuation of C&amp;C Servers
+            <ul>
+                <li data-line="132" class="code-line">BotFinder cannot build traces of minimal length
+                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">∣</mi><mi>τ</mi><msub><mi mathvariant="normal">∣</mi><mrow><mi>m</mi><mi>i</mi><mi>n</mi></mrow></msub><mo>=</mo><mn>5</mn><mn>0</mn></mrow><annotation encoding="application/x-tex">|\\tau|\_{min} = 50</annotation></semantics></math></span>
+                        <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base"><span class="mord mathrm">∣</span>
+                        <span class="mord mathit" style="margin-right:0.1132em;">τ</span>
+                        <span class="mord"><span class="mord mathrm">∣</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                        <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathit mtight">m</span><span class="mord mathit mtight">i</span><span class="mord mathit mtight">n</span></span>
+                        </span>
+                        </span>
+                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                        </span>
+                        </span>
+                        </span><span class="mrel">=</span><span class="mord mathrm">5</span><span class="mord mathrm">0</span></span>
+                        </span>
+                        </span>
+                    </eq>
+                    <ul>
+                        <li data-line="133" class="code-line">Not observe such high C&amp;C server fluctuations (IP flux)</li>
+                    </ul>
+                </li>
+                <li data-line="134" class="code-line">Additional pre-processing step before Step 4
+                    <ul>
+                        <li data-line="135" class="code-line">Merge two sub-traces
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>τ</mi><mi>A</mi></msub></mrow><annotation encoding="application/x-tex">\\tau\_A</annotation></semantics></math></span><span class="katex-html"
+                                    aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="base"><span class="mord"><span class="mord mathit" style="margin-right:0.1132em;">τ</span>
+                                <span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.1132em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                                <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight">A</span></span>
+                                </span>
+                                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                            </eq> and
+                            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>τ</mi><mi>B</mi></msub></mrow><annotation encoding="application/x-tex">\\tau\_B</annotation></semantics></math></span><span class="katex-html"
+                                    aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="base"><span class="mord"><span class="mord mathit" style="margin-right:0.1132em;">τ</span>
+                                <span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.1132em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                                <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight" style="margin-right:0.05017em;">B</span></span>
+                                </span>
+                                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                                </span>
+                            </eq>
+                        </li>
+                        <li data-line="136" class="code-line">Two factors
+                            <ul>
+                                <li data-line="137" class="code-line">
+                                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>S</mi><mi>D</mi></mrow><annotation encoding="application/x-tex">SD</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span>
+                                        <span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base"><span class="mord mathit" style="margin-right:0.05764em;">S</span><span class="mord mathit" style="margin-right:0.02778em;">D</span></span>
+                                        </span>
+                                        </span>
+                                    </eq> of
+                                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>τ</mi><mrow><mi>A</mi><mi>B</mi></mrow></msub></mrow><annotation encoding="application/x-tex">\\tau\_{AB}</annotation></semantics></math></span>
+                                        <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="base"><span class="mord"><span class="mord mathit" style="margin-right:0.1132em;">τ</span>
+                                        <span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.1132em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                                        <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathit mtight">A</span><span class="mord mathit mtight" style="margin-right:0.05017em;">B</span></span>
+                                        </span>
+                                        </span>
+                                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                                        </span>
+                                        </span>
+                                        </span>
+                                        </span>
+                                        </span>
+                                        </span>
+                                    </eq> is lower than the
+                                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>S</mi><mi>D</mi></mrow><annotation encoding="application/x-tex">SD</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.68333em;"></span>
+                                        <span class="strut bottom" style="height:0.68333em;vertical-align:0em;"></span><span class="base"><span class="mord mathit" style="margin-right:0.05764em;">S</span><span class="mord mathit" style="margin-right:0.02778em;">D</span></span>
+                                        </span>
+                                        </span>
+                                    </eq> of at least one of the individual traces</li>
+                                <li data-line="138" class="code-line">
+                                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>q</mi><mrow><mi>c</mi><mi>l</mi><mi>u</mi><mi>s</mi><mi>t</mi><mi>e</mi><mi>r</mi></mrow></msub></mrow><annotation encoding="application/x-tex">q\_{cluster}</annotation></semantics></math></span>
+                                        <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="base"><span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">q</span>
+                                        <span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                                        <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathit mtight">c</span><span class="mord mathit mtight" style="margin-right:0.01968em;">l</span><span class="mord mathit mtight">u</span>
+                                        <span class="mord mathit mtight">s</span>
+                                        <span class="mord mathit mtight">t</span><span class="mord mathit mtight">e</span><span class="mord mathit mtight" style="margin-right:0.02778em;">r</span></span>
+                                        </span>
+                                        </span>
+                                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                                        </span>
+                                        </span>
+                                        </span>
+                                        </span>
+                                        </span>
+                                        </span>
+                                    </eq> of
+                                    <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>τ</mi><mrow><mi>A</mi><mi>B</mi></mrow></msub></mrow><annotation encoding="application/x-tex">\\tau\_{AB}</annotation></semantics></math></span>
+                                        <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="base"><span class="mord"><span class="mord mathit" style="margin-right:0.1132em;">τ</span>
+                                        <span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.1132em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                                        <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathit mtight">A</span><span class="mord mathit mtight" style="margin-right:0.05017em;">B</span></span>
+                                        </span>
+                                        </span>
+                                        </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                                        </span>
+                                        </span>
+                                        </span>
+                                        </span>
+                                        </span>
+                                        </span>
+                                    </eq> higher than a threshold</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li data-line="139" class="code-line">P2P Bots</li>
+        <li data-line="140" class="code-line">Bot-like Benign Traffic</li>
+    </ul>
+    <h3 data-line="142" class="code-line" id="cost-of-botnet">Cost of botnet</h3>
+    <ul>
+        <li data-line="144" class="code-line">C&amp;C and bots need to update Botnet Communication Topologies</li>
+        <li data-line="145" class="code-line">Increase the botnet operator's costs and reduce stability and performance of the malware network</li>
+    </ul>
+    <h3 data-line="147" class="code-line" id="fail-case">Fail case</h3>
+    <ul>
+        <li data-line="149" class="code-line">Significantly randomize the bot's communication pattern</li>
+        <li data-line="150" class="code-line">Drastically increase the communication intervals to force BotFinder to capture traces over longer periods of time</li>
+        <li data-line="151" class="code-line">Introduce overhead traffic for source and destination byte variation</li>
+        <li data-line="152" class="code-line">Change the C&amp;C server extremely frequently</li>
+        <li data-line="153" class="code-line">Use completely different traffic patterns after each C&amp;C server change</li>
+    </ul>
+    <h2 data-line="156" class="code-line" id="reference">Reference</h2>
+    <ul>
+        <li data-line="157" class="code-line">BotFinder: Finding Bots in Network Traffic Without Deep Packet Inspection</li>
+        <li data-line="158" class="code-line">CS 259D Lecture 2</li>
+    </ul>
+
+</body>
+
+</html>

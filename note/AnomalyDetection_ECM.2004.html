@@ -1,0 +1,108 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.4.1/github-markdown.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/styles/default.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.8.3/katex.min.css">
+    <link rel="stylesheet" href="https://gitcdn.xyz/repo/goessner/mdmath/master/css/texmath.css">
+    <link rel="stylesheet" href="https://gitcdn.xyz/repo/goessner/mdmath/master/css/vscode-texmath.css">
+    <title>Anomaly Detection Using Layered Networks Based on Eigen Co-occurrence Matrix Note</title>
+
+</head>
+
+<body class="markdown-body">
+    <h1 data-line="0" class="code-line" id="anomaly-detection-using-layered-networks-based-on-eigen-co-occurrence-matrix-note">Anomaly Detection Using Layered Networks Based on Eigen Co-occurrence Matrix Note</h1>
+    <!-- TOC -->
+    <ul>
+        <li data-line="4" class="code-line"><a href="#insight">Insight</a></li>
+        <li data-line="5" class="code-line"><a href="#goal">Goal</a></li>
+        <li data-line="6" class="code-line"><a href="#algorithm">Algorithm</a></li>
+        <li data-line="7" class="code-line"><a href="#reference">Reference</a></li>
+    </ul>
+    <!-- /TOC -->
+    <h2 data-line="11" class="code-line" id="insight">Insight</h2>
+    <ul>
+        <li data-line="12" class="code-line">Hard to accurately model user behavior
+            <ul>
+                <li data-line="13" class="code-line">Dynamic usesr's behabvior</li>
+                <li data-line="14" class="code-line">Difficult to capture completely</li>
+            </ul>
+        </li>
+        <li data-line="15" class="code-line">model user behavior
+            <ul>
+                <li data-line="16" class="code-line">Feature vectorby
+                    <ul>
+                        <li data-line="17" class="code-line">Histogram
+                            <ul>
+                                <li data-line="18" class="code-line">no sequence</li>
+                            </ul>
+                        </li>
+                        <li data-line="19" class="code-line">N-grams
+                            <ul>
+                                <li data-line="20" class="code-line">n-connected sequence</li>
+                            </ul>
+                        </li>
+                        <li data-line="21" class="code-line">Correlation between unadjacent events</li>
+                    </ul>
+                </li>
+                <li data-line="22" class="code-line">Network model
+                    <ul>
+                        <li data-line="23" class="code-line">Automaton
+                            <ul>
+                                <li data-line="24" class="code-line">Require well-defined rules</li>
+                                <li data-line="25" class="code-line">Various contexts not have well-defined rules</li>
+                            </ul>
+                        </li>
+                        <li data-line="26" class="code-line">Bayesian network
+                            <ul>
+                                <li data-line="27" class="code-line">Bayesian network indicates the direction of causality between the corresponding variables</li>
+                                <li data-line="28" class="code-line">Topology must be predefined</li>
+                            </ul>
+                        </li>
+                        <li data-line="29" class="code-line">Hidden Markov Model (HMM)
+                            <ul>
+                                <li data-line="30" class="code-line">Hard to build an adequate topology</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        <li data-line="31" class="code-line">Assumption
+            <ul>
+                <li data-line="32" class="code-line">The dynamic behavior of a user appearing in a sequence can be captured by correlating not only connected events but also events that are not adjacent to each other while appearing within a certain distance (non-connected events)</li>
+            </ul>
+        </li>
+        <li data-line="33" class="code-line">ECM, Eigen co-occurrence matrices
+            <ul>
+                <li data-line="34" class="code-line">Inspired by the Eigenface technique</li>
+                <li data-line="35" class="code-line">Three main components:
+                    <ul>
+                        <li data-line="36" class="code-line">modeling of the dynamic features of a sequence</li>
+                        <li data-line="37" class="code-line">extraction of the principal features of the resulting model</li>
+                        <li data-line="38" class="code-line">automatic construction of a layered network from the extracted principal features</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+    </ul>
+    <h2 data-line="40" class="code-line" id="goal">Goal</h2>
+    <ul>
+        <li data-line="41" class="code-line">Eigen co-occurrence matrix (ECM)</li>
+        <li data-line="42" class="code-line">For dynamic user behavior</li>
+    </ul>
+    <h2 data-line="44" class="code-line" id="algorithm">Algorithm</h2>
+    <ul>
+        <li data-line="46" class="code-line">Handwritten Notes :)</li>
+    </ul>
+    <h2 data-line="48" class="code-line" id="reference">Reference</h2>
+    <ul>
+        <li data-line="50" class="code-line">Anomaly Detection Using Layered Networks Based on Eigen Co-occurrence Matrix</li>
+        <li data-line="51" class="code-line">Anomaly Detection Using Integration Model of Vector Space and Network Representation</li>
+    </ul>
+
+</body>
+
+</html>

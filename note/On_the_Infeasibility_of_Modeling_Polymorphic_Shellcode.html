@@ -1,0 +1,371 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/2.4.1/github-markdown.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/styles/default.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.8.3/katex.min.css">
+    <link rel="stylesheet" href="https://gitcdn.xyz/repo/goessner/mdmath/master/css/texmath.css">
+    <link rel="stylesheet" href="https://gitcdn.xyz/repo/goessner/mdmath/master/css/vscode-texmath.css">
+    <title>On the Infeasibility of Modeling Polymorphic Shellcode</title>
+
+</head>
+
+<body class="markdown-body">
+    <h1 data-line="0" class="code-line" id="on-the-infeasibility-of-modeling-polymorphic-shellcode">On the Infeasibility of Modeling Polymorphic Shellcode</h1>
+    <!-- TOC -->
+    <ul>
+        <li data-line="4" class="code-line"><a href="#goal">Goal</a></li>
+        <li data-line="5" class="code-line"><a href="#shellcode">Shellcode</a>
+            <ul>
+                <li data-line="6" class="code-line"><a href="#decoder">Decoder</a></li>
+            </ul>
+        </li>
+        <li data-line="7" class="code-line"><a href="#related-work-signature-matching">Related work: Signature matching</a></li>
+        <li data-line="8" class="code-line"><a href="#problem-definition">Problem definition</a></li>
+        <li data-line="9" class="code-line"><a href="#polymorphic-engine-analysis">Polymorphic Engine Analysis</a>
+            <ul>
+                <li data-line="10" class="code-line"><a href="#measures">Measures</a></li>
+                <li data-line="11" class="code-line"><a href="#spectral-image">Spectral Image</a></li>
+                <li data-line="12" class="code-line"><a href="#minimum-euclidian-distance">Minimum Euclidian distance</a></li>
+                <li data-line="13" class="code-line"><a href="#variation-strength">Variation strength</a></li>
+                <li data-line="14" class="code-line"><a href="#propagation-strength">Propagation strength</a></li>
+                <li data-line="15" class="code-line"><a href="#overall-strength">Overall strength</a></li>
+            </ul>
+        </li>
+        <li data-line="16" class="code-line"><a href="#hybrid-engine-combining-polymorphism-and-blending">Hybrid Engine: Combining Polymorphism and Blending</a></li>
+        <li data-line="17" class="code-line"><a href="#reference">Reference</a></li>
+    </ul>
+    <!-- /TOC -->
+    <h2 data-line="21" class="code-line" id="goal">Goal</h2>
+    <ul>
+        <li data-line="23" class="code-line">Describe describes shellcode and code obfuscation techniques</li>
+        <li data-line="24" class="code-line">Measure the strengths of polymorphic engines</li>
+        <li data-line="25" class="code-line">Introduce a hybrid engine</li>
+    </ul>
+    <h2 data-line="27" class="code-line" id="shellcode">Shellcode</h2>
+    <ul>
+        <li data-line="29" class="code-line">Traditional shellcode structure
+            <ul>
+                <li data-line="30" class="code-line">[nop][<strong>payload</strong>][retaddr]</li>
+            </ul>
+        </li>
+        <li data-line="31" class="code-line">Encrypted shellcode structure
+            <ul>
+                <li data-line="32" class="code-line">[nop][<strong>decoder</strong>][<strong>encpayload</strong>][retaddr]</li>
+            </ul>
+        </li>
+        <li data-line="33" class="code-line">Modern obfuscation technique
+            <ul>
+                <li data-line="34" class="code-line">Automatically re-write code
+                    <ul>
+                        <li data-line="35" class="code-line">Hard(NP-complete) to decompose to graph</li>
+                    </ul>
+                </li>
+                <li data-line="36" class="code-line">Code-obfuscation
+                    <ul>
+                        <li data-line="37" class="code-line">Encrypt</li>
+                        <li data-line="38" class="code-line">Dynamically decrypt at runtime</li>
+                        <li data-line="39" class="code-line">Remain code obfuscated at runtime</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+    </ul>
+    <h3 data-line="41" class="code-line" id="decoder">Decoder</h3>
+    <ul>
+        <li data-line="43" class="code-line">Look for decoder rather than payload</li>
+        <li data-line="44" class="code-line"><strong>How well the decoder can be hidden</strong>
+            <ul>
+                <li data-line="45" class="code-line">Rearranging and randomizing the order of the individual ciphers components</li>
+                <li data-line="46" class="code-line">Randomly chosen keys</li>
+                <li data-line="47" class="code-line">Insert junk instructions</li>
+            </ul>
+        </li>
+        <li data-line="48" class="code-line">Decoder detector
+            <ul>
+                <li data-line="49" class="code-line">Modification operation
+                    <ul>
+                        <li data-line="50" class="code-line"><code>add</code>, <code>sub</code>, <code>xor</code>, etc.</li>
+                    </ul>
+                </li>
+                <li data-line="51" class="code-line">Loop component
+                    <ul>
+                        <li data-line="52" class="code-line"><code>jmpz</code></li>
+                    </ul>
+                </li>
+                <li data-line="53" class="code-line">Maintenance operations
+                    <ul>
+                        <li data-line="54" class="code-line">Clear register</li>
+                        <li data-line="55" class="code-line">Multiple cipher operation</li>
+                        <li data-line="56" class="code-line">Calculate the location of the executable</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+    </ul>
+    <h2 data-line="58" class="code-line" id="related-work-signature-matching">Related work: Signature matching</h2>
+    <ul>
+        <li data-line="60" class="code-line">String-based signatures
+            <ul>
+                <li data-line="61" class="code-line">Snort</li>
+            </ul>
+        </li>
+        <li data-line="62" class="code-line">Detection heuristics
+            <ul>
+                <li data-line="63" class="code-line">Frequency of various packet types</li>
+            </ul>
+        </li>
+        <li data-line="64" class="code-line">Identification of NOP sled</li>
+        <li data-line="65" class="code-line">Signature from the actual actual exploit code</li>
+        <li data-line="66" class="code-line">Statistical measures of packet content</li>
+    </ul>
+    <h2 data-line="69" class="code-line" id="problem-definition">Problem definition</h2>
+    <ul>
+        <li data-line="71" class="code-line">Given n bytes, there exist 256<sup>n</sup> possible strings</li>
+        <li data-line="72" class="code-line">x86 code of length n is a subspace</li>
+        <li data-line="73" class="code-line">How difficult is it to model this subspace?</li>
+    </ul>
+    <h2 data-line="75" class="code-line" id="polymorphic-engine-analysis">Polymorphic Engine Analysis</h2>
+    <h3 data-line="77" class="code-line" id="measures">Measures</h3>
+    <ul>
+        <li data-line="79" class="code-line">Spectral image</li>
+        <li data-line="80" class="code-line">Minimum Euclidian distance</li>
+        <li data-line="81" class="code-line">Variation strength</li>
+        <li data-line="82" class="code-line">Propagation strength</li>
+        <li data-line="83" class="code-line">Overall strength</li>
+    </ul>
+    <h3 data-line="85" class="code-line" id="spectral-image">Spectral Image</h3>
+    <p data-line="87" class="code-line"><img src="images/visualization_of_shellcode_variations.png" alt="visualization_of_shellcode_variations"></p>
+    <ul>
+        <li data-line="89" class="code-line">D decoders of length N</li>
+        <li data-line="90" class="code-line">Compile into D*N matrix</li>
+        <li data-line="91" class="code-line">Display matrix as image</li>
+    </ul>
+    <h3 data-line="93" class="code-line" id="minimum-euclidian-distance">Minimum Euclidian distance</h3>
+    <ul>
+        <li data-line="95" class="code-line">Intuition: Decoders can shift order of operations</li>
+        <li data-line="96" class="code-line">String x as point in n-dim Euclidian space
+            <ul>
+                <li data-line="97" class="code-line">Example: &quot;ab&quot; -&gt; (97,98)</li>
+            </ul>
+        </li>
+        <li data-line="98" class="code-line">Minimum Euclidian Distance: minimum normalized distance between two points under arbitrary byte-level rotations</li>
+    </ul>
+    <section>
+        <eqn><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>δ</mi><mo>(</mo><mtext>x</mtext><mo separator="true">,</mo><mtext>y</mtext><mo>)</mo><mo>=</mo><msub><mi>min</mi><mrow><mn>1</mn><mo>≤</mo><mi>r</mi><mo>≤</mo><mi>n</mi></mrow></msub><mo>{</mo><mfrac><mrow><mo>∥</mo><mtext>x</mtext><mo>=</mo><mi>r</mi><mi>o</mi><mi>t</mi><mo>(</mo><mtext>y</mtext><mo separator="true">,</mo><mi>r</mi><mo>)</mo><mo>∥</mo></mrow><mrow><mo>∥</mo><mtext>x</mtext><mo>∥</mo><mo>+</mo><mo>∥</mo><mtext>y</mtext><mo>∥</mo></mrow></mfrac><mo>}</mo></mrow><annotation encoding="application/x-tex">\\delta(\\textbf{x}, \\textbf{y}) = \\min\_{1 \\leq r \\leq n}\\{\\frac{\\parallel \\textbf{x} = rot(\\textbf{y}, r) \\parallel}{\\parallel \\textbf{x} \\parallel + \\parallel \\textbf{y} \\parallel}\\}</annotation></semantics></math></span>
+            <span class="katex-html" aria-hidden="true"><span class="strut" style="height:1.427em;"></span><span class="strut bottom" style="height:2.363em;vertical-align:-0.936em;"></span><span class="base"><span class="mord mathit" style="margin-right:0.03785em;">δ</span>
+            <span class="mopen">(</span>
+            <span class="mord text"><span class="mord mathbf">x</span></span><span class="mpunct">,</span><span class="mord text"><span class="mord mathbf">y</span></span><span class="mclose">)</span><span class="mrel">=</span><span class="mop op-limits"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.66786em;"><span style="top:-2.082892em;margin-left:0em;"><span class="pstrut" style="height:2.7em;"></span>
+            <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathrm mtight">1</span><span class="mrel mtight">≤</span><span class="mord mathit mtight" style="margin-right:0.02778em;">r</span><span class="mrel mtight">≤</span>
+            <span class="mord mathit mtight">n</span>
+            </span>
+            </span>
+            </span><span style="top:-2.7em;"><span class="pstrut" style="height:2.7em;"></span><span><span class="mop">min</span></span>
+            </span>
+            </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.812287em;"></span></span>
+            </span>
+            </span><span class="mopen">{</span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.427em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span>
+            <span class="mord"><span class="mrel">∥</span><span class="mord text"><span class="mord mathbf">x</span></span><span class="mrel">∥</span><span class="mord">+</span><span class="mrel">∥</span><span class="mord text"><span class="mord mathbf">y</span></span>
+            <span class="mrel">∥</span>
+            </span>
+            </span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span>
+            <span class="mord"><span class="mrel">∥</span><span class="mord text"><span class="mord mathbf">x</span></span><span class="mrel">=</span><span class="mord mathit" style="margin-right:0.02778em;">r</span><span class="mord mathit">o</span>
+            <span class="mord mathit">t</span><span class="mopen">(</span><span class="mord text"><span class="mord mathbf">y</span></span><span class="mpunct">,</span><span class="mord mathit" style="margin-right:0.02778em;">r</span><span class="mclose">)</span>
+            <span class="mrel">∥</span>
+            </span>
+            </span>
+            </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.936em;"></span></span>
+            </span>
+            </span><span class="mclose nulldelimiter"></span></span><span class="mclose">}</span></span>
+            </span>
+            </span>
+            </span>
+        </eqn>
+    </section>
+    <h3 data-line="102" class="code-line" id="variation-strength">Variation strength</h3>
+    <ul>
+        <li data-line="104" class="code-line">Magnitude of the space covered by span of points in n-space corresponding to detectors</li>
+        <li data-line="105" class="code-line">Decoders
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>x</mi><mn>1</mn></msub><mo separator="true">,</mo><msub><mi>x</mi><mn>2</mn></msub><mo separator="true">,</mo><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><mo separator="true">,</mo><msub><mi>x</mi><mi>N</mi></msub></mrow><annotation encoding="application/x-tex">x\_1, x\_2, ..., x\_N</annotation></semantics></math></span>
+                <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.43056em;"></span><span class="strut bottom" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="base"><span class="mord"><span class="mord mathit">x</span>
+                <span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                <span class="sizing reset-size6 size3 mtight"><span class="mord mathrm mtight">1</span></span>
+                </span>
+                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                </span>
+                </span>
+                </span><span class="mpunct">,</span><span class="mord"><span class="mord mathit">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                <span class="sizing reset-size6 size3 mtight"><span class="mord mathrm mtight">2</span></span>
+                </span>
+                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                </span>
+                </span>
+                </span><span class="mpunct">,</span><span class="mord mathrm">.</span><span class="mord mathrm">.</span><span class="mord mathrm">.</span><span class="mpunct">,</span><span class="mord"><span class="mord mathit">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight" style="margin-right:0.10903em;">N</span></span>
+                </span>
+                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span>
+            </eq> in n-space</li>
+        <li data-line="106" class="code-line">
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>λ</mi><mn>1</mn></msub><mo separator="true">,</mo><msub><mi>λ</mi><mn>2</mn></msub><mo separator="true">,</mo><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><mi mathvariant="normal">.</mi><mo separator="true">,</mo><msub><mi>λ</mi><mi>n</mi></msub></mrow><annotation encoding="application/x-tex">\\lambda\_1, \\lambda\_2, ..., \\lambda\_n</annotation></semantics></math></span>
+                <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base"><span class="mord"><span class="mord mathit">λ</span>
+                <span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                <span class="sizing reset-size6 size3 mtight"><span class="mord mathrm mtight">1</span></span>
+                </span>
+                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                </span>
+                </span>
+                </span><span class="mpunct">,</span><span class="mord"><span class="mord mathit">λ</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                <span class="sizing reset-size6 size3 mtight"><span class="mord mathrm mtight">2</span></span>
+                </span>
+                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                </span>
+                </span>
+                </span><span class="mpunct">,</span><span class="mord mathrm">.</span><span class="mord mathrm">.</span><span class="mord mathrm">.</span><span class="mpunct">,</span><span class="mord"><span class="mord mathit">λ</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+                <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight">n</span></span>
+                </span>
+                </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span>
+                </span>
+            </eq> eigenvalues of covariance matrix</li>
+        <li data-line="107" class="code-line">Variation strength:</li>
+    </ul>
+    <section>
+        <eqn><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">Ψ</mi><mo>(</mo><mtext>engine</mtext><mo>)</mo><mo>=</mo><mfrac><mrow><mn>1</mn></mrow><mrow><mi>d</mi></mrow></mfrac><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>d</mi></munderover><mrow><msqrt><mrow><msub><mi>λ</mi><mi>i</mi></msub></mrow></msqrt></mrow></mrow><annotation encoding="application/x-tex">\\Psi(\\text{engine}) = \\frac{1}{d}\\sum\_{i = 1}^{d}{\\sqrt{\\lambda\_i}}</annotation></semantics></math></span>
+            <span class="katex-html" aria-hidden="true"><span class="strut" style="height:1.8361130000000003em;"></span><span class="strut bottom" style="height:3.1137820000000005em;vertical-align:-1.277669em;"></span><span class="base"><span class="mord mathrm">Ψ</span>
+            <span class="mopen">(</span>
+            <span class="mord text"><span class="mord mathrm">engine</span></span><span class="mclose">)</span><span class="mrel">=</span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.32144em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span>
+            <span class="mord"><span class="mord mathit">d</span></span>
+            </span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span>
+            <span class="mord"><span class="mord mathrm">1</span></span>
+            </span>
+            </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"></span></span>
+            </span>
+            </span><span class="mclose nulldelimiter"></span></span><span class="mop op-limits"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.8361130000000003em;"><span style="top:-1.872331em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span>
+            <span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathit mtight">i</span><span class="mrel mtight">=</span><span class="mord mathrm mtight">1</span></span>
+            </span>
+            </span><span style="top:-3.050005em;"><span class="pstrut" style="height:3.05em;"></span><span><span class="mop op-symbol large-op">∑</span></span>
+            </span><span style="top:-4.3000050000000005em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathit mtight">d</span></span>
+            </span>
+            </span>
+            </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.277669em;"></span></span>
+            </span>
+            </span><span class="mord"><span class="mord sqrt"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist svg-align" style="height:1.006095em;"><span style="top:-3.2em;"><span class="pstrut" style="height:3.2em;"></span>
+            <span class="mord" style="padding-left:1em;"><span class="mord"><span class="mord mathit">λ</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span>
+            <span class="sizing reset-size6 size3 mtight"><span class="mord mathit mtight">i</span></span>
+            </span>
+            </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"></span></span>
+            </span>
+            </span>
+            </span>
+            </span>
+            </span><span style="top:-2.966095em;"><span class="pstrut" style="height:3.2em;"></span><span style="height:1.2em;"><svg width="100%" height="1.2em">
+                <svg viewBox='0 0 400000 1200' preserveAspectRatio='xMinYMin
+    slice'><path d='M263 601c.667 0 18 39.667 52 119s68.167
+     158.667 102.5 238 51.833 119.333 52.5 120C810 373.333 980.667 17.667 982 11
+    c4.667-7.333 11-11 19-11h398999v40H1012.333L741 607c-38.667 80.667-84 175-136
+     283s-89.167 185.333-111.5 232-33.833 70.333-34.5 71c-4.667 4.667-12.333 7-23
+     7l-12-1-109-253c-72.667-168-109.333-252-110-252-10.667 8-22 16.667-34 26-22
+     17.333-33.333 26-34 26l-26-26 76-59 76-60zM1001 0h398999v40H1012z'/></svg></svg></span></span>
+            </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.23390500000000003em;"></span></span>
+            </span>
+            </span>
+            </span>
+            </span>
+            </span>
+            </span>
+            </span>
+        </eqn>
+    </section>
+    <h3 data-line="111" class="code-line" id="propagation-strength">Propagation strength</h3>
+    <ul>
+        <li data-line="113" class="code-line">Efficacy in making sample pairs different</li>
+        <li data-line="114" class="code-line">Consider fully connected graph with decoders as nodes</li>
+        <li data-line="115" class="code-line">Edge weight = minimum Euclidian distance</li>
+        <li data-line="116" class="code-line">Propagation strength = average edge weight</li>
+        <li data-line="117" class="code-line">
+            <eq><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>η</mi><mo>=</mo><mi mathvariant="normal">#</mi></mrow><annotation encoding="application/x-tex">\\eta = \\#</annotation></semantics></math></span><span class="katex-html"
+                    aria-hidden="true"><span class="strut" style="height:0.69444em;"></span><span class="strut bottom" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="base"><span class="mord mathit" style="margin-right:0.03588em;">η</span>
+                <span class="mrel">=</span><span class="mord mathrm">#</span></span>
+                </span>
+                </span>
+            </eq> salient bytes in samples</li>
+        <li data-line="118" class="code-line">p(.) = prior (default: p(.) = 1)</li>
+    </ul>
+    <section>
+        <eqn><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">Φ</mi><mo>(</mo><mi>e</mi><mi>n</mi><mi>g</mi><mi>i</mi><mi>n</mi><mi>e</mi><mo>)</mo><mo>=</mo><mo>(</mo><mn>1</mn><mo>−</mo><mfrac><mrow><mi>η</mi></mrow><mrow><mi>n</mi></mrow></mfrac><mo>)</mo><mo>∫</mo><mo>∫</mo><mi>p</mi><mo>(</mo><mi>δ</mi><mo>(</mo><mi>x</mi><mo separator="true">,</mo><mi>y</mi><mo>)</mo><mo>)</mo><mi>δ</mi><mo>(</mo><mi>x</mi><mo separator="true">,</mo><mi>y</mi><mo>)</mo><mi>d</mi><mi>x</mi><mi>d</mi><mi>y</mi></mrow><annotation encoding="application/x-tex">\\Phi(engine) = (1 - \\frac{\\eta}{n})\\int\\int p(\\delta(x, y))\\delta(x, y)dxdy</annotation></semantics></math></span>
+            <span class="katex-html" aria-hidden="true"><span class="strut" style="height:1.36em;"></span><span class="strut bottom" style="height:2.22225em;vertical-align:-0.86225em;"></span><span class="base"><span class="mord mathrm">Φ</span>
+            <span class="mopen">(</span><span class="mord mathit">e</span>
+            <span class="mord mathit">n</span><span class="mord mathit" style="margin-right:0.03588em;">g</span><span class="mord mathit">i</span><span class="mord mathit">n</span><span class="mord mathit">e</span><span class="mclose">)</span>
+            <span class="mrel">=</span>
+            <span class="mopen">(</span><span class="mord mathrm">1</span><span class="mbin">−</span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.1075599999999999em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span>
+            <span class="mord"><span class="mord mathit">n</span></span>
+            </span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span>
+            <span class="mord"><span class="mord mathit" style="margin-right:0.03588em;">η</span></span>
+            </span>
+            </span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"></span></span>
+            </span>
+            </span><span class="mclose nulldelimiter"></span></span><span class="mclose">)</span><span class="mop op-symbol large-op" style="margin-right:0.44445em;position:relative;top:-0.0011249999999999316em;">∫</span><span class="mop op-symbol large-op"
+                style="margin-right:0.44445em;position:relative;top:-0.0011249999999999316em;">∫</span><span class="mord mathit">p</span><span class="mopen">(</span><span class="mord mathit" style="margin-right:0.03785em;">δ</span>
+            <span class="mopen">(</span><span class="mord mathit">x</span><span class="mpunct">,</span><span class="mord mathit" style="margin-right:0.03588em;">y</span><span class="mclose">)</span><span class="mclose">)</span><span class="mord mathit"
+                style="margin-right:0.03785em;">δ</span><span class="mopen">(</span><span class="mord mathit">x</span><span class="mpunct">,</span><span class="mord mathit" style="margin-right:0.03588em;">y</span><span class="mclose">)</span>
+            <span class="mord mathit">d</span><span class="mord mathit">x</span><span class="mord mathit">d</span><span class="mord mathit" style="margin-right:0.03588em;">y</span></span>
+            </span>
+            </span>
+            </span>
+        </eqn>
+    </section>
+    <h3 data-line="122" class="code-line" id="overall-strength">Overall strength</h3>
+    <ul>
+        <li data-line="124" class="code-line">For a polymorphic engine</li>
+    </ul>
+    <section>
+        <eqn><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">Π</mi><mo>(</mo><mtext>engine</mtext><mo>)</mo><mo>=</mo><mi mathvariant="normal">Φ</mi><mo>(</mo><mtext>engine</mtext><mo>)</mo><mo>⋅</mo><mi mathvariant="normal">Ψ</mi><mo>(</mo><mtext>engine</mtext><mo>)</mo></mrow><annotation encoding="application/x-tex">\\Pi(\\text{engine}) = \\Phi(\\text{engine}) \\cdot \\Psi(\\text{engine})</annotation></semantics></math></span>
+            <span class="katex-html" aria-hidden="true"><span class="strut" style="height:0.75em;"></span><span class="strut bottom" style="height:1em;vertical-align:-0.25em;"></span><span class="base"><span class="mord mathrm">Π</span><span class="mopen">(</span>
+            <span class="mord text"><span class="mord mathrm">engine</span></span>
+            <span class="mclose">)</span><span class="mrel">=</span><span class="mord mathrm">Φ</span><span class="mopen">(</span><span class="mord text"><span class="mord mathrm">engine</span></span><span class="mclose">)</span><span class="mbin">⋅</span>
+            <span class="mord mathrm">Ψ</span>
+            <span class="mopen">(</span><span class="mord text"><span class="mord mathrm">engine</span></span><span class="mclose">)</span></span>
+            </span>
+            </span>
+            </span>
+        </eqn>
+    </section>
+    <h2 data-line="128" class="code-line" id="hybrid-engine-combining-polymorphism-and-blending">Hybrid Engine: Combining Polymorphism and Blending</h2>
+    <ul>
+        <li data-line="130" class="code-line">CLET: byte distribution blending</li>
+        <li data-line="131" class="code-line">ADMutate: Polymorphism
+            <ul>
+                <li data-line="132" class="code-line">Random looking decoder, recursive NOP sled</li>
+            </ul>
+        </li>
+        <li data-line="133" class="code-line">Combine CLET and ADMutate
+            <ul>
+                <li data-line="134" class="code-line">Blend in with normal traffic</li>
+                <li data-line="135" class="code-line">Blending bytes can be randomly permuted</li>
+                <li data-line="136" class="code-line">RETADDR can be added with a random offset</li>
+                <li data-line="137" class="code-line">4-byte salient artifact too small to use as a signature</li>
+                <li data-line="138" class="code-line">Essentially impossible to model</li>
+            </ul>
+        </li>
+    </ul>
+    <h2 data-line="140" class="code-line" id="reference">Reference</h2>
+    <ul>
+        <li data-line="142" class="code-line">On the Infeasibility of Modeling Polymorphic Shellcode, Song et al, 2007</li>
+        <li data-line="143" class="code-line">CS 259D Session 14</li>
+    </ul>
+
+</body>
+
+</html>

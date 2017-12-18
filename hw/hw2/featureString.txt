@@ -1,0 +1,37 @@
+% matlab commands to create a cell array of feature strings
+
+
+featureStr{1} ='user id';
+featureStr{2  } = 'doc id';
+featureStr{3  } = 'inter-stroke time';
+featureStr{4  } = 'stroke duration';
+featureStr{5  } = 'start $x$';
+featureStr{6  } = 'start $y$';
+featureStr{7  } = 'stop $x$';
+featureStr{8} = 'stop $y$';
+featureStr{9} = 'direct end-to-end distance';
+featureStr{10} = ' mean resultant lenght';
+featureStr{11} = 'up/down/left/right flag';
+featureStr{12} = 'direction of end-to-end line';
+featureStr{13} = 'phone id';
+featureStr{14} = '20\%-perc. pairwise velocity';
+featureStr{15} = '50\%-perc. pairwise velocity';
+featureStr{16} = '80\%-perc. pairwise velocity';
+featureStr{17} = '20\%-perc. pairwise acc';
+featureStr{18} = '50\%-perc. pairwise acc';
+featureStr{19} = '80\%-perc. pairwise acc';
+featureStr{20 } = 'median velocity at last 3 pts';
+featureStr{21 } = 'largest deviation from end-to-end line';
+featureStr{22} = '20\%-perc. dev. from end-to-end line';
+featureStr{23} = '50\%-perc. dev. from end-to-end line';
+featureStr{24} = '80\%-perc. dev. from end-to-end line';
+featureStr{25  } = 'average direction';
+featureStr{26 } = 'length of trajectory';
+featureStr{27 } = 'ratio end-to-end dist and length of trajectory';
+featureStr{28 } = 'average velocity';
+featureStr{29} = 'median acceleration at first 5 points';
+featureStr{30 } = 'mid-stroke pressure';
+featureStr{31 } = 'mid-stroke area covered';
+featureStr{32 } = 'mid-stroke finger orientation';
+featureStr{33} = 'change of finger orientation';
+featureStr{34} = 'phone orientation';
