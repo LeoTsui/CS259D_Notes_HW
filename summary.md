@@ -49,6 +49,17 @@
     * [Touchalytics](note/Touchalytics.md)
 
     * [Using Generalization and Characterization Techniques in the Anomaly-based Detection of Web Attacks](note/Using_Generalization_and_Characterization_Techniques_in_the_Anomaly-based_Detection_of_Web_Attacks.md)
-
-
-
+* Homeworks
+    * Homework1
+        * Question 1. Botnets
+            * [Mirai](hw/hw1/q1_mirai.md)
+        * Question 2. [Anomaly Detection via "Eigenface" of Command History](hw/hw2/q2_eigenface.md)
+        * Question 3. [Continuous Authentication via Biometric Behavior](hw/hw3/q3_keystroke.md)
+    * Homework2
+        * Question 1. [Quizzes](hw/hw2/q1_Quiz.md)
+        * Question 2. [Touch Biometrics](hw/hw2/q2_Touch_Biometrics.md)
+        * Question 3. [Merits of Entropy in Attack Detection/Diagnostics](hw/hw2/q3_server_log_entropy.md)
+    * Homework3
+        * [Analyse e-mail packets](hw/hw3/q3_server_log_entropy.md)
+    *  Homework4
+        * [Quizzes](hs/hw4/q1.md)
