@@ -2,5 +2,15 @@
     "author": "Leo Tsui",
     "title": "CS259D Note",
     "description": "This Note is the supplement to papers and handouts of CS 259D",
-    "plugins": ["katex"]
+    "plugins": ["katex", "github", "rss"],
+    "pluginsConfig": {
+        "github": {
+            "url": "https://github.com/LeoTsui/CS259D_Note_HW"
+        },
+        "rss": {
+            "title": "CS259D Note",
+            "description": "This Note is the supplement to papers and handouts of CS 259D",
+            "author": "Leo Tsui"
+        }
+    }
 }
