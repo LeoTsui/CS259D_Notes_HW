@@ -2,5 +2,5 @@
     "author": "Leo Tsui",
     "title": "CS259D Note",
     "description": "This Note is the supplement to papers and handouts of CS 259D",
-    "plugins": ["ComScore", "katex"]
+    "plugins": ["katex"]
 }
