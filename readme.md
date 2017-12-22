@@ -1,4 +1,6 @@
-# CS 259D Data Mining for Cyber Security Autumn 2014
+# CS 259D Data Mining for Cyber Security Note Introduction
+
+**This Note is the supplement to papers and handouts**
 
 <!-- TOC -->
 
@@ -23,8 +25,6 @@
     - [Homework4](#homework4)
 
 <!-- /TOC -->
-
-**This Note is the supplement to papers and handouts**
 
 ## Lectures
 
