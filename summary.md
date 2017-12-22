@@ -49,7 +49,7 @@
         * Question 2. [Touch Biometrics](hw/hw2/q2_Touch_Biometrics.md)
         * Question 3. [Merits of Entropy in Attack Detection/Diagnostics](hw/hw2/q3_server_log_entropy.md)
     * Homework3
-        * [Analyse e-mail packets](hw/hw3/q3_server_log_entropy.md)
+        * [Analyse e-mail packets](hw/hw3/q1.md)
     *  Homework4
-        * [Quizzes](hs/hw4/q1.md)
+        * [Quizzes](hw/hw4/q1.md)
 
