@@ -9,11 +9,11 @@
 ## Qa
 
 * a. Divide each input into a series of sequences of L = 100. Construct the co-occurrence matrix for each user (for each sequence). Choose a window size ​w ​ for your experiments. What are the values for ​m ​ (total # of commands) and ​n ​ in the provided dataset? For users 1 and 2 what is the co-occurrence of `rm` with `ls` (`ls` following `rm`) for 5 of the 50 sequences (choose the sequences)?
-    * m, total # of commands: $635$
-    * n, total sample sequence: 50 * 50 = 2500
+    * m, total # of commands: $$635$$
+    * n, total sample sequence: $$50 * 50 = 2500$$
     * rm-ls (in that order) co-occurrences
-        * User1: $[0, 1, 3, 1, 1]$
-        * User2: $[1, 0, 0, 0, 0]$
+        * User1: $$[0, 1, 3, 1, 1]$$
+        * User2: $$[1, 0, 0, 0, 0]$$
 
 ## Qb
 
