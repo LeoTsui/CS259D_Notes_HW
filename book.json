@@ -29,6 +29,6 @@
         "paperSize": "a4"
     },
     "plugins": ["ComScore", "katex"],
-    "title": null,
+    "title": "CS259D Note",
     "variables": {}
 }
