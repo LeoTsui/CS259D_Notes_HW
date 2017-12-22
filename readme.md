@@ -2,6 +2,8 @@
 
 **This Note is the supplement to papers and handouts**
 
+[GitBook: CS259D Note](https://leotsui.gitbooks.io/cs259d-note/)
+
 <!-- TOC -->
 
 - [Lectures](#lectures)
