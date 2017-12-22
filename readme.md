@@ -4,6 +4,8 @@
 
 [GitBook: CS259D Note](https://leotsui.gitbooks.io/cs259d-note/)
 
+---
+
 <!-- TOC -->
 
 - [Lectures](#lectures)
