@@ -53,8 +53,8 @@
     * Homework1
         * Question 1. Botnets
             * [Mirai](hw/hw1/q1_mirai.md)
-        * Question 2. [Anomaly Detection via "Eigenface" of Command History](hw/hw2/q2_eigenface.md)
-        * Question 3. [Continuous Authentication via Biometric Behavior](hw/hw3/q3_keystroke.md)
+        * Question 2. [Anomaly Detection via "Eigenface" of Command History](hw/hw1/q2_eigenface.md)
+        * Question 3. [Continuous Authentication via Biometric Behavior](hw/hw1/q3_keystroke.md)
     * Homework2
         * Question 1. [Quizzes](hw/hw2/q1_Quiz.md)
         * Question 2. [Touch Biometrics](hw/hw2/q2_Touch_Biometrics.md)
