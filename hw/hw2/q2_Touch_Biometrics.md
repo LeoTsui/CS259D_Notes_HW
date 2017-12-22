@@ -2,15 +2,15 @@
 
 ## Questions
 
-### a.
+### a
 
 Implement two more features in addition to the 30 found in the database. Do they have positive information gain? That is, are the features useful?
 
-### b.
+### b
 
 Report correlation of these feature to the rest of the implemented features.
 
-### c.
+### c
 
 Train your model on a binary classifier of your choice (“true user” or “false user” classification problem) using the following 4 scenarios in which you use a feature selection method to choose top 10 features. Describe this process. Use 10-fold cross validation to compute precision and recall in the following scenarios. Try to maximize F1 score when optimizing your classifier. Report F1 and any methods you used to optimize your classifier.
 
@@ -19,11 +19,12 @@ Train your model on a binary classifier of your choice (“true user” or “fa
 * iii. 30 computed features,
 * iv. 30 computed features & your features
 
-### d.
+### d
 
 Qualitatively describe which family of features are most discriminating in your classifier.
 
 ## Data
+
 1. phone I
 1. user ID
 1. document ID
@@ -37,6 +38,7 @@ Qualitatively describe which family of features are most discriminating in your 
 1. finger orientation
 
 ## Feature
+
 * feature csv
     1. ~~user_id~~
     1. ~~doc_id~~
@@ -117,4 +119,3 @@ Qualitatively describe which family of features are most discriminating in your 
     * 8 mean_resultant_lenght
     * 14 20_pairwise_acc
     * 18 largest_deviation_from_end_to_end_line
-
