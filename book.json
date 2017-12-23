@@ -2,10 +2,24 @@
     "author": "Leo Tsui",
     "title": "CS259D Note",
     "description": "This Note is the supplement to papers and handouts of CS 259D",
-    "plugins": ["katex", "github"],
+    "plugins": [
+        "katex",
+        "github",
+        "github-buttons",
+        "anchors"
+    ],
     "pluginsConfig": {
         "github": {
             "url": "https://github.com/LeoTsui/CS259D_Note_HW"
+        },
+        "github-buttons": {
+            "buttons": [{
+                "user": "LeoTsui",
+                "repo": "CS259D_Note_HW",
+                "type": "star",
+                "size": "small",
+                "count": true
+            }]
         }
     }
 }
