@@ -58,10 +58,10 @@
 
 ### Notation
 
-* $\tau$, trace, a sequence of chronologically-ordered flows between two network endpoints
-* $M$, model
-* $\tau_M$, score of trace $\tau$ on model $M$
-* $q_{cluster}$, quality rate
+* $$\tau$$, trace, a sequence of chronologically-ordered flows between two network endpoints
+* $$M$$, model
+* $$\tau_M$$, score of trace $$\tau$$ on model $$M$$
+* $$q_{cluster}$$, quality rate
 
 ### Input Data Processing
 
@@ -108,18 +108,18 @@
     * Better than k-means
 * Cluster quality
     * Large clusters , highly similar values
-    * $q_{cluster} = exp(-\beta \frac{SD}{Avg})$
-        * $\beta = 2.5$ (empirical value)
+    * $$q_{cluster} = exp(-\beta \frac{SD}{Avg})$$
+        * $$\beta = 2.5$$ (empirical value)
 
 ### Malware Detection
 
 * Match each feature of the trace against the corresponding model's cluster
-* $\tau$ hit one feature of $M$
-* Add $q_{cluster} \cdot exp(-\beta \frac{SD_{trace}}{Avg_{trace}})$ to $\tau_M$
-    * $\beta = 2.5$ (empirical value)
-* Maintain a $\tau_M$ for each model
-* Compare highest $\tau_M$ with threshold $a$
-* Minimal number of feature hits, $h$
+* $$\tau$$ hit one feature of $$M$$
+* Add $$q_{cluster} \cdot exp(-\beta \frac{SD_{trace}}{Avg_{trace}})$$ to $$\tau_M$$
+    * $$\beta = 2.5$$ (empirical value)
+* Maintain a $$\tau_M$$ for each model
+* Compare highest $$\tau_M$$ with threshold $$a$$
+* Minimal number of feature hits, $$h$$
 
 ## Bot Evolution
 
@@ -130,13 +130,13 @@
 * Introducing Larger Gaps
     * Fast Fourier Transformation
 * High Fluctuation of C&C Servers
-    * BotFinder cannot build traces of minimal length $|\tau|_{min} = 50$
+    * BotFinder cannot build traces of minimal length $$|\tau|_{min} = 50$$
         * Not observe such high C&C server fluctuations (IP flux)
     * Additional pre-processing step before Step 4
-        * Merge two sub-traces $\tau_A$ and $\tau_B$
+        * Merge two sub-traces $$\tau_A$$ and $$\tau_B$$
         * Two factors
-            * $SD$ of $\tau_{AB}$ is lower than the $SD$ of at least one of the individual traces
-            * $q_{cluster}$ of $\tau_{AB}$ higher than a threshold
+            * $$SD$$ of $$\tau_{AB}$$ is lower than the $$SD$$ of at least one of the individual traces
+            * $$q_{cluster}$$ of $$\tau_{AB}$$ higher than a threshold
 * P2P Bots
 * Bot-like Benign Traffic
 

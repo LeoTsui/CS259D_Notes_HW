@@ -38,11 +38,11 @@
 * Hypothesis
     * Observation:
         * Measurements extracted from these behavior patterns 
-        * $\to$ More stable than those from holistic behavior
+        * $$\to$$ More stable than those from holistic behavior
     * Assumption:
         * Frequent behavior segments in mouse behavior
-        * $\to$ Provide more stable and discriminative features or measurements
-        * $\to$ Allow one to more accurately characterize the discriminable components of mouse behavior.
+        * $$\to$$ Provide more stable and discriminative features or measurements
+        * $$\to$$ Allow one to more accurately characterize the discriminable components of mouse behavior.
 * One-Class Classification
     * Only legitimate user patterns are available
     * Useing both the legitimate user's and impostors' samples is not practical
@@ -109,37 +109,37 @@
 
 #### Clarifying Questions
 
-* $I = \{i_1 , i_2, ..., i_n\}$ a set of all mouse operations
-* $\mathrm{operation}\text{-}\mathrm{set}$: a set of mouse operations
-    * Example: $\{(1,3,4,0), (2,1,4,0), (3,1,4,0)\}$
-* $s$, sequence: ordered list of operation sets by user ID and timestamp
-    * $s = \{s_1, s_2, ..., s_k\}$, each $s_j$
-        * An $\text{operation-set}$ (subset of $I$), $s_j \subset I$, for $1 \leq j \leq l$
-        * Called an element of sequence $s$
-        * $s_j = \langle x_1, x_2, ..., x_m \rangle$, each $x_k$ a mouse operation
+* $$I = \{i_1 , i_2, ..., i_n\}$$ a set of all mouse operations
+* $$\mathrm{operation}\text{-}\mathrm{set}$$: a set of mouse operations
+    * Example: $$\{(1,3,4,0), (2,1,4,0), (3,1,4,0)\}$$
+* $$s$$, sequence: ordered list of operation sets by user ID and timestamp
+    * $$s = \{s_1, s_2, ..., s_k\}$$, each $$s_j$$
+        * An $$\text{operation-set}$$ (subset of $$I$$), $$s_j \subset I$$, for $$1 \leq j \leq l$$
+        * Called an element of sequence $$s$$
+        * $$s_j = \langle x_1, x_2, ..., x_m \rangle$$, each $$x_k$$ a mouse operation
     * Example:
-        * $s = \{\langle(1,3,4,0)\rangle, \langle(1,3,4,0), (2,1,4,0), (3,1,4,0)\rangle, \langle(2,1,2,1)\rangle\}$
-        * $\mathrm{length}(s) = 5$
-* $\alpha$, a subsequence of $s$
+        * $$s = \{\langle(1,3,4,0)\rangle, \langle(1,3,4,0), (2,1,4,0), (3,1,4,0)\rangle, \langle(2,1,2,1)\rangle\}$$
+        * $$\mathrm{length}(s) = 5$$
+* $$\alpha$$, a subsequence of $$s$$
     * Example
-        * $\{\langle(1,3,4,0)\rangle\}$ is a subsequence of $\{\langle(1,3,4,0), (2,1,4,0), (3,1,4,0)\rangle\}$
-* $L$, length of sequence: the number of mouse operation instances
-    * $\text{L-sequence}$: A sequence of length $L$
-* $S$, a mouse operation sequence database
-    * A set of triples $\langle ID, sid, s \rangle$
-        * $ID$, the user ID
-        * $sid$, a sequence $ID$
-        * $s$, a sequence
-* $\mathrm{Support_S} (\alpha)$ = $\#$ tuples in databases $S$ that contain $\alpha$
-* Sequential pattern: $\mathrm{Support_S} \geq \xi$
-    * $\xi$ a given threshold
+        * $$\{\langle(1,3,4,0)\rangle\}$$ is a subsequence of $$\{\langle(1,3,4,0), (2,1,4,0), (3,1,4,0)\rangle\}$$
+* $$L$$, length of sequence: the number of mouse operation instances
+    * $$\text{L-sequence}$$: A sequence of length $$L$$
+* $$S$$, a mouse operation sequence database
+    * A set of triples $$\langle ID, sid, s \rangle$$
+        * $$ID$$, the user ID
+        * $$sid$$, a sequence $$ID$$
+        * $$s$$, a sequence
+* $$\mathrm{Support_S} (\alpha)$$ = $$\#$$ tuples in databases $$S$$ that contain $$\alpha$$
+* Sequential pattern: $$\mathrm{Support_S} \geq \xi$$
+    * $$\xi$$ a given threshold
 * **Problem Statement**
     * The problem of sequential mouse behavior pattern mining is:
         * Input
-            * Mouse operation sequence $S$
-            * minimun support threshold $\xi$
+            * Mouse operation sequence $$S$$
+            * minimun support threshold $$\xi$$
         * Output
-            * Complete set of all frequent mouse behavior patterns in $S$
+            * Complete set of all frequent mouse behavior patterns in $$S$$
 
 #### Mining Method
 
@@ -162,7 +162,7 @@
 
 #### Behavior Pattern Analysis
 
-* Set minimum support $8\%$
+* Set minimum support $$8\%$$
     * Trade-off value
 
 ## Feature
@@ -172,8 +172,8 @@
 * Feature Construction from Mined Pattern
     * Click elapsed time
         * Time spent by user to perform a click action
-        * Single click: $\mathrm{mean}$, $\mathrm{stdv}$ of overall time
-        * Double click: $\mathrm{mean}$, $\mathrm{stdv}$ of overall & 3 interval times
+        * Single click: $$\mathrm{mean}$$, $$\mathrm{stdv}$$ of overall time
+        * Double click: $$\mathrm{mean}$$, $$\mathrm{stdv}$$ of overall & 3 interval times
     * Movement speed
         * Average movement speed for different types of mouse movement
         * 24 types: 8 directions, 3 distance ranges
@@ -207,16 +207,16 @@
 ## Detection
 
 * Nearest-Neighbor
-    * $k = 3$
+    * $$k = 3$$
     * Anomaly score
         * Mahalanobis distance between test & training feature vectors
 * Neural Network
     * Single hidden layer
-        * Input nodes, $p$
-        * Hidden nodes, $\lfloor2p/3\rfloor$
-        * Output node, $1$
-    * Train with every input feature vector & output $=1.0$
-    * Test-vector fed into network, output $\sim$ $1.0$ or $-1.0$
+        * Input nodes, $$p$$
+        * Hidden nodes, $$\lfloor2p/3\rfloor$$
+        * Output node, $$1$$
+    * Train with every input feature vector & output $$=1.0$$
+    * Test-vector fed into network, output $$\sim$$ $$1.0$$ or $$-1.0$$
 * One-class SVM
     * RBF kernel
 
@@ -226,7 +226,7 @@
     * Samples are only come from the college
     * No impostors' samples
     * One-class classification
-* $\Rightarrow$ For every time to deploy this user authentication method need to
+* $$\Rightarrow$$ For every time to deploy this user authentication method need to
     * Collect new samples
     * Traning
 

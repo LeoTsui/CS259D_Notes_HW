@@ -21,7 +21,7 @@
     * TF, frequency of word in document
     * IDF, measure popularity of word in corpus
         * Log(N/#{documents having the term})
-    * $tf\textrm{-}idf (t, d, D) = tf(t, d) \times idf(t, D)$
+    * $$tf\textrm{-}idf (t, d, D) = tf(t, d) \times idf(t, D)$$
 * Robust Hyperlinks
     * Lexical signatures for identifying URLs
     * Signature words chosen using TF-IDF

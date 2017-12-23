@@ -103,8 +103,8 @@ $$\delta(\textbf{x}, \textbf{y}) = \min_{1 \leq r \leq n}\{\frac{\parallel \text
 ### Variation strength
 
 * Magnitude of the space covered by span of points in n-space corresponding to detectors
-* Decoders $x_1, x_2, ..., x_N$ in n-space
-* $\lambda_1, \lambda_2, ..., \lambda_n$ eigenvalues of covariance matrix
+* Decoders $$x_1, x_2, ..., x_N$$ in n-space
+* $$\lambda_1, \lambda_2, ..., \lambda_n$$ eigenvalues of covariance matrix
 * Variation strength:
 
 $$\Psi(\text{engine}) = \frac{1}{d}\sum_{i = 1}^{d}{\sqrt{\lambda_i}}$$
@@ -115,7 +115,7 @@ $$\Psi(\text{engine}) = \frac{1}{d}\sum_{i = 1}^{d}{\sqrt{\lambda_i}}$$
 * Consider fully connected graph with decoders as nodes
 * Edge weight = minimum Euclidian distance
 * Propagation strength = average edge weight
-* $\eta = \#$ salient bytes in samples
+* $$\eta = \#$$ salient bytes in samples
 * p(.) = prior (default: p(.) = 1)
 
 $$\Phi(engine) = (1 - \frac{\eta}{n})\int\int p(\delta(x, y))\delta(x, y)dxdy$$

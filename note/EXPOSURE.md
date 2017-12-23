@@ -89,19 +89,19 @@
     * Repeating patterns
     * Access ratio
 * F2: DNS answer-based features
-    * $\#$ distinct IP addresses
-    * $\#$ distinct countries
-    * $\#$ domains IP shared with
+    * $$\#$$ distinct IP addresses
+    * $$\#$$ distinct countries
+    * $$\#$$ domains IP shared with
     * Reverse DNS query results
 * F3: TTL value-based features
-    * $Avg$ TTL
-    * $SD$ of TTL
-    * $\#$ distinct TTL values
-    * $\#$ TTL changes
-    * $\%$ usage of specific TTL ranges
+    * $$Avg$$ TTL
+    * $$SD$$ of TTL
+    * $$\#$$ distinct TTL values
+    * $$\#$$ TTL changes
+    * $$\%$$ usage of specific TTL ranges
 * F4: Domain name-based features
-    * $\%$ of numerical characters
-    * $\%$ of the length of the LMS
+    * $$\%$$ of numerical characters
+    * $$\%$$ of the length of the LMS
 
 ### Time-Based Features
 
@@ -122,8 +122,8 @@
         * An increase or decrease of request count at same intervals everyday
     * Regularly repeating patterns
         * Instance of change point detection (CPD)
-        * $\#$ changes
-        * $SD$ the durations of detected changes
+        * $$\#$$ changes
+        * $$SD$$ the durations of detected changes
     * Access ratio
         * Idle vs popular
 
@@ -133,23 +133,23 @@
 * Goal to find points, which data values change abruptly
 * Detecting abrupt changes
     * Time series for each domain
-        * $P(t)$, Request count at hour $t$, normalized by max count
-        * Iterate time interval $t = 3600s$
-        * $P^-(t)$, Average of past $8$ time intervals
-        * $P^+(t)$, Average of next $8$ time intervals
-        * $d(t) = |P^+(t) - P^-(t)|$
-    * Apply Cumulative Sum (CUSUM) algorithm to $d(t)$
-        * Detect times $t$, when $d(t)$ is large and is a $local_{max}$
-        * $CUSUM(t) = Max\{0, CUSUM(t-1) + d(t) - local_{max}\}$
-        * Report $t$ as change point if: $CUSUM(t) > cusum_{max}$
+        * $$P(t)$$, Request count at hour $$t$$, normalized by max count
+        * Iterate time interval $$t = 3600s$$
+        * $$P^-(t)$$, Average of past $$8$$ time intervals
+        * $$P^+(t)$$, Average of next $$8$$ time intervals
+        * $$d(t) = |P^+(t) - P^-(t)|$$
+    * Apply Cumulative Sum (CUSUM) algorithm to $$d(t)$$
+        * Detect times $$t$$, when $$d(t)$$ is large and is a $$local_{max}$$
+        * $$CUSUM(t) = Max\{0, CUSUM(t-1) + d(t) - local_{max}\}$$
+        * Report $$t$$ as change point if: $$CUSUM(t) > cusum_{max}$$
 
 #### Detecting Similar Daily Behavior
 
 * Compute distances of all pairs of daily time series
-    * Normalized each time series by its $Avg$ and $SD$
+    * Normalized each time series by its $$Avg$$ and $$SD$$
     * Use Euclidian distance
-* $d_{ij}$, Euclidian distance between $i^{th}$ & $j^{th}$ days
-* $D$, $Avg$ of all $d_{ij}$ values
+* $$d_{ij}$$, Euclidian distance between $$i^{th}$$ & $$j^{th}$$ days
+* $$D$$, $$Avg$$ of all $$d_{ij}$$ values
 
 ### DNS Answer-Based Features
 
@@ -182,8 +182,8 @@
 * Number of TTL change
     * Higher in malicious domains
 * Percentage usage of specific TTL ranges
-    * Considered ranges: $[0,1), [1,10), [10,100), [100,300), [300,900), [900, inf)$
-    * Malicious domains peak at $[0, 100)$ ranges
+    * Considered ranges: $$[0,1), [1,10), [10,100), [100,300), [300,900), [900, inf)$$
+    * Malicious domains peak at $$[0, 100)$$ ranges
 
 ### Domain Name-Based Features
 

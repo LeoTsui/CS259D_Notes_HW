@@ -121,20 +121,20 @@
     * Not completely established (F2)
 * White-listing (F3)
     * Flows with well-known destinations
-* Given an epoch $E$, aggregate into communication flows (C-flows)
-    * $c_i = \{f_j\}_{j=1..m}$, C-flow
-        * Where $f_j$ have same protocol (TCP/UDP), source IP, destination IP & port
-        * $m$, $\#$ TCP/UDP flows
+* Given an epoch $$E$$, aggregate into communication flows (C-flows)
+    * $$c_i = \{f_j\}_{j=1..m}$$, C-flow
+        * Where $$f_j$$ have same protocol (TCP/UDP), source IP, destination IP & port
+        * $$m$$, $$\#$$ TCP/UDP flows
 * Feature extraction
     * For each C-flow
         * Temporal
-            * $\#$ flows per hour ($fph$)
-            * $\#$ bytes per second ($bps$)
+            * $$\#$$ flows per hour ($$fph$$)
+            * $$\#$$ bytes per second ($$bps$$)
         * Spatial
-            * $\#$ packets per flow ($ppf$)
-            * $\#$ bytes per packets ($bpp$)
-    * $13$ bins per feature
-    * Dimension of features, $d = 4 \times 13 = 52$
+            * $$\#$$ packets per flow ($$ppf$$)
+            * $$\#$$ bytes per packets ($$bpp$$)
+    * $$13$$ bins per feature
+    * Dimension of features, $$d = 4 \times 13 = 52$$
 * Two-step Clustering
     * Clustering C-flows is a challenging task
         * Large networks
@@ -143,10 +143,10 @@
     * X-means, a variant of k-means
         * Not require the user to choose the number of clusters
     * Feature reduction
-        * $d = 52$ to $d' = 8$ 
-        * $\{Avg, SD\} \times \{fph, ppf, bpp, bps\}$
-    * First-step Coarse grained clustering on entire dataset, $d' = 8$
-    * Second-step Fine-grained clustering on multiple smaller clusters using all features, $d = 52$
+        * $$d = 52$$ to $$d' = 8$$ 
+        * $$\{Avg, SD\} \times \{fph, ppf, bpp, bps\}$$
+    * First-step Coarse grained clustering on entire dataset, $$d' = 8$$
+    * Second-step Fine-grained clustering on multiple smaller clusters using all features, $$d = 52$$
 * FP and FN can be reduced by A-plane
 
 ### A-plane Clustering
@@ -166,8 +166,8 @@
 
 ### Cross-plane Correlation
 
-* Calculate botnet score, $s(h)$, for every host $h$
-* Similarity score between host $h_i$ and $h_j$
+* Calculate botnet score, $$s(h)$$, for every host $$h$$
+* Similarity score between host $$h_i$$ and $$h_j$$
     * Indication function
 *  Hierarchical clustering
 

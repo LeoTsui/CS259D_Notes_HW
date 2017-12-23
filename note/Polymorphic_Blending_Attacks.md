@@ -137,24 +137,24 @@
 
 * **Minimize the maximum frequency difference**
 * Padding
-    * $\hat{\omega}$, substituted attack body before padding
-    * $\acute{\omega}$, substituted attack body after padding
-    * $\|\omega\|$, length of $\omega$
-    * $i$, idx of characters
-    * $x$, characters
-        * $x_i$, the $i^{th}$ of the characters
-    * $\lambda$, $\#$ occurrences
-        * $\lambda_i$, $\#$ occurrences of $x_i$
-    * $\|\acute{\omega}\| = \|\hat{\omega}\| + \sum_{i=1}^n{\lambda_i}$
-    * $f(x_i)$, relative frequency of character $x_i$ in normal traffic
-    * $\hat{f}(x_i)$, relative frequency of character $x_i$ in substituted attack traffic
-    * $\lambda_i = \|\acute{\omega}\|f(x_i) - \|\hat{\omega}\|\hat{f}(x_i)$
-    * For some characters, $f{x_i} < \hat{f}(x_i)$
+    * $$\hat{\omega}$$, substituted attack body before padding
+    * $$\acute{\omega}$$, substituted attack body after padding
+    * $$\|\omega\|$$, length of $$\omega$$
+    * $$i$$, idx of characters
+    * $$x$$, characters
+        * $$x_i$$, the $$i^{th}$$ of the characters
+    * $$\lambda$$, $$\#$$ occurrences
+        * $$\lambda_i$$, $$\#$$ occurrences of $$x_i$$
+    * $$\|\acute{\omega}\| = \|\hat{\omega}\| + \sum_{i=1}^n{\lambda_i}$$
+    * $$f(x_i)$$, relative frequency of character $$x_i$$ in normal traffic
+    * $$\hat{f}(x_i)$$, relative frequency of character $$x_i$$ in substituted attack traffic
+    * $$\lambda_i = \|\acute{\omega}\|f(x_i) - \|\hat{\omega}\|\hat{f}(x_i)$$
+    * For some characters, $$f{x_i} < \hat{f}(x_i)$$
     * **The most frequent such character need not be padded** 
-    * Let $\delta = \max{(\hat{f}(x_i) / f(x_i))}$ be the maximum overuse
-    * $\lambda_i = \|\hat{\omega}\|(\delta f(x_i) - \hat{f}(x_i))$
+    * Let $$\delta = \max{(\hat{f}(x_i) / f(x_i))}$$ be the maximum overuse
+    * $$\lambda_i = \|\hat{\omega}\|(\delta f(x_i) - \hat{f}(x_i))$$
 * Substitution
-    * To minimize padding we need to minimize　$\delta$
+    * To minimize padding we need to minimize　$$\delta$$
     * Case 1: attack chars are less numerous than legitimate chars
         * A greedy algorithm that generates one-to-many mapping
         * Sort characters by frequency in attack and legitimate Traffic

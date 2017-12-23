@@ -79,11 +79,11 @@
 ## Feature(Metrics)
 
 * Direction
-    * For consecutive points $A$, $B$: $\vec{AB}$
+    * For consecutive points $$A$$, $$B$$: $$\vec{AB}$$
 * Angle of Curvature
-    * For any three consecutive points $A$, $B$, $C$: $\angle{ABC}$, angle between $\vec{AB}$ and $\vec{BC}$
+    * For any three consecutive points $$A$$, $$B$$, $$C$$: $$\angle{ABC}$$, angle between $$\vec{AB}$$ and $$\vec{BC}$$
 * Curvature Distance
-    * For any three consecutive points $A$, $B$, $C$: ratio between $\vert\vec{AB}\vert$ to length of perpendicular distance from B to $\vec{AC}$
+    * For any three consecutive points $$A$$, $$B$$, $$C$$: ratio between $$\vert\vec{AB}\vert$$ to length of perpendicular distance from B to $$\vec{AC}$$
 * Speed
     * `the total distance traveled for that action` divided by `the total time taken to complete the action`
 * Pause-and-Click
@@ -109,13 +109,13 @@
 ### Distance Between Distributions
 
 * Since angle-based features are continuous variables
-* Divided into discrete intervals, $bins$
+* Divided into discrete intervals, $$bins$$
 * Calculate PDF for each distribution
-* $\mathrm{PDF}_p = \{p_1, p_2, ..., p_n\}$
-    * $\mathrm{PDF}_p$ for distribution $p$
-    * $p_i$ represents the probability of falling into the $bin_i$
-*  the distance between $\mathrm{PDF}_p$, $\mathrm{PDF}_p$
-    * $D(p,q)=\sum_i^n \vert p_i-q_i\vert$
+* $$\mathrm{PDF}_p = \{p_1, p_2, ..., p_n\}$$
+    * $$\mathrm{PDF}_p$$ for distribution $$p$$
+    * $$p_i$$ represents the probability of falling into the $$bin_i$$
+*  the distance between $$\mathrm{PDF}_p$$, $$\mathrm{PDF}_p$$
+    * $$D(p,q)=\sum_i^n \vert p_i-q_i\vert$$
 
 ### Number of Mouse Clicks in a Real Session
 

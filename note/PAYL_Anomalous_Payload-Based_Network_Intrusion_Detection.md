@@ -69,11 +69,11 @@
         * Inbound
         * Outbound
 * Measurement: n-gram frequencies
-    * Length $L$: frequency $= \#$ of occurrences $/ (L-n+1)$
-    * Use $n = 1$: 256 ASCII characters
-* $i$, observed length bin
-* $j$, port number
-* $M_{ij}$, average byte frequency and the standard deviation of each byte’s frequency
+    * Length $$L$$: frequency $$= \#$$ of occurrences $$/ (L-n+1)$$
+    * Use $$n = 1$$: 256 ASCII characters
+* $$i$$, observed length bin
+* $$j$$, port number
+* $$M_{ij}$$, average byte frequency and the standard deviation of each byte’s frequency
 
 
 ### Simplified Mahalanobis Distance
@@ -88,13 +88,13 @@
         * Avoid same frequency
         * Reflect statistical confidence of sampled training data
             * larger smoothing factor, less confidence
-* $x$, feature vector of the new observation
-* $\overline{y}$, averaged feature vector computed from the training dataset
-* $\overline{\sigma}$, standard deviation
-* $d(x, \overline{y}) = \sum_{i = 0}^{n - 1}{|x_i - \overline{y_i}| / ({\overline{\sigma} + \alpha})}$
+* $$x$$, feature vector of the new observation
+* $$\overline{y}$$, averaged feature vector computed from the training dataset
+* $$\overline{\sigma}$$, standard deviation
+* $$d(x, \overline{y}) = \sum_{i = 0}^{n - 1}{|x_i - \overline{y_i}| / ({\overline{\sigma} + \alpha})}$$
 * Intuitive Explanation
     * **A kind of "normalization" observation examples by "length bin", and summing the results**
-    * For each dimension (observed length bin, $i$)
+    * For each dimension (observed length bin, $$i$$)
         * Measure the Euclidean distance between a sample data and the center point
         * Normalize with smoothed SD
     * Summation
@@ -103,8 +103,8 @@
 
 * Adapt to concept Drift
 * Use streaming measurements for mean and standard deviation
-* $\overline{x} = \overline{x} + {(x_{N + 1} - \overline{x})} / {(N + 1)}$
-* Store the average of $x_i^2$, 256-element array
+* $$\overline{x} = \overline{x} + {(x_{N + 1} - \overline{x})} / {(N + 1)}$$
+* Store the average of $$x_i^2$$, 256-element array
 
 ### Reduced Model Size by Clustering
 

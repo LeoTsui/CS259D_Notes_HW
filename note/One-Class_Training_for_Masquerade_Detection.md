@@ -64,10 +64,10 @@
         * Each feature = # of occurrences of command
         * Performs better at large vocabulary sizes
     * One-class Naïve Bayes
-        *  Compute $p(c_i|u)$ only for user's self profile
-        *  For masquerader, assume each command has probability $1/N$ (completely random)
+        *  Compute $$p(c_i|u)$$ only for user's self profile
+        *  For masquerader, assume each command has probability $$1/N$$ (completely random)
             * Makes no assumption about masquerader
-        *  Given a block $d$, compute: $p(d|self)/p(d|non-self)$
+        *  Given a block $$d$$, compute: $$p(d|self)/p(d|non-self)$$
         *  Threshold controls false positive vs detection rate
 * One-class support vector machine
     * Map data to a high-dimensional feature space

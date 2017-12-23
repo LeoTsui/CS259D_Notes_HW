@@ -68,13 +68,13 @@
 ###  Adversarial learning game
 
 * Exploratory game
-    * Defender Choose procedure $H$ for selecting hypothesis
-    * Attacker Choose procedure $A_E$ for selecting distribution
+    * Defender Choose procedure $$H$$ for selecting hypothesis
+    * Attacker Choose procedure $$A_E$$ for selecting distribution
         * Construct an unfavorable evaluation distribution concentrating probability mass on high-cost instances
-        * Procedure $A_E$ try to construct $P_E$
+        * Procedure $$A_E$$ try to construct $$P_E$$
 * Causative game
-    * Defender Choose procedure $H$ for selecting hypothesis
-    * Attacker Choose procedures $A_T$ and $A_E$ for selecting distributions
+    * Defender Choose procedure $$H$$ for selecting hypothesis
+    * Attacker Choose procedures $$A_T$$ and $$A_E$$ for selecting distributions
 * Defenders' trade-off
     * Better performance on worst-case vs Less effective on average
 
@@ -87,11 +87,11 @@
 * Contamination in PAC learning (Kearns and Li 1993)
     * PAC, probably approximately correct
     * **Learner**
-        * Success with $P \geq 1 - \delta$
-        * $P_\text{incorrect} \leq \epsilon$
+        * Success with $$P \geq 1 - \delta$$
+        * $$P_\text{incorrect} \leq \epsilon$$
     * **Attacker**
-        * Control over training data with fraction $\beta$
-        * Prevent the learner form succeeding if $\beta \geq \epsilon / (1 + \epsilon)$
+        * Control over training data with fraction $$\beta$$
+        * Prevent the learner form succeeding if $$\beta \geq \epsilon / (1 + \epsilon)$$
 * Spam foretold
     * **Attacker**
         * Send non-spam resembling the desired spam

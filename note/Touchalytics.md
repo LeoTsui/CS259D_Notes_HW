@@ -64,13 +64,13 @@
 * Stroke
     * Sequence of touch data starting with touching the screen, ending with lifting the finger
     * Sequence of vectors:
-        * $s_n = (x_n, y_n, t_n, p_n, A_n, o_n^f, o_n^{ph}),\ n \in \{1, 2, ..., N\}$
-            * $x_n$, $y_n$, location
-            * $t_n$, time stamp
-            * $p_n$, pressure on screen
-            * $A_n$, area occluded by the finger
-            * $o_n^f$, orientation of the finger
-            * $o_n^{ph}$, orientation of the phone (landscape or portrait)
+        * $$s_n = (x_n, y_n, t_n, p_n, A_n, o_n^f, o_n^{ph}),\ n \in \{1, 2, ..., N\}$$
+            * $$x_n$$, $$y_n$$, location
+            * $$t_n$$, time stamp
+            * $$p_n$$, pressure on screen
+            * $$A_n$$, area occluded by the finger
+            * $$o_n^f$$, orientation of the finger
+            * $$o_n^{ph}$$, orientation of the phone (landscape or portrait)
 * 30 features
 * Information entropy
 * Most informative single features
@@ -78,7 +78,7 @@
     * Stroke velocity
     * Fingertip pressure on screen
     * Direction of the stroke
-* $x\text{-position}$ coordinate more informative than $y\text{-position}$ coordinate
+* $$x\text{-position}$$ coordinate more informative than $$y\text{-position}$$ coordinate
 
 ## Classification
 

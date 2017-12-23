@@ -128,47 +128,47 @@
 
 #### Notation
 
-* $T$, $\#$ instances
-* $n$, $\#$ base IDSs
-* $t$, $(t=1,...,T)$, a certain time or trial
-* $x_t$, a vector of $n$ IDS's output
-    * A-IDS receives $x_t$
-    * $x_t = (x_{t,1}, ..., x_{t,n})$
-        * where $x_{t, i} \in \{0\text{(normal)}, 1\text{(attack)}\}$
-* $pred(t)$, the prediction of A-IDS
-* $y_t$, $y_t \in \{0, 1\}$, the true label of the $t\text{-th}$ instance at the time $t$
-* $L$, loss function
-    * For the trial $t$, and the $i\text{-th}$ IDS
-    * $L_{t, i} = (y_t - x_{t, i})^2$
+* $$T$$, $$\#$$ instances
+* $$n$$, $$\#$$ base IDSs
+* $$t$$, $$(t=1,...,T)$$, a certain time or trial
+* $$x_t$$, a vector of $$n$$ IDS's output
+    * A-IDS receives $$x_t$$
+    * $$x_t = (x_{t,1}, ..., x_{t,n})$$
+        * where $$x_{t, i} \in \{0\text{(normal)}, 1\text{(attack)}\}$$
+* $$pred(t)$$, the prediction of A-IDS
+* $$y_t$$, $$y_t \in \{0, 1\}$$, the true label of the $$t\text{-th}$$ instance at the time $$t$$
+* $$L$$, loss function
+    * For the trial $$t$$, and the $$i\text{-th}$$ IDS
+    * $$L_{t, i} = (y_t - x_{t, i})^2$$
     * Measure the discrepancy between the true label and the predictions of the base IDSs
-* $v_t$, the weight vector maintained by the A-IDS
-    * For the trial $t$, and the $i\text{-th}$ IDS
-    * $v_t = (v_{t,1}, v_{t,2}, ..., v_{t,n})$
-    * $v_{t,i} \geq 0$
-    * $\sum_{i = 1}^n v_{t,i} = 1$
+* $$v_t$$, the weight vector maintained by the A-IDS
+    * For the trial $$t$$, and the $$i\text{-th}$$ IDS
+    * $$v_t = (v_{t,1}, v_{t,2}, ..., v_{t,n})$$
+    * $$v_{t,i} \geq 0$$
+    * $$\sum_{i = 1}^n v_{t,i} = 1$$
 
 #### Mixing Algorithm
 
 * Parameters
-    * $\eta > 0$, learning rate
-    * $0 \leq \alpha \leq 1$
-    * $n$
+    * $$\eta > 0$$, learning rate
+    * $$0 \leq \alpha \leq 1$$
+    * $$n$$
 * Initialization
-    * $v_1 = v_0^m = (1/n, ...,  1/n, ..., 1/n)$
-* For $t=1 \to T$
+    * $$v_1 = v_0^m = (1/n, ...,  1/n, ..., 1/n)$$
+* For $$t=1 \to T$$
     * Prediction
-        * $\hat y_t = v_t \cdot x_t$
-        * $pred(t)$:
-            * $0$, $0 \leq \hat y_t \leq 0.5$
-            * $1$, $\hat y_t \geq 0.5$
+        * $$\hat y_t = v_t \cdot x_t$$
+        * $$pred(t)$$:
+            * $$0$$, $$0 \leq \hat y_t \leq 0.5$$
+            * $$1$$, $$\hat y_t \geq 0.5$$
     * *Loss Update*
-        * Find the best IDS from a pool of $n$ base ones
-        * $L_{t, i} = (y_t - x_{t, i})^2$
-        * $e^{-\eta L_{t,i}}$, a factor
-        * $v_{t,i}^m = {v_{t,i} e^{-\eta L_{t,i}}} / {\sum_{j=1}^n v_{t,j} e^{-\eta L_{t,j}}}$
+        * Find the best IDS from a pool of $$n$$ base ones
+        * $$L_{t, i} = (y_t - x_{t, i})^2$$
+        * $$e^{-\eta L_{t,i}}$$, a factor
+        * $$v_{t,i}^m = {v_{t,i} e^{-\eta L_{t,i}}} / {\sum_{j=1}^n v_{t,j} e^{-\eta L_{t,j}}}$$
     * *Mixing Update*
-        * $av_t = \frac{1}{t} \sum_{q=0}^{t-1} v_q^m$, average weight vector 
-        * $v_{t+1} = \alpha av_t + (1-\alpha)v_t^m$
+        * $$av_t = \frac{1}{t} \sum_{q=0}^{t-1} v_q^m$$, average weight vector 
+        * $$v_{t+1} = \alpha av_t + (1-\alpha)v_t^m$$
 
 ## Experimental
 
@@ -183,24 +183,24 @@
         * Good performance on special segments
         * Need combination
     * *Loss Update*
-        * $\eta = 0.1$
+        * $$\eta = 0.1$$
     * Not ***Mixing** Update*
-        * $v_{t_1,i} = v_{t,i}^m$
+        * $$v_{t_1,i} = v_{t,i}^m$$
         * Combination is not help
         * The performance is almost the same as the best IDS
 * Combining (A-IDS)
     * Random permutation
     * 1O-folds cross-validation
     * Mixing Algorithm
-        * $\eta = 0.1$
-        * $\alpha = 0.001$
+        * $$\eta = 0.1$$
+        * $$\alpha = 0.001$$
         * Uniform Past update
 * Expanding (A-ExIDS)
 
 ## Limitation
 
 * Double-edge knife of *Lose Update*
-    * The best $v_{t,i}$($L_{t,i} = 0$) controls $v_{t,i}^m$
+    * The best $$v_{t,i}$$($$L_{t,i} = 0$$) controls $$v_{t,i}^m$$
     * Hard to recover if an IDS temporarily performs poorly and then performs well
     * Consequence:
         * Slow adaptation to changes in IDS performances

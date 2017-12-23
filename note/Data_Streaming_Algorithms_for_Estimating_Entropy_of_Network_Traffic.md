@@ -67,45 +67,45 @@
 
 ### Notation
 
-* $[n]=\{1,2,3,...,n\}$, set of all items come over the stream
-    * $n$ can be various when measuring different features
+* $$[n]=\{1,2,3,...,n\}$$, set of all items come over the stream
+    * $$n$$ can be various when measuring different features
         * Port
         * Source or destination addresses
-* $m_i$, the frequency of item $i \in [n]$
-* $m$, the total number of items in the stream
-    * $m = \sum_{i=1}^n m_i$
-* $a_j \in [n]$, the $j\text{th}$ item obersved in the stream
-* $n_0$, $\#$ distince items appeared in the stream
-    * not all $n$ items are present
-* $n \gg m$
-* $H \equiv - \sum_{i=1}^n \frac{m_i}{m} \log \frac{m_i}{m}$, entropy(sample entropy)
-$$H = \log m - \frac{1}{m} \sum_i m_i \log m_i$$
+* $$m_i$$, the frequency of item $$i \in [n]$$
+* $$m$$, the total number of items in the stream
+    * $$m = \sum_{i=1}^n m_i$$
+* $$a_j \in [n]$$, the $$j\text{th}$$ item obersved in the stream
+* $$n_0$$, $$\#$$ distince items appeared in the stream
+    * not all $$n$$ items are present
+* $$n \gg m$$
+* $$H \equiv - \sum_{i=1}^n \frac{m_i}{m} \log \frac{m_i}{m}$$, entropy(sample entropy)
+$$$$H = \log m - \frac{1}{m} \sum_i m_i \log m_i$$$$
 
 ### Relative Error
 
-* $S \equiv \sum_i m_i \log m_i$
-$$H = \log m - \frac{S}{m}$$
-* $\vert S - \tilde{S} \vert / S$
-    * $S$, true value
-    * $\tilde{S}$, estimated value
-* $\tilde{H} = \log m - \tilde{S} / m$, estimated value of $H$
-* $S$ with relative error at most $\epsilon$
-    * $(1-\epsilon)S \le \tilde{S} \le (1+\epsilon)S$
-$$\frac{\vert H - \tilde{H} \vert}{H} \le \epsilon \frac{S}{H m} $$
+* $$S \equiv \sum_i m_i \log m_i$$
+$$$$H = \log m - \frac{S}{m}$$$$
+* $$\vert S - \tilde{S} \vert / S$$
+    * $$S$$, true value
+    * $$\tilde{S}$$, estimated value
+* $$\tilde{H} = \log m - \tilde{S} / m$$, estimated value of $$H$$
+* $$S$$ with relative error at most $$\epsilon$$
+    * $$(1-\epsilon)S \le \tilde{S} \le (1+\epsilon)S$$
+$$$$\frac{\vert H - \tilde{H} \vert}{H} \le \epsilon \frac{S}{H m} $$$$
 
 ### Approximation Algorithm
 
-* $(\epsilon, \delta)$-Approximation Algorithm
-    * $X$, real values
-    * $\tilde{X}$, estimated values
-    * Given a relative error of at most $\epsilon$ with probability at least $1-\delta$ 
+* $$(\epsilon, \delta)$$-Approximation Algorithm
+    * $$X$$, real values
+    * $$\tilde{X}$$, estimated values
+    * Given a relative error of at most $$\epsilon$$ with probability at least $$1-\delta$$ 
     * s.t.
-$$P(\vert X - \tilde{X} \vert \le X \epsilon) \ge 1-\delta$$
+$$$$P(\vert X - \tilde{X} \vert \le X \epsilon) \ge 1-\delta$$$$
 
 ## Lower Bound
 
-* $H \le \alpha \log m$
-$$O(\log m)$$
+* $$H \le \alpha \log m$$
+$$$$O(\log m)$$$$
 * Observed errors on the traffic traces are much smaller than the theoretical guarantees
     * Alogrithm must guarantee the error bound for any stream with any distribution. 
     * Real packet traces have considerable underlying structure
@@ -122,10 +122,10 @@ $$O(\log m)$$
         * Decide counters
     2.  Online stage
         * Keep an exact counter for the number of subsequent occurrences of that item
-            * Select position $k$
-            * Keep exact counter, $\alpha _k$, for the items' location between position $k$ and $m$
+            * Select position $$k$$
+            * Keep exact counter, $$\alpha _k$$, for the items' location between position $$k$$ and $$m$$
     3. Post-processing stage
-        * Use various counters to obtain an estimator for the $S$ value for the stream
+        * Use various counters to obtain an estimator for the $$S$$ value for the stream
 
 ### Sieving Algorithm
 
@@ -133,7 +133,7 @@ $$O(\log m)$$
     * Sieve the elephants from the mice
         * Threshold = 2
 * Post-processing stage
-    * $S_\text{elephant} + S_\text{mice}$
+    * $$S_\text{elephant} + S_\text{mice}$$
 
 ## Reference
 

@@ -68,8 +68,8 @@
     * Set a dynamic detection threshold for the attribute
 * Detection phase
     * Evaluate the observed values of the attribute
-    * Outputs: anomaly score, $[0, 1]$
-        * $0$, high anomalous value
+    * Outputs: anomaly score, $$[0, 1]$$
+        * $$0$$, high anomalous value
         * Weighted sum of the individual model scores
     * Alert
 
@@ -139,13 +139,13 @@
     * Chebyshev inequality
         * Weak bound
 * Generalization
-    * $\mu$, sample mean
-    * $\sigma^2$, variance
-    * $l_{\text{obsv}}$, observed attribute length
-    * $l_{\text{orig}}$, anomalous attribute length
-    * $d_{\text{attr}}$, configurable distance
-    * $\psi_{\text{attrlen}}(l_{\text{obsv}}, l_{\text{orig}})$, similarity operator
-    * $\psi_{\text{attrlen}} \equiv \lvert \frac{\sigma^2}{(l_{\text{obsv}} - \mu)^2} - \frac{\sigma^2}{(l_{\text{orig}} - \mu)^2} \rvert < d_{\text{attr}}$
+    * $$\mu$$, sample mean
+    * $$\sigma^2$$, variance
+    * $$l_{\text{obsv}}$$, observed attribute length
+    * $$l_{\text{orig}}$$, anomalous attribute length
+    * $$d_{\text{attr}}$$, configurable distance
+    * $$\psi_{\text{attrlen}}(l_{\text{obsv}}, l_{\text{orig}})$$, similarity operator
+    * $$\psi_{\text{attrlen}} \equiv \lvert \frac{\sigma^2}{(l_{\text{obsv}} - \mu)^2} - \frac{\sigma^2}{(l_{\text{orig}} - \mu)^2} \rvert < d_{\text{attr}}$$
 
 ### Character distribution
 
@@ -158,17 +158,17 @@
             * Sharp drop-off, large occurrences of a single character
             * Little drop-off, random character values
 * Generalization
-    * $m$, $\#$ dominating character value
-    * $c_i$, the $i^{th}$ domination character value
-    * $f_i$, corresponding relative frequency
-    * $C$, set of $m$ dominating character values and frequency pairs extracted from the model
-    * $C = \{ (c_1, f_1), (c_2, f_2), (c_m, f_m) \}$
-    * $C_{\text{obsv}}$, set of dominating characters from the observed attribute value
-    * $C_{\text{orig}}$, corresponding set from he original anomalous value
+    * $$m$$, $$\#$$ dominating character value
+    * $$c_i$$, the $$i^{th}$$ domination character value
+    * $$f_i$$, corresponding relative frequency
+    * $$C$$, set of $$m$$ dominating character values and frequency pairs extracted from the model
+    * $$C = \{ (c_1, f_1), (c_2, f_2), (c_m, f_m) \}$$
+    * $$C_{\text{obsv}}$$, set of dominating characters from the observed attribute value
+    * $$C_{\text{orig}}$$, corresponding set from he original anomalous value
     * Sharp drop-off
-        * $\psi_{\text{cdist}} \equiv min \{ \lvert f_{\text{obsv}, i} - f_{\text{orig}, j} \rvert \} < d_{\text{cdist}}$
+        * $$\psi_{\text{cdist}} \equiv min \{ \lvert f_{\text{obsv}, i} - f_{\text{orig}, j} \rvert \} < d_{\text{cdist}}$$
     * Little drop-off
-        * $\psi_{\text{cdist}} \equiv max \{ \lvert f_{\text{obsv}, i} - f_{\text{orig}, j} \rvert \} < d_{\text{cdist}}$
+        * $$\psi_{\text{cdist}} \equiv max \{ \lvert f_{\text{obsv}, i} - f_{\text{orig}, j} \rvert \} < d_{\text{cdist}}$$
 
 ### Structural inference
 
@@ -184,7 +184,7 @@
         * "A" for all upper-case alphabetic chars
         * "0" for all numeric chars
         * All other chars unchanged
-    * $\psi_{\text{structure}} ( s_{\text{obsv}}, s_{\text{orig}} ) \equiv s_{\text{obsv}, i} - s_{\text{orig}, i}$
+    * $$\psi_{\text{structure}} ( s_{\text{obsv}}, s_{\text{orig}} ) \equiv s_{\text{obsv}, i} - s_{\text{orig}, i}$$
 
 ### Token finder
 
@@ -193,10 +193,10 @@
     * Flags/indices
     * Random/enumeration
 * Generalization
-    * $lex$, lexicographical similarity function
+    * $$lex$$, lexicographical similarity function
         * Hamming distance
         * Levenshtein distance
-    * $\psi_{\text{token}} \equiv lex(l_{\text{obsv}}, l_{\text{orig}})$
+    * $$\psi_{\text{token}} \equiv lex(l_{\text{obsv}}, l_{\text{orig}})$$
 
 ## Reference
 

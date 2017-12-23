@@ -107,37 +107,37 @@
 
 ## Data model
 
-* An ordered set $U=\{u_1,u_2,...,u_m\}$ of URIs
+* An ordered set $$U=\{u_1,u_2,...,u_m\}$$ of URIs
     * Extract from successful GET requests
-    * $200 \leq \text{return-code} < 300$
-* Components of $u_i$
+    * $$200 \leq \text{return-code} < 300$$
+* Components of $$u_i$$
     * Path to desired resource: pathi
     * Optional path information: pinfoi
-    * Optional query string: $q$
+    * Optional query string: $$q$$
         * Following a "?" Character
         * Passing parameters to referenced resource
-        * Attributes and values: $q = (a_1, v_1), (a_2, v_2), ..., (a_n, v_n)$
-        * $A$, the set of all attributes, $a_i$ belongs to $A$
-        * $v_i$ is a string
-        * $S_q = \{a_1=v_1, a_2=v_2, ..., a_n=v_n\}$
-* URIs without query strings not included in $U$
-* $U_r$: subset of $U$ with resource path $r$
-    * Partition $U$
-    * Anomaly detection run independently on each $U_r$
+        * Attributes and values: $$q = (a_1, v_1), (a_2, v_2), ..., (a_n, v_n)$$
+        * $$A$$, the set of all attributes, $$a_i$$ belongs to $$A$$
+        * $$v_i$$ is a string
+        * $$S_q = \{a_1=v_1, a_2=v_2, ..., a_n=v_n\}$$
+* URIs without query strings not included in $$U$$
+* $$U_r$$: subset of $$U$$ with resource path $$r$$
+    * Partition $$U$$
+    * Anomaly detection run independently on each $$U_r$$
 
 ## Detection models
 
 * One model, one query
-* Task: returns probability $p$ of normalcy
+* Task: returns probability $$p$$ of normalcy
 * Alerting on a single anomalous attribute is **necessarily  excessively cautious**
 * Anomaly Score
-* Has an associated weight $w$
-    * Default $\text{value} = 1$, in this paper
+* Has an associated weight $$w$$
+    * Default $$\text{value} = 1$$, in this paper
 * Training mode
     1. Create profiles for each server-side program  and each of its attributes
     2. Establish suitable thresholds
         * Store the highest anomaly score
-        * Default thresholds: $10\%$ larger than the max anomaly score
+        * Default thresholds: $$10\%$$ larger than the max anomaly score
 * Detection mode
 
 ### Attribute length
@@ -160,12 +160,12 @@
 
 #### Learning
 
-* Estimate mean μ and variance $\sigma^2$ of lengths in training data
+* Estimate mean μ and variance $$\sigma^2$$ of lengths in training data
 
 #### Detection
 
 * Strings with length larger than mean
-    * If $\text{length} < \text{mean}$, $p = 1$
+    * If $$\text{length} < \text{mean}$$, $$p = 1$$
     * Padding not effective
 * **Chebyshev inequality is weak bound**
 * **Useful to flag only significant outliers**
@@ -174,7 +174,7 @@
 
 * Character distribution: sorted relative frequencies
     * Lost relative frequencies
-    * Example: $\text{passwd} \Rightarrow 0.33, 0.17, 0.17, 0.17, 0.17, 0, ..., 0$
+    * Example: $$\text{passwd} \Rightarrow 0.33, 0.17, 0.17, 0.17, 0.17, 0, ..., 0$$
     * Fall smoothly for human-readable tokens
     * Fall quickly for malicious input
 
@@ -201,14 +201,14 @@
 
 #### Detection
 
-* Variant of the $\text{Pearson}\ \chi^2\text{-test}$
+* Variant of the $$\text{Pearson}\ \chi^2\text{-test}$$
     * goodness-of-fit
-* Bins: $\{[0], [1, 3], [4, 6], [7, 11], [12, 15], [16, 255]\}$
+* Bins: $$\{[0], [1, 3], [4, 6], [7, 11], [12, 15], [16, 255]\}$$
 * For each query attribute:
     * Compute character distribution
-    * Observed values $O_i$ : Aggregate over bins
-    * Expected values $E_i$ : Learned character distribution attribute length
-* Compute: $\chi^2$
+    * Observed values $$O_i$$ : Aggregate over bins
+    * Expected values $$E_i$$ : Learned character distribution attribute length
+* Compute: $$\chi^2$$
 * Read corresponding probability
 
 ### Structural inference
@@ -235,37 +235,37 @@
 * Goal: Find a model(NFA) with highest likelihood given training examples
 * Markov model/Non-deterministic finite automaton (NFA)
     * "Reasonable generalizaton"
-    * $P_s(o)$: probability of emitting symbol $o$ at state $S$
-    * $P(t)$: probability of transition $t$
+    * $$P_s(o)$$: probability of emitting symbol $$o$$ at state $$S$$
+    * $$P(t)$$: probability of transition $$t$$
     * Output: paths from Start state to Terminalstate
 * Bayesian model induction:
-    * $P(\text{model}\mid\text{training}\_\text{data}) = \frac{p(\text{training}\_\text{data}\mid\text{model})*p(\text{model})}{p(\text{training}\_\text{data})}$
-    * $P(\text{training}\_\text{data})$ a scaling factor; ignored
-    * $P(\text{training}\_\text{data}\mid\text{model})$ computed as last slide
-    * $P(\text{model})$: preference towards smaller models
-        * Total number of states: $N$
-        * Total number of transitions at each state $S$: $T(S)$
-        * Total number of emissions at each state $S$: $E(S)$
+    * $$P(\text{model}\mid\text{training}\_\text{data}) = \frac{p(\text{training}\_\text{data}\mid\text{model})*p(\text{model})}{p(\text{training}\_\text{data})}$$
+    * $$P(\text{training}\_\text{data})$$ a scaling factor; ignored
+    * $$P(\text{training}\_\text{data}\mid\text{model})$$ computed as last slide
+    * $$P(\text{model})$$: preference towards smaller models
+        * Total number of states: $$N$$
+        * Total number of transitions at each state $$S$$: $$T(S)$$
+        * Total number of emissions at each state $$S$$: $$E(S)$$
     * Start with a model exactly reflecting input data
     * Gradually merge states
     * Until posterior probability does not increase
-    * Cost: $O((n*L)^3)$ with n training input strings, and L maximum length of each string
-    * Up to $n*L$ states
-    * $\frac{(n*L)(n*L-1)}{2}$ comparisons for each merging
-    * Up to $n*(L-1)$ merges
+    * Cost: $$O((n*L)^3)$$ with n training input strings, and L maximum length of each string
+    * Up to $$n*L$$ states
+    * $$\frac{(n*L)(n*L-1)}{2}$$ comparisons for each merging
+    * Up to $$n*(L-1)$$ merges
 * Optimizations
     * Viterbi path approximations
     * Path prefix compression
-    * Cost: $O(n*L^2)$
+    * Cost: $$O(n*L^2)$$
 
 #### Detection
 
 * First option: Compute probability of query attribute
-    * Issue: probabilities of all input words sum up to $1$
+    * Issue: probabilities of all input words sum up to $$1$$
     * all words have small probabilities
 * Output:
-    * $p = 1$ if word is a valid output of Markov model
-    * $p = 0$ otherwise
+    * $$p = 1$$ if word is a valid output of Markov model
+    * $$p = 0$$ otherwise
 
 ### Token finder
 
@@ -285,20 +285,20 @@
 * Enumerated or Random
 * Growth in # of different argument instances compared to total # of argument instances
 * Compute correlation between these numbers:
-* $F(x) = x$
-* $G(x)$, $G$ is like a "enumeration counter"
-    * $G(x) = G(x-1)+1$ if $\text{x-th}$ value is new
-    * $G(x) = G(x-1)-1$ if $\text{x-th}$ value was seen before
-    * $G(x) = 0$ if $x = 0$
-    * $Corr = \frac{Covar(F, G)}{\sqrt{Var(F)Var(G)}}$
-    * If $Corr < 0$, then enumeration
+* $$F(x) = x$$
+* $$G(x)$$, $$G$$ is like a "enumeration counter"
+    * $$G(x) = G(x-1)+1$$ if $$\text{x-th}$$ value is new
+    * $$G(x) = G(x-1)-1$$ if $$\text{x-th}$$ value was seen before
+    * $$G(x) = 0$$ if $$x = 0$$
+    * $$Corr = \frac{Covar(F, G)}{\sqrt{Var(F)Var(G)}}$$
+    * If $$Corr < 0$$, then enumeration
     * If enumeration, then store all values for use in detection phase
 
 #### Detection
 
 * If enumeration: value expected to be among stored values
-    * Output $p = 1$ or $p = 0$ correspondingly
-    * If random: $p = 1$
+    * Output $$p = 1$$ or $$p = 0$$ correspondingly
+    * If random: $$p = 1$$
     * Hash table lookup, efficiency
 
 ### Attribute presence or absence
@@ -318,14 +318,14 @@
 #### Learning
 
 * Create a model of acceptable subsets of attributes
-* Record each distinct set $S_q$
-    * Each query $q$ during training
+* Record each distinct set $$S_q$$
+    * Each query $$q$$ during training
     * Hash table
 
 #### Detection
 
 * Lookup the attribute set in hash table
-    * Return $p = 1$ or $p = 0$ correspondingly
+    * Return $$p = 1$$ or $$p = 0$$ correspondingly
 
 ### Attribute order
 
@@ -342,20 +342,20 @@
 
 #### Learning
 
-* Attribute $a_s$ precedes $a_t$ if as and at appear together in parameter list of at least one query and $a_s$ comes before $a_t$  when theyappear together
+* Attribute $$a_s$$ precedes $$a_t$$ if as and at appear together in parameter list of at least one query and $$a_s$$ comes before $$a_t$$  when theyappear together
 * Directed graph
-* $\text{number of vertices} = \text{number of attributes}$
+* $$\text{number of vertices} = \text{number of attributes}$$
 * For each training query, add edges between nodes of ordered attribute pairs
 * Find all strongly connected components (SCC) of the graph
 * Remove edges between nodes in same SCC
 * For each node, find all reachable nodes
 * Add corresponding pairs to set of precedence orders
-* Tarjan's algorithm, $O(v + e)$
+* Tarjan's algorithm, $$O(v + e)$$
 
 #### Detection
 
 * Find all order violations
-    * Return $p = 0$ or $p = 1$ correspondingly
+    * Return $$p = 0$$ or $$p = 1$$ correspondingly
 
 ### Access frequency
 
@@ -410,7 +410,7 @@
 
 #### Detection
 
-* $\text{Pearson}\ \chi^2\text{-test}$
+* $$\text{Pearson}\ \chi^2\text{-test}$$
 
 ### Invocation order
 
@@ -433,7 +433,7 @@
 
 #### Detection
 
-* $p = 1$ or $p = 0$ depending on session being an output of NFA
+* $$p = 1$$ or $$p = 0$$ depending on session being an output of NFA
 
 ## Limitation
 
