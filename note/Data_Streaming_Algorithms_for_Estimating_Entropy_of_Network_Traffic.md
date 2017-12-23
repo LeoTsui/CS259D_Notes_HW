@@ -79,19 +79,19 @@
     * not all $$n$$ items are present
 * $$n \gg m$$
 * $$H \equiv - \sum_{i=1}^n \frac{m_i}{m} \log \frac{m_i}{m}$$, entropy(sample entropy)
-$$$$H = \log m - \frac{1}{m} \sum_i m_i \log m_i$$$$
+$$H = \log m - \frac{1}{m} \sum_i m_i \log m_i$$
 
 ### Relative Error
 
 * $$S \equiv \sum_i m_i \log m_i$$
-$$$$H = \log m - \frac{S}{m}$$$$
+$$H = \log m - \frac{S}{m}$$
 * $$\vert S - \tilde{S} \vert / S$$
     * $$S$$, true value
     * $$\tilde{S}$$, estimated value
 * $$\tilde{H} = \log m - \tilde{S} / m$$, estimated value of $$H$$
 * $$S$$ with relative error at most $$\epsilon$$
     * $$(1-\epsilon)S \le \tilde{S} \le (1+\epsilon)S$$
-$$$$\frac{\vert H - \tilde{H} \vert}{H} \le \epsilon \frac{S}{H m} $$$$
+$$\frac{\vert H - \tilde{H} \vert}{H} \le \epsilon \frac{S}{H m} $$
 
 ### Approximation Algorithm
 
@@ -100,12 +100,12 @@ $$$$\frac{\vert H - \tilde{H} \vert}{H} \le \epsilon \frac{S}{H m} $$$$
     * $$\tilde{X}$$, estimated values
     * Given a relative error of at most $$\epsilon$$ with probability at least $$1-\delta$$ 
     * s.t.
-$$$$P(\vert X - \tilde{X} \vert \le X \epsilon) \ge 1-\delta$$$$
+$$P(\vert X - \tilde{X} \vert \le X \epsilon) \ge 1-\delta$$
 
 ## Lower Bound
 
 * $$H \le \alpha \log m$$
-$$$$O(\log m)$$$$
+$$O(\log m)$$
 * Observed errors on the traffic traces are much smaller than the theoretical guarantees
     * Alogrithm must guarantee the error bound for any stream with any distribution. 
     * Real packet traces have considerable underlying structure
