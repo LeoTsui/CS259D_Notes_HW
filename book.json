@@ -2,6 +2,23 @@
     "author": "Leo Tsui",
     "title": "CS259D Note",
     "description": "This Note is the supplement to papers and handouts of CS 259D",
+    "links": {
+        "sharing": {
+            "facebook": true,
+            "twitter": true,
+            "google": true,
+            "weibo": true,
+            "instapaper": false,
+            "vk": false,
+            "all": [
+                "facebook", "google", "twitter",
+                "weibo", "instapaper"
+            ]
+        },
+        "sidebar": {
+            "CS259D Note": "/"
+        }
+    },
     "plugins": [
         "katex",
         "github",
