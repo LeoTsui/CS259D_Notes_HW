@@ -139,8 +139,8 @@
 
 * C&C location resolution
 * Static Lists
-        * Hard-coded list of IP addresses
-        * Can be detected via a feed of botnet IPs
+    * Hard-coded list of IP addresses
+    * Can be detected via a feed of botnet IPs
 * Fluxing
     * Add resilience
     * Types
