@@ -2,3 +2,7 @@
 
 _book
 node_modules
+
+# Chinese for paper.kakapo.ml
+
+*.cn.md

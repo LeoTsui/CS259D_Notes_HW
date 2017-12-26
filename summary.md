@@ -40,8 +40,7 @@
     * [Data Streaming Algorithms for Estimating Entropy of Network Traffic](note/Data_Streaming_Algorithms_for_Estimating_Entropy_of_Network_Traffic.md)
 * Homeworks
     * Homework1
-        * Question 1. Botnets
-            * [Mirai](hw/hw1/q1_mirai.md)
+        * Question 1. [Botnets](hw/hw1/q1_mirai.md)
         * Question 2. [Anomaly Detection via "Eigenface" of Command History](hw/hw1/q2_eigenface.md)
         * Question 3. [Continuous Authentication via Biometric Behavior](hw/hw1/q3_keystroke.md)
     * Homework2

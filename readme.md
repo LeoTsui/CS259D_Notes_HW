@@ -2,7 +2,9 @@
 
 **This Note is the supplement to papers and handouts of [CS 259D](https://web.stanford.edu/class/cs259d)**
 
-[GitBook: CS259D Note](https://leotsui.gitbooks.io/cs259d-note/)
+Github: [CS259D_Note_HW](https://github.com/LeoTsui/CS259D_Note_HW)
+
+GitBook: [CS259D Note](https://leotsui.gitbooks.io/cs259d-note/)
 
 ---
 
@@ -143,7 +145,6 @@
 ### Homework1
 
 * Question 1. Botnets
-    * Mirai
 * Question 2. Anomaly Detection via "Eigenface" of Command History
 * Question 3. Continuous Authentication via Biometric Behavior
 
