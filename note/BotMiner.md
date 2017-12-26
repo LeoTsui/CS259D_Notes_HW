@@ -84,7 +84,7 @@
     * Source port
     * Destination IP
     * Destination port
-    * # packets, both directions
+    * \# packets, both directions
     * Bytes, both directions
 
 ### A-plane Monitor
