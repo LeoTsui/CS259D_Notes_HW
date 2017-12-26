@@ -62,7 +62,7 @@
 * DNS traffic from the Security Information Exchange (SIE)
     * Response data from authoritative name servers in North America & Europe
     * 2.5 months
-    * >100 billion DNS queries (1 million queries/minute on average)
+    * More than 100 billion DNS queries (1 million queries/minute on average)
     * 4.8 million distinct domain names
     * Filtering
         * Alexa top 1000 (20% reduction)
@@ -139,9 +139,9 @@
         * $$P^+(t)$$, Average of next $$8$$ time intervals
         * $$d(t) = |P^+(t) - P^-(t)|$$
     * Apply Cumulative Sum (CUSUM) algorithm to $$d(t)$$
-        * Detect times $$t$$, when $$d(t)$$ is large and is a $$local_{max}$$
-        * $$CUSUM(t) = Max\{0, CUSUM(t-1) + d(t) - local_{max}\}$$
-        * Report $$t$$ as change point if: $$CUSUM(t) > cusum_{max}$$
+        * Detect times $$t$$, when $$d(t)$$ is large and is a $$local\_max$$
+        * $$CUSUM(t) = Max\{0, CUSUM(t-1) + d(t) - local\_max\}$$
+        * Report $$t$$ as change point if: $$CUSUM(t) > cusum\_max$$
 
 #### Detecting Similar Daily Behavior
 

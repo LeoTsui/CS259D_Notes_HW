@@ -3,8 +3,7 @@
 * [CS 259D Note Introduction](readme.md)
 * Note
     * [Introduction](note/Introduction.md)
-    * Botnets
-        * [Botnet](note/Botnet.md)
+    * [Botnets](note/Botnet.md)
         * [BotFinder](note/BotFinder.md)
         * [BotMiner](note/BotMiner.md)
         * [EXPOSURE](note/EXPOSURE.md)
