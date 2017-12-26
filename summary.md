@@ -39,13 +39,13 @@
     * [Data Streaming Algorithms for Estimating Entropy of Network Traffic](note/Data_Streaming_Algorithms_for_Estimating_Entropy_of_Network_Traffic.md)
 * Homeworks
     * Homework1
-        * Question 1. [Botnets](hw/hw1/q1_mirai.md)
-        * Question 2. [Anomaly Detection via "Eigenface" of Command History](hw/hw1/q2_eigenface.md)
-        * Question 3. [Continuous Authentication via Biometric Behavior](hw/hw1/q3_keystroke.md)
+        * [1. Botnets](hw/hw1/q1_mirai.md)
+        * [2. Anomaly Detection via "Eigenface" of Command History](hw/hw1/q2_eigenface.md)
+        * [3. Continuous Authentication via Biometric Behavior](hw/hw1/q3_keystroke.md)
     * Homework2
-        * Question 1. [Quizzes](hw/hw2/q1_Quiz.md)
-        * Question 2. [Touch Biometrics](hw/hw2/q2_Touch_Biometrics.md)
-        * Question 3. [Merits of Entropy in Attack Detection/Diagnostics](hw/hw2/q3_server_log_entropy.md)
+        * [1. Quizzes](hw/hw2/q1_Quiz.md)
+        * [2. Touch Biometrics](hw/hw2/q2_Touch_Biometrics.md)
+        * [3. Merits of Entropy in Attack Detection/Diagnostics](hw/hw2/q3_server_log_entropy.md)
     * Homework3
         * [Analyse e-mail packets](hw/hw3/q1.md)
     *  Homework4
