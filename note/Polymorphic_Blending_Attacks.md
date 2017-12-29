@@ -17,7 +17,7 @@
     - [Attack vector](#attack-vector)
     - [Dataset](#dataset)
 - [Evaluation](#evaluation)
-        - [PAYL Training](#payl-training)
+    - [PAYL Training](#payl-training)
     - [Traditional Polymorphic Attacks (CLET)](#traditional-polymorphic-attacks-clet)
     - [Artificial Profile](#artificial-profile)
     - [1-gram and 2-gram Attacks](#1-gram-and-2-gram-attacks)
@@ -207,7 +207,7 @@
 
 ## Evaluation
 
-#### PAYL Training
+### PAYL Training
 
 * PAYL training time increases with the size of the training data because new packets carry more unique n-grams
 

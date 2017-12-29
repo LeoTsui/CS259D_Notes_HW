@@ -57,11 +57,11 @@
 
 ## Data Source
 
-|Trace|Period|Bins|TCP packets / bin|Distinct IP / bin|Ports / bin|
-|-|-|-|-|-|-|
-|University Trace (Trace 1)|1 Hour|1 min epochs|1.7M|30267|15165|
-|Department Trace (Trace 2)|5 Hour|5 min epochs|0.5M|2587|4672|
-|University Trace (Trace 3)|1 Hour|1 min epochs|2.5M|25565|8080|
+| Trace                      | Period | Bins         | TCP packets / bin | Distinct IP / bin | Ports / bin |
+| -------------------------- | ------ | ------------ | ----------------- | ----------------- | ----------- |
+| University Trace (Trace 1) | 1 Hour | 1 min epochs | 1.7M              | 30267             | 15165       |
+| Department Trace (Trace 2) | 5 Hour | 5 min epochs | 0.5M              | 2587              | 4672        |
+| University Trace (Trace 3) | 1 Hour | 1 min epochs | 2.5M              | 25565             | 8080        |
 
 ## Formulation
 
