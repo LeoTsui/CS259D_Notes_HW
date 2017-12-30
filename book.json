@@ -14,9 +14,6 @@
                 "facebook", "google", "twitter",
                 "weibo", "instapaper"
             ]
-        },
-        "sidebar": {
-            "CS259D Note": "/"
         }
     },
     "plugins": [
@@ -35,7 +32,7 @@
                 "repo": "CS259D_Note_HW",
                 "type": "star",
                 "size": "small",
-                "count": true
+                "count": false
             }]
         }
     }

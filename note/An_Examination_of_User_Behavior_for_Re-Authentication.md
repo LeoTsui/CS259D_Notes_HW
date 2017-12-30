@@ -34,10 +34,10 @@
 ## Background Knowledge and Insight
 
 > Most of the incidents (83%) were executed physically from within the insider's organization and took place during normal business hours
-
+> 
 > The impact of nearly all insider incidents in the banking and finance sector was a financial loss for the victim organization: in 30% of the cases the financial loss exceeded $500,000. Many victim organizations incurred harm to multiple aspects of the organization.
-
-<div align="right">US Secret Service National Threat Assessment Center (NTAC), Insider threat study (2004)</div>
+> 
+> <div align="right">US Secret Service National Threat Assessment Center (NTAC), Insider threat study (2004)</div>
 
 ### Behavioral Biometrics
 

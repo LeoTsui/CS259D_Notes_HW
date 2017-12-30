@@ -18,7 +18,6 @@
     - [Reactive Defense](#reactive-defense)
 - [Data Mining in Security](#data-mining-in-security)
     - [Why Big Data](#why-big-data)
-    - [Failure of Prevention](#failure-of-prevention)
     - [Explosion of Malware](#explosion-of-malware)
     - [Detection Taxonomy](#detection-taxonomy)
         - [Information source](#information-source)
@@ -26,14 +25,13 @@
         - [Time aspects](#time-aspects)
         - [Activeness](#activeness)
         - [Continuality](#continuality)
-- [Course Topic](#course-topic)
 - [Reference](#reference)
 
 <!-- /TOC -->
 
 > There are only two types of companies: those that have been hacked, and those that will be. Even that is merging into one category: those that have been hacked and will be again.
-
-<div align="right">Robert Mueller FBI Director</div>
+> 
+> <div align="right">Robert Mueller FBI Director</div>
 
 ## Information Security Goals
 
@@ -184,7 +182,7 @@
 * Administrative
     * Policies, guidelines
         * Password policies
-        * Payment Card Industry Data Security Standard (PCI DSS)
+        * Payment Card Industry Data Security Standard (PCIDSS)
         * Principle of least privilege
 * Physical
     * Doors, locks, etc.
@@ -205,7 +203,7 @@
 * Firewalls
     * Control inter-network traffic (e.g., from/to internet)
 * Security by design
-    * Principle of least privilege, Code reviews, unit testing, Defense in depth
+    * Principle of least privilege, Code reviews, Unit testing, Defense in depth
 * Secure coding
     * Buffer overflows, Format string vulnerabilities, Code/Command injection
 
@@ -245,10 +243,12 @@
 
 * Attack landscape
     * Attacks increasingly more sophisticated
-    * Required attacker knowledge going down
+    * Attacking constantly getting easier
+        * Required attacker knowledge going down
+        * Quality of attack tools increasing
     * Highly motivated attackers
         * Attacker needs to succeed only once, defense needs to be right every single time
-* Current detection techniques failing
+* Attack mechanisms constantly evolving/mutating, current detection techniques failing
     * Polymorphic malwares
     * Zero-day attacks
     * APTs
@@ -260,16 +260,6 @@
     * In 86% of cases of breach, evidence was in the logs
     * Detection mechanisms failed to raise alerts
 * How do we make sense of the data?
-
-### Failure of Prevention
-
-* Attacking constantly getting easier
-    * Required expertise decreasing
-    * Quality of attack tools increasing
-* Attack mechanisms constantly evolving/mutating
-* New connectivity options bypassing perimeter security
-* Preventive measures getting obsolete
-    * Polymorphic viruses resistant to current antivirus
 
 ### Explosion of Malware
 
@@ -298,16 +288,19 @@
         * Knowledge of attack patterns provided by human experts
         * Signature matching
         * Data mining using labeled data sets
-    * Benefit: high accuracy in detecting known attacks
-    * Drawbacks:
+    * Benefit
+        * High accuracy in detecting known attacks
+    * Drawbacks
         * Ineffective against novel attacks
         * Signatures need updates with each new discovered attack
 * Anomaly detection
     * Premise
         * Build profiles of normal behavior (users, hosts, networks)
         * Detect deviations from normal profiles
-    * Benefit: detect novel attacks
-    * Drawback: Possible high false alarm rate
+    * Benefit
+        * Detect novel attacks
+    * Drawback
+        * Possible high false alarm rate
 
 #### Time aspects
 
@@ -339,46 +332,7 @@
     * Higher deployment effort
 * Periodic analysis
     * Take periodic snapshots of the environment
-    * Lower security: Exploitation between two snapshots
-
-## Course Topic
-* Introduction
-    * Introduction to Information Security
-    * Introduction to Data Mining for Information Security
-* Malware Detection
-    * Obfuscation
-    * Polymorphism
-    * Payloadbased detection of worms
-    * Botnet detection/takedown
-* Network Intrusion Detection
-    * Signature-based solutions (Snort, etc)
-    * Data-mining-based solutions (supervised and unsupervised)
-    * Deep packet inspection
-* Host Intrusion Detection
-    * Analysis of shell command sequences, system call sequences, and audit trails
-    * Masquerader/Impersonator/Insider threat detection
-* Web Security
-    * Anomaly detection of web-based attacks using web server logs
-    * Anomaly detection in web proxy logs
-* Email
-    * Spam detection
-    * Phishing detection
-* Social network security
-    * Detecting compromised accounts
-    * Detecting social network spam
-* Authentication
-    * Anomaly detection of Single SignOn (Kerberos, Active Directory)
-    * Detecting Pass-the-Hash and Pass-the-Ticket attacks
-* Automated correlation
-    * Attack trees
-    * Building attack scenarios from individual alerts
-* Issues
-    * Privacy issues
-    * Adversarial machine learning (use of machine learning by attackers, how to make ML algorithms robust/secure against adversaries)
-* Other potential topics
-    * Fraud detection
-    * IoT/Infrastructure security
-    * Mobile/Wireless security
+    * Lower security: exploiting the window of opportunity between two snapshots
 
 ## Reference
 
