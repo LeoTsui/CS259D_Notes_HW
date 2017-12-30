@@ -24,12 +24,12 @@
     ],
     "pluginsConfig": {
         "github": {
-            "url": "https://github.com/LeoTsui/CS259D_Note_HW"
+            "url": "https://github.com/LeoTsui/CS259D_Notes_HW"
         },
         "github-buttons": {
             "buttons": [{
                 "user": "LeoTsui",
-                "repo": "CS259D_Note_HW",
+                "repo": "CS259D_Notes_HW",
                 "type": "star",
                 "size": "small",
                 "count": false
