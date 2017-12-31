@@ -39,6 +39,7 @@
     * Bots send similar traffic to C&C
     * Upload information to C&C in similar way
     * Timing patterns of communications with C&C
+* Run bot binaries in a controlled environment, learn patterns
 
 ## Goal and Contribution
 
@@ -79,6 +80,8 @@
 
 ![Traces with different statistical behaviors](images/Traces_BotFinder.png)
 
+* $$|\tau|_{min}$$, minimal number of connections (empirical value 10 to 50)
+* Command-and-control traffic consists of multiple connections between the infected host and the C&C server
 * Two ways to filter the traffic and identify the relevant traffic traces
     * Whitelist
     * Third-party knowledge
@@ -107,7 +110,7 @@
     * Allow non-parametric clustering
     * Better than k-means
 * Cluster quality
-    * Large clusters , highly similar values
+    * Large clusters, with highly similar values, is better
     * $$q_{cluster} = exp(-\beta \frac{SD}{Avg})$$
         * $$\beta = 2.5$$ (empirical value)
 
@@ -119,7 +122,7 @@
     * $$\beta = 2.5$$ (empirical value)
 * Maintain a $$\tau_M$$ for each model
 * Compare highest $$\tau_M$$ with threshold $$a$$
-* Minimal number of feature hits, $$h$$
+* Allow to specify a minimal number of feature hits, $$h$$
 
 ## Bot Evolution
 
@@ -155,5 +158,6 @@
 
 
 ## Reference
+
 * BotFinder: Finding Bots in Network Traffic Without Deep Packet Inspection
 * CS 259D Lecture 2
