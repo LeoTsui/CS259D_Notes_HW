@@ -20,7 +20,8 @@
         "katex",
         "github",
         "github-buttons",
-        "anchors"
+        "anchors",
+        "splitter"
     ],
     "pluginsConfig": {
         "github": {
