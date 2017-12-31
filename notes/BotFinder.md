@@ -156,7 +156,6 @@
 * Change the C&C server extremely frequently
 * Use completely different traffic patterns after each C&C server change
 
-
 ## Reference
 
 * BotFinder: Finding Bots in Network Traffic Without Deep Packet Inspection
