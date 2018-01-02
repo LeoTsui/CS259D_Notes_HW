@@ -17,37 +17,23 @@
 
 ## Background Knowledge and Insight
 
-* Bot
-    * A malware instance that runs autonomously and automatically on a compromised computer (zombie) without owner's consent
-* Botnet (Bot Army)
-    * Network of bots controlled by criminals
-    * A coordinated group of malware instances that are controlled by a botmaster via some C&C channel
-* Evolving and quite flexible
-* Bots communicate with C&C servers/peers
-    * Centralized
-        * IRC
-            * 53% of botnet activity related to scan
-                * For DDoS or spreading
-            * 14.4% related to binary downloading
-        * HTTP
-            * Mostly for sending spam
-    * Distributed
-        * P2P
-            * Mostly for sending spam
+* **The Botnet is like an army**
 * Bots act a similar/correlated way
-    * Otherwise, just a group of unrelated/isolated infections
-    * Bots are non-human driven, programmed to perform C&C logic/communications
-
+    * Non-human driven
+    * Programmed to perform C&C logic/communications
+    *Communication patterns not change, even varying C&C serve IPs or neighbor peers
+    * Otherwise, degenerate into a group of unrelated/isolated infections
+        * A bot**net** should be different from a set of **isolated** individual malware instances
 
 ## Goal and Contribution
 
-* Grounded on the definition and essential properties, no a priori knowledge
+* Detection is grounded on the definition and essential properties, no a priori knowledge
 * A new "aggregated communication flow" (C-flow)
 * BotMiner
 
 ## BotMiner
 
-![Architecture overview of our BotMiner detection framework](images/BotMiner.png)
+![BotMiner detection framework](images/BotMiner.png)
 
 * Assume
     * Bots within the same botnet will be characterized by similar malicious activities and similar C&C communication patterns
@@ -90,12 +76,12 @@
 ### A-plane Monitor
 
 * **Who is doing what**
-* Analyzes outbound traffic
+* Analyses outbound traffic
 * Based on Snort, with some modifications
 * Detects several types of malicious activities
     * Scanning
-        * SCADE (Statistical sCan Anomaly Detection Engine)
-        * Two anomaly detection modules
+        * SCADE (Statistical Scan Anomaly Detection Engine)
+        * Two anomaly detection modules (OR)
             * Abnormally-high scan rate
             * Weighted failed connection rate
     * Spamming
@@ -104,6 +90,7 @@
         * PEHunter
         * BotHunter
             * Egg download detection method
+                * Egg：full malicious binary program
     * Exploit
     * Easily add others
 * A-plane monitoring alone is not sufficient for botnet detection purpose
@@ -117,7 +104,7 @@
 * Basic-filtering (F1, F2)
     * Irrelevant traffic flows (F1)
         * Internal hosts
-        * From external hosts to internal hosts=
+        * From external hosts to internal hosts
     * Not completely established (F2)
 * White-listing (F3)
     * Flows with well-known destinations
@@ -145,8 +132,8 @@
     * Feature reduction
         * $$d = 52$$ to $$d' = 8$$ 
         * $$\{Avg, SD\} \times \{fph, ppf, bpp, bps\}$$
-    * First-step Coarse grained clustering on entire dataset, $$d' = 8$$
-    * Second-step Fine-grained clustering on multiple smaller clusters using all features, $$d = 52$$
+    * First-step, Coarse grained clustering on entire dataset, $$d' = 8$$
+    * Second-step, Fine-grained clustering on multiple smaller clusters using all features, $$d = 52$$
 * FP and FN can be reduced by A-plane
 
 ### A-plane Clustering
@@ -155,25 +142,25 @@
 
 * Two-layer
     * Cluster according to the activity types
+        * Scan activity features
+            * Scanning ports
+            * Target subnet
+        * Spam activity features
+            * Highly overlapped SMTP connection destinations
+        * Binary download
+            * Capture and compare the first portion (packet) of the binary
     * Cluster according to the activity features
-* Scan activity features
-    * Scanning ports
-    * Target subnet
-* Spam activity features
-    * SMTP connection destinations
-* Binary download
-    * First/random portion/packet of the binary
 
 ### Cross-plane Correlation
 
 * Calculate botnet score, $$s(h)$$, for every host $$h$$
 * Similarity score between host $$h_i$$ and $$h_j$$
-    * Indication function
-*  Hierarchical clustering
+    * Indication function (boolean value)
+* Hierarchical clustering
 
 ## Limitations and Potential Solutions
 
-* Evading C-plane Monitoring and Clustering
+* Evading C-plane monitoring and clustering
     * Utilize a legitimate website
         * Maybe not able to hide this secondary URL and the corresponding communications
     * Manipulate their communication patterns
@@ -196,9 +183,8 @@
 * Evading cross-plane analysis
     * Extremely delayed task
         * Use multiple-day data and cross check back several days
-        * Impedes efficiency
+        * Impedes attack efficiency
         * The bot may be offline or powered off
-* Offline system
 
 ## Reference
 
