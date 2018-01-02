@@ -95,7 +95,7 @@
     * Reverse DNS query results
 * F3: TTL value-based features
     * $$Avg$$ TTL
-    * $$SD$$ of TTL
+    * $$SD$$ TTL
     * $$\#$$ distinct TTL values
     * $$\#$$ TTL changes
     * $$\%$$ usage of specific TTL ranges
@@ -149,7 +149,7 @@
     * Normalized each time series by its $$Avg$$ and $$SD$$
     * Use Euclidian distance
 * $$d_{ij}$$, Euclidian distance between $$i^{th}$$ & $$j^{th}$$ days
-* $$D$$, $$Avg$$ of all $$d_{ij}$$ values
+* $$D$$, $$Avg$$ all $$d_{ij}$$ values
 
 ### DNS Answer-Based Features
 
