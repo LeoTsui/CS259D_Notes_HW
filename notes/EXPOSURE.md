@@ -74,7 +74,7 @@
         * drive-by-download sites
         * phishing/scam pages
     * Example Sources
-        * malwaredomains.com
+        * [Malware Domain Block List](http://www.malwaredomains.com/)
         * Zeus Block List
 * Benign domains
     * 3000 domains
@@ -100,8 +100,8 @@
     * $$\#$$ TTL changes
     * $$\%$$ usage of specific TTL ranges
 * F4: Domain name-based features
-    * $$\%$$ of numerical characters
-    * $$\%$$ of the length of the LMS
+    * $$\%$$ numerical characters
+    * $$\%$$ the length of the LMS (Longest Meaningful Substring)
 
 ### Time-Based Features
 
@@ -154,15 +154,13 @@
 ### DNS Answer-Based Features
 
 * Domains map to multiple IPs, and IPs be shared across different domains
-* Number of distinct IP addresses
-*    Resolved for a domain during the experiment
-* Number of distinct countries
-* Number of domains share the IP with
+* $$\#$$ distinct IP addresses
+    * Resolved for a domain during the experiment
+* $$\#$$ distinct countries that IP addresses located
+* $$\#$$ domains share the IP
     * Can be large for web hosting providers as well
-    * Reduce false positives by looking for reverse DNS query results on Google top 3 search results
 * Reverse DNS query results
-* Reduce false positives
-*    Reverse DNS answer from Google
+    * Reduce false positives by looking for reverse DNS query results on Google top 3 search results
 
 ### TTL Value-Based Features
 
@@ -171,15 +169,15 @@
 * Insight
     * Sophisticated infrastructure of malicious networks cause frequent TTL changes
     * Setting lower TTL values to the less reliable hosts
-* Average TTL
+* $$Avg$$ TTL
     * High availability systems
         * Low TTL values
         * Round Robin DNS
         * Example: CDNs, Fast Flux botnets
-* Standard Deviation of TTL
+* $$SD$$ TTL
     * Compromised home computers (dynamic IP) assigned much shorter TTL than compromised servers (static IP)
-* Number of distinct TTL values
-* Number of TTL change
+* $$\#$$ distinct TTL values
+* $$\#$$ TTL change
     * Higher in malicious domains
 * Percentage usage of specific TTL ranges
     * Considered ranges: $$[0,1), [1,10), [10,100), [100,300), [300,900), [900, inf)$$
@@ -189,14 +187,14 @@
 
 * Insight
     * Easy-to-remember names
-    * Important for benign services
+        * Important for benign services
         * Main purpose of DNS
     * Unimportant for attackers (e.g., DGA-generated)
 * Ratio of numerical characters to name length
-* Ratio of length of the longest meaningful substring to length of domain name
-*    Query name on Google & check # of hits vs a threshold
-* Combined to decrease false positives
+* Ratio of length of the longest meaningful substring (LMS) to length of domain name
+    * Query name on Google & check the number of hits vs a threshold
 * Features applied to only second-level domains(SLD)
+    * `x.y.server.com` $$\rightarrow$$ `server.com`
 * Other possible feature: entropy of the domain name
     * DGA-generated names more random than human-generated
 
@@ -225,7 +223,8 @@
 ## Evaluation
 
 * Evaluation of the Detection Rate
-    * 216 domains reported by malwareurls.com & present in dataset
+    * 569 domains reported by `malwareurls.com`
+        * 219 domains queried in the monitored network
     * 5 had less than 20 queries
         * be filtered
     * 211 detected malicious
