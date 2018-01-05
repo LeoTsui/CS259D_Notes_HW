@@ -5,6 +5,8 @@
 - [Background Knowledge and Insight](#background-knowledge-and-insight)
 - [Schonlau Dataset](#schonlau-dataset)
 - [Machine learning methods](#machine-learning-methods)
+    - [Naïve Bayes Classifier](#na%C3%AFve-bayes-classifier)
+    - [One-class support vector machine](#one-class-support-vector-machine)
 - [Limitation](#limitation)
 - [Reference](#reference)
 
@@ -29,7 +31,7 @@
 ## Schonlau Dataset
 
 * Unix shall commands of 70 users
-    * Collected using Unix acct
+    * Collected using Unix `acct`
     * 50 random users as intrusion targets
     * 20 masquerade users
 * 15,000 commands per user
@@ -42,37 +44,38 @@
     * Different number of login sessions per user
     * Different number (0-24) of intrusion blocks per users
     * User job functions unknown
-    * Acct logs commands in the order they finished
+    * `acct` logs commands in the order they finished
 
 ## Machine learning methods
 
 * Learning task
     * Identify masqueraders positively, not identify particular user
-* One-class or two class
-    * One-class Naïve Bayes
-    * One-class SVM
-* Naïve Bayes Classifier
-    * Bayes rule
-    * Different commands assumed independent
-    * Multi-variate Bernoulli model
-        * Total unique commands(Unix), 856
-        * Each block as a binary N-dimensional vector
-        * Each dimension with Bernoulli model
-        * Performs better at small vocabulary sizes
-    * Multinomial model
-        * Each black as N-dimensional vector
-        * Each feature = # of occurrences of command
-        * Performs better at large vocabulary sizes
-    * One-class Naïve Bayes
-        *  Compute $$p(c_i|u)$$ only for user's self profile
-        *  For masquerader, assume each command has probability $$1/N$$ (completely random)
-            * Makes no assumption about masquerader
-        *  Given a block $$d$$, compute: $$p(d|self)/p(d|non-self)$$
-        *  Threshold controls false positive vs detection rate
-* One-class support vector machine
-    * Map data to a high-dimensional feature space
-    * Maximally separate data points from origin
-    * Allow some outliers, but probability of lying on the wrong side bounded by a parameter
+
+### Naïve Bayes Classifier
+
+* Bayes rule
+* Different commands assumed independent
+* Multi-variate Bernoulli model
+    * Total unique commands(Unix), 856
+    * Each block as a binary N-dimensional vector
+    * Each dimension with Bernoulli model
+    * Performs better at small vocabulary sizes
+* Multinomial model
+    * Each black as N-dimensional vector
+    * Each feature = # of occurrences of command
+    * Performs better at large vocabulary sizes
+* One-class Naïve Bayes
+    * Compute $$p(c_i|u)$$ only for user's self profile
+    * For masquerader, assume each command has probability $$1/N$$ (completely random)
+        * Makes no assumption about masquerader
+    * Given a block $$d$$, compute: $$p(d|self)/p(d|non-self)$$
+    * Threshold controls false positive vs detection rate
+
+### One-class support vector machine
+
+* Map data to a high-dimensional feature space
+* Maximally separate data points from origin
+* Allow some outliers, but probability of lying on the wrong side bounded by a parameter
 
 ## Limitation
 

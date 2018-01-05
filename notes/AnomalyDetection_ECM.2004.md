@@ -2,24 +2,25 @@
 
 <!-- TOC -->
 
-- [Insight](#insight)
-- [Goal](#goal)
-- [Algorithm](#algorithm)
+- [Background Knowledge](#background-knowledge)
+- [Insight and Goal](#insight-and-goal)
+- [Eigen co-occurrence matrix (ECM)](#eigen-co-occurrence-matrix-ecm)
 - [Reference](#reference)
 
 <!-- /TOC -->
 
-## Insight
+## Background Knowledge
+
 * Hard to accurately model user behavior
-    * Dynamic usesr's behabvior
+    * Dynamic user's behavior
     * Difficult to capture completely
-* model user behavior
-    * Feature vectorby
+* Model user behavior
+    * Feature vector
         * Histogram
-            * no sequence
+            * No sequence
         * N-grams
-            * n-connected sequence
-        * Correlation between unadjacent events
+            * N-connected sequence
+        * Correlation between un-adjacent events
     * Network model
         * Automaton
             * Require well-defined rules
@@ -28,21 +29,20 @@
             * Bayesian network indicates the direction of causality between the corresponding variables
             * Topology must be predefined
         * Hidden Markov Model (HMM)
-            *  Hard to build an adequate topology
+            * Hard to build an adequate topology
+
+## Insight and Goal
+
 * Assumption
     * The dynamic behavior of a user appearing in a sequence can be captured by correlating not only connected events but also events that are not adjacent to each other while appearing within a certain distance (non-connected events)
 * ECM, Eigen co-occurrence matrices
     * Inspired by the Eigenface technique
-    * Three main components:
-        * modeling of the dynamic features of a sequence
-        * extraction of the principal features of the resulting model
-        * automatic construction of a layered network from the extracted principal features
+    * Three main components
+        * Modeling of the dynamic features of a sequence
+        * Extraction of the principal features of the resulting model
+        * Automatic construction of a layered network from the extracted principal features
 
-## Goal
-* Eigen co-occurrence matrix (ECM)
-* For dynamic user behavior
-
-## Algorithm
+## Eigen co-occurrence matrix (ECM)
 
 * Handwritten Notes :)
 
