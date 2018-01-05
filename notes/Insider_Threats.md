@@ -34,7 +34,7 @@
 ## Two Types of Insider Attackers
 
 * Traitors
-    * A legitimate user with proper access credentials do evil
+    * A legitimate user with proper access credentials can be evil
     * Full knowledge of systems & security policies
 * Masqueraders
     * An attacker who has stolen/obtained and uses credentials of a legitimate user
@@ -79,16 +79,15 @@
 * Keystroke/Mouse dynamics
 * Honeypots
 
-|                                                 | Masquerader                                                                   | Internal Traitor                                                          |
-| ----------------------------------------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| Two-Class Classifiers: Unix  Command  Sequences | High - Unfamiliar with local environment and user behavior                    | Medium - Can possibly mimic another normal user or train the classifier   |
-| One-Class: Unix  Command  sequences             | High - Unfamiliar with local environment and user behavior                    | Medium - Can possibly mimic another normal user or train the classifier   |
-| Unix Audit Events                               | Medium - Given proper credentials and might not trigger alerts                | Low - Application level malicious acts may not manifest as unusual events |
-| Unix System Calls                               | Medium - Might not violate system call profile                                | Low - Application level malicious acts may not manifest as unusual events |
-| Window Usage Events                             | Medium - Given proper credentials and might not trigger alerts                | Low - Application level malicious acts may not manifest as unusual events |
-| Windows Registry access                         | Medium - unless malicious programs access Registry                            | Medium - unless malicious programs access Registry                        |
-| Network Activity Audit                          | Medium - If attack uses network and attribution is possible                   | High - If attack uses network  and attribution is possible                |
-| Honeypots and Decoy Technologies                | High - Unfamiliar with local information and likely to interact with honeypot | Medium - Unlikely to interact if aware of the location of honeypots       |
+|                                                     | Masquerader                                                                   | Traitor                                                                   |
+| --------------------------------------------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| One/Two-Class Classifiers: Unix  Command  Sequences | High - Unfamiliar with local environment and user behavior                    | Medium - Can possibly mimic another normal user or train the classifier   |
+| Unix Audit Events                                   | Medium - Given proper credentials and might not trigger alerts                | Low - Application level malicious acts may not manifest as unusual events |
+| Unix System Calls                                   | Medium - Might not violate system call profile                                | Low - Application level malicious acts may not manifest as unusual events |
+| Window Usage Events                                 | Medium - Given proper credentials and might not trigger alerts                | Low - Application level malicious acts may not manifest as unusual events |
+| Windows Registry access                             | Medium - unless malicious programs access Registry                            | Medium - unless malicious programs access Registry                        |
+| Network Activity Audit                              | Medium - If attack uses network and attribution is possible                   | High - If attack uses network  and attribution is possible                |
+| Honeypots and Decoy Technologies                    | High - Unfamiliar with local information and likely to interact with honeypot | Medium - Unlikely to interact if aware of the location of honeypots       |
 
 ## Reference
 
