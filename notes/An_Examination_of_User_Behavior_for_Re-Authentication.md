@@ -3,8 +3,6 @@
 <!-- TOC -->
 
 - [Background Knowledge and Insight](#background-knowledge-and-insight)
-    - [Behavioral Biometrics](#behavioral-biometrics)
-    - [Behavioral Biometrics Categories](#behavioral-biometrics-categories)
     - [Authentication](#authentication)
     - [Re-authentication](#re-authentication)
     - [Behavioral Biometrics (Re-)authentication](#behavioral-biometrics-re-authentication)
@@ -39,49 +37,6 @@
 > 
 > <div align="right">US Secret Service National Threat Assessment Center (NTAC), Insider threat study (2004)</div>
 
-### Behavioral Biometrics
-
-* Model user behavior(Input, GUI changes)
-* Applications
-    * User authentication
-    * Intrusion detection
-* Advantages
-    * Very low impact on usability
-* Most useful in multimodal systems
-    * Complement to more robust methods
-    * Highly sensitive to means of implementation
-        * Keyboard hardware
-* Implementation factors
-    * Required equipment
-        * None
-        * Multiple cameras
-        * EEG sensors
-    * Enrollment time
-        * Training time for system to recognize the user
-    * Persistence
-        * Time it takes for features to change
-    * Obtrusiveness
-    * Error rates
-        * False rejection rate (FRR)
-        * False acceptance rate (FAR)
-        * Equal error rate (ERR): error rate when FRR=FAR
-
-### Behavioral Biometrics Categories
-
-* Authorship
-    * Text or drawing made by user
-        * Vocabulary, punctuation, brush strokes
-* HCI-based biometrics
-    * Input interaction: keystrokes, mouse, haptics
-    * Software interaction: strategy, knowledge, skill
-* Indirect HCI-based biometrics
-    * Low-level system activities
-        * System call traces, audit logs, program execution traces, registry access, storage activity, call-stack data analysis
-* Kinetics: Motor-skills based biometrics
-    * Rely on proper functioning of brain, skeleton, joints, nervous system
-* Purely behavioral biometrics
-    * Walking style, typing style, gripping style
-
 ### Authentication
 
 * Knowledge: password, PIN
@@ -113,7 +68,11 @@
 
 ### Behavioral Biometrics (Re-)authentication
 
-* Evade classical IDS
+* Attackers evade classical IDS
+* Compared with traditional authentication systems
+    * Greater comfort
+    * Ease of use
+* Performance: EER, FAR, FRR, etc.
 * Deployment scenarios
     * Open setting
         * Public library, internet cafe
@@ -381,4 +340,5 @@
 ## Reference
 
 * An examination of user behavior for re- authentication (M. Pusara's PhD thesis, 2007)
+* Toward Reliable User Authentication through Biometrics
 * CS 259D Lecture 4

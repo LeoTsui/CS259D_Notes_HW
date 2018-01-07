@@ -2,10 +2,8 @@
 
 **The notes are the supplement to papers and handouts of [CS 259D](https://web.stanford.edu/class/cs259d)**
 
-Github: [CS259D_Notes_HW](https://github.com/LeoTsui/CS259D_Notes_HW)
-
-GitBook: [CS259D Notes](https://leotsui.gitbooks.io/cs259d-notes/)
-
+English: [GitHub](https://github.com/LeoTsui/CS259D_Notes_HW) [GitBook](https://leotsui.gitbooks.io/cs259d-notes/) 中文：[Github](https://github.com/LeoTsui/CS259D_Notes_HW_cn) [GitBook](https://leotsui.gitbooks.io/cs259d-notes-cn/)
+ 
 ---
 
 <!-- TOC -->
