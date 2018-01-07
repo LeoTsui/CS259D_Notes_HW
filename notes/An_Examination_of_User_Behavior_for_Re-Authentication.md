@@ -300,18 +300,19 @@
 
 ## Implementation schemes
 
-1. Classify one feature vector instance at a time
-    * C4.5
-    * If the instance matched normal profile, serve request
-    * Else, alert system admin, ask re-auth, or close session
-    * May cause high false alarm rates
-1. Smoothing
-    * Look at a window of n (n between 1-11) feature vector instances
-    * If m (m between 1,n) of those matched profile, serve request
-    * Overlapping windows
-    * W-s old points, s new points
-    * s = 50, equivalent to 5 second intervals
-    * Reduces time-to-alarm
+* Two schemes
+    * Classify one feature vector instance at a time
+        * C4.5
+        * If the instance matched normal profile, serve request
+        * Else, alert system admin, ask re-auth, or close session
+        * May cause high false alarm rates
+    * Smoothing
+        * Look at a window of n (n between 1-11) feature vector instances
+        * If m (m between 1,n) of those matched profile, serve request
+        * Overlapping windows
+        * W-s old points, s new points
+        * s = 50, equivalent to 5 second intervals
+        * Reduces time-to-alarm
 * False bell rate
     * Bell, a sequence of contiguous alarms without the interrupting "normal" window
     * False bell rate = FB / (\# positive instances)
