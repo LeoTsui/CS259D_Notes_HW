@@ -43,6 +43,7 @@
 
 ### Behavioral Biometrics
 
+* Something you do
 * Model user behavior(Input, GUI changes)
 * Applications
     * User authentication

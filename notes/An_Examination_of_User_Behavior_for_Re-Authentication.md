@@ -3,12 +3,14 @@
 <!-- TOC -->
 
 - [Background Knowledge and Insight](#background-knowledge-and-insight)
-    - [Authentication](#authentication)
     - [Re-authentication](#re-authentication)
     - [Behavioral Biometrics (Re-)authentication](#behavioral-biometrics-re-authentication)
-- [Objective of User Re–authentication System](#objective-of-user-re%E2%80%93authentication-system)
+- [Objective of User Re–authentication System](#objective-of-user-reauthentication-system)
 - [Multimodal Data Analysis](#multimodal-data-analysis)
 - [Sample Collection](#sample-collection)
+    - [Data Set I](#data-set-i)
+    - [Data Set II](#data-set-ii)
+    - [Data Set III](#data-set-iii)
 - [Data Processing and Features Extract](#data-processing-and-features-extract)
     - [Mouse](#mouse)
         - [Mouse Data](#mouse-data)
@@ -23,32 +25,19 @@
         - [GUI Feature Hierarchy](#gui-feature-hierarchy)
         - [GUI Features](#gui-features)
     - [Summary of Feature Space](#summary-of-feature-space)
-- [Architecture](#architecture)
-- [Balance](#balance)
+- [Implementation schemes](#implementation-schemes)
+- [Experimental](#experimental)
 - [Reference](#reference)
 
 <!-- /TOC -->
 
-## Background Knowledge and Insight
-
-> Most of the incidents (83%) were executed physically from within the insider's organization and took place during normal business hours
+> Most of the incidents (83%) were executed physically from within the insider's organization and took place during normal business hours.
 > 
 > The impact of nearly all insider incidents in the banking and finance sector was a financial loss for the victim organization: in 30% of the cases the financial loss exceeded $500,000. Many victim organizations incurred harm to multiple aspects of the organization.
 > 
 > <div align="right">US Secret Service National Threat Assessment Center (NTAC), Insider threat study (2004)</div>
 
-### Authentication
-
-* Knowledge: password, PIN
-    * Something you know
-* Objects: ID card, credit card, access token
-    * Something you have
-* Biometrics
-    * Physiological: fingerprints, retina pattern
-        * Something you are
-        * Issues: implementation cost, acceptability, stability
-    * Behavioral: signature, gait, keystroke dynamics
-        * Something you do
+## Background Knowledge and Insight
 
 ### Re-authentication
 
@@ -69,10 +58,6 @@
 ### Behavioral Biometrics (Re-)authentication
 
 * Attackers evade classical IDS
-* Compared with traditional authentication systems
-    * Greater comfort
-    * Ease of use
-* Performance: EER, FAR, FRR, etc.
 * Deployment scenarios
     * Open setting
         * Public library, internet cafe
@@ -91,18 +76,19 @@
     * To design an accurate, classification system for detecting outliers (e.g., intruders) in high dimensional temporal sequence data when the amount of data per user is limited
 * Goal
     1. Detect insiders pretending to be other insiders;
-    2. Detect outsiders pretending to be insiders;
-    3. Discriminate users in a pair–wise sense;
-    4. Determine the sensitivity of user profiles on different hardware configurations;
-    5. Discriminate users when they are behaving in an identical manner;
-    6. Determine the degree of system's scalability and computational efficiency;
-    7. Determine the strength of each data source (e.g., the mouse, keystrokes and GUI) individually and in combination;
-    8. Exploit granularity of the data to obtain a comprehensive feature space;
-    9. Reduce the candidate feature space to a subset of most predictive features;
-    10. Improve the accuracy measure when the amount of data per user dataset is limited.
+    1. Detect outsiders pretending to be insiders;
+    1. Discriminate users in a pair–wise sense;
+    1. Determine the sensitivity of user profiles on different hardware configurations;
+    1. Discriminate users when they are behaving in an identical manner;
+    1. Determine the degree of system's scalability and computational efficiency;
+    1. Determine the strength of each data source (e.g., the mouse, keystrokes and GUI) individually and in combination;
+    1. Exploit granularity of the data to obtain a comprehensive feature space;
+    1. Reduce the candidate feature space to a subset of most predictive features;
+    1. Improve the accuracy measure when the amount of data per user dataset is limited.
 
 ## Multimodal Data Analysis
 
+* More than one data source
 * Combine sources at
     * Data level
         * Can miss on characteristics
@@ -114,6 +100,8 @@
 
 ## Sample Collection
 
+### Data Set I
+
 * 61 volunteers
     * Task 1:
         * Reading assignment
@@ -123,6 +111,18 @@
         * Another set of questions
     * Average 4 hours of data collection
         * Average 92K data points, 4.5MB per user
+
+### Data Set II
+
+* One user, five different computer and I/O configurations
+* Same tasks as Data set I
+
+### Data Set III
+
+* 73 volunteers executing the same task
+* Compared with Data set I
+    * No pause time
+    * Smaller in size and more dense with the I/O events
 
 ## Data Processing and Features Extract
 
@@ -156,7 +156,7 @@
     * Mouse Moves
 *  Client area: area of application window below the menu and toolbars
 *  Rate of client area mouse movements
-    * several hundred movements per second
+    * Several hundred movements per second
     * Too large, did not collect all movements
     * Recorded every 100ms if & only if cursor position changed
 *  Single & double clicks
@@ -184,8 +184,8 @@
     * NC moves features
         * Similar to event features
         * Distance, speed, angle, etc. computed
-            * between two subsequent NC moves
-            * two NC moves separated by K data points
+            * Between two subsequent NC moves
+            * Two NC moves separated by K data points
         * Total of 40 features
     * Client area moves
         * Similar to NC mouse movement features
@@ -222,8 +222,7 @@
     * \# of occurrences of each letter & each numeral
         * 26 alphabet features, 10 numeric features
     * Mean, stdv, skewness
-        * N-graph duration between consecutive keystrokes
-        * N between 1-8
+        * N-graph duration between consecutive keystrokes (N between 1-8)
     * Total of 236 features
 
 ### GUI
@@ -236,7 +235,7 @@
 #### GUI Feature Hierarchy
 
 * GUI
-    * Temporal and spatial
+    * Spatial
         * Window
             * Scroll bar, minimize, maximize, restore, move, etc.
         * Control
@@ -271,7 +270,7 @@
 * Temporal features
     * Over a window of W data points
         * \# of events in each temporal category
-        * Subsequent spatial events or spatial events separated by K data points
+        * Subsequent temporal events or temporal events separated by K data points
             * Mean, stdv, skewness
             * N-graph duration (N between 1-8)
         * Total of 240 features
@@ -299,43 +298,36 @@
 * Hierarchical groupings improve performance
     * Removing features from lower levels of mouse hierarchy lowered classifier performance
 
-## Architecture
+## Implementation schemes
 
-* Process
-    * Collect clean data from each user
-    * Build profile of normal behavior for each user
-    * Use profile to compare behavior of current  user with that of a valid user
-    * Any significant behavioral difference flagged
-* Implementation schemes
-    * Two schemes
-        * 1.Classify one feature vector instance at a time
-            * C4.5
-            * If the instance matched normal profile, serve request
-            * Else, alert sys admin, ask re-auth, or close session
-            * May cause high false alarm rates
-        * 2.Smoothing
-            * Look at a window of n (n between 1-11) feature vector instances
-            * If m (m between 1,n) of those matched profile, serve request
-            * Overlapping windows
-            * W-s old points, s new points
-            * s = 50, equivalent to 5 second intervals
-            * Reduces time-to-alarm
-    * False bell rate
-    * Evaluation
-        * 10-fold cross validation
-* Experimental
-    * Pairwise Discrimination
-        * Discriminate normalcy
-    * Anomaly Detection
-        * Detect an insider pretending to be another insider
-    * Unseen User Detection
-        * Detect an outsider pretending to be an insider
+1. Classify one feature vector instance at a time
+    * C4.5
+    * If the instance matched normal profile, serve request
+    * Else, alert system admin, ask re-auth, or close session
+    * May cause high false alarm rates
+1. Smoothing
+    * Look at a window of n (n between 1-11) feature vector instances
+    * If m (m between 1,n) of those matched profile, serve request
+    * Overlapping windows
+    * W-s old points, s new points
+    * s = 50, equivalent to 5 second intervals
+    * Reduces time-to-alarm
+* False bell rate
+    * Bell, a sequence of contiguous alarms without the interrupting "normal" window
+    * False bell rate = FB / (\# positive instances)
+* Evaluation
+    * 10-fold cross validation
 
-## Balance
+## Experimental
 
-* Accuracy
-* Efficiency
-* Scalability
+* Pairwise Discrimination
+    * Discriminate normalcy
+* Anomaly Detection
+    * Detect an insider pretending to be another insider
+* Unseen User Detection
+    * Detect an outsider pretending to be an insider
+* Tracking a Valid User
+    * Identify the same valid user on different hardware
 
 ## Reference
 
