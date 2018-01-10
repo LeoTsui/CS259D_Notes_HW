@@ -56,7 +56,7 @@ English: [GitHub](https://github.com/LeoTsui/CS259D_Notes_HW) [GitBook](https://
 
 * Active authentication using behavioral and cognitive biometrics
     * Lecture 4
-    * An examination of user behavior for re-authentication (M. Pusara’s PhD thesis,2007)
+    * An examination of user behavior for re-authentication (M. Pusara's PhD thesis,2007)
 * Mouse dynamics analysis for active authentication
     * Lecture 5
     * Continuous authentication for mouse dynamics: A pattern-growth approach (Shen C, Cai Z, Guan X. 2012)
