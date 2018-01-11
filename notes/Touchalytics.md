@@ -2,9 +2,10 @@
 
 <!-- TOC -->
 
-- [Background Knowledge and Insight](#background-knowledge-and-insight)
-- [Goal](#goal)
+- [Entry-point authentication on mobile devices](#entry-point-authentication-on-mobile-devices)
+- [Contribution](#contribution)
 - [Data Source](#data-source)
+- [Touch-based Gestures](#touch-based-gestures)
 - [Feature](#feature)
 - [Classification](#classification)
 - [Limitation](#limitation)
@@ -12,27 +13,19 @@
 
 <!-- /TOC -->
 
-## Background Knowledge and Insight
+## Entry-point authentication on mobile devices
 
 * Usability
     * Inconvenient for quick activities
-* Security
+        * Check email
+        * Read SMS
+* Sacrifice security
     * Short passwords
     * Increased screen lock time-outs
     * Disable unlock
-    * Higher risk of thief
-* Human characteristics
-    * Physiological biometrics
-        * Fingerprints
-        * Hand geometry
-        * Facial features
-        * DNA
-    * Behavioral biometrics
-        * Voice
-        * Keystroke dynamics
-        * Mouse movements
+* Higher risk of thief
 
-## Goal
+## Contribution
 
 * Touch-based behavioral biometric authentication
 
@@ -40,7 +33,7 @@
 
 * Android phones
 * Tasks: read documents, compare images
-* Raw features:
+* Raw features
     * Event code
         * Finger up
         * Finger down
@@ -57,13 +50,26 @@
         * Input user ID
         * links to the documents and images
 
+## Touch-based Gestures
+
+* Trigger-actions
+    * Sliding horizontally over the screen
+        * Browse through images
+        * Navigate to next page of icons
+    * Sliding vertically over the screen
+        * Reading email, documents, webpages
+        * Browsing menus
+* Only record trigger-actions
+* Complex gestures are not frequent
+* Unable to get enough features from "click"
+
 ## Feature
 
 ![Features of a stroke](images/Touchalytics_Stroke.png)
 
 * Stroke
     * Sequence of touch data starting with touching the screen, ending with lifting the finger
-    * Sequence of vectors:
+    * Sequence of vectors
         * $$s_n = (x_n, y_n, t_n, p_n, A_n, o_n^f, o_n^{ph}),\ n \in \{1, 2, ..., N\}$$
             * $$x_n$$, $$y_n$$, location
             * $$t_n$$, time stamp
@@ -75,14 +81,14 @@
 * Information entropy
 * Most informative single features
     * Area covered by fingertip
-    * Stroke velocity
+    * 20% percentile of the stroke velocity
     * Fingertip pressure on screen
     * Direction of the stroke
 * $$x\text{-position}$$ coordinate more informative than $$y\text{-position}$$ coordinate
 
 ## Classification
 
-* kNN
+* KNN
     * Using a k-d tree
     * Euclidian distance
     * k between 1-7
@@ -91,7 +97,7 @@
     * RBF kernel
         * 5-fold Cross-validation
 * Combine scores of multiple strokes
-    * Threshold the combined score
+    * Threshold of combined score
 
 ## Limitation
 
@@ -111,3 +117,4 @@
 
 * Touchalytics: On the Applicability of Touchscreen Input as a Behavioral Biometric for Continuous Authentication, 2013
 * [Touchalytics](http://www.mariofrank.net/touchalytics/index.html)
+* CS 259D Lecture 7

@@ -159,3 +159,7 @@ English: [GitHub](https://github.com/LeoTsui/CS259D_Notes_HW) [GitBook](https://
 ### Homework4
 
 * Quizzes
+
+---
+
+Unless otherwise stated, all images and tables are cited from the original paper.

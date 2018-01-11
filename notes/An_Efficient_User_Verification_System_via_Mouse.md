@@ -20,12 +20,15 @@
 
 ## Background Knowledge and Insight
 
-* User verification need
-    * More frequent
+* Re-verification system
+    * Accuracy
+    * Quick response
+    * Difficult to forge normal biometric behaviors
+* Frequent User verification should be
     * Passive
     * Transparent to users
-* behavioral biometrics approaches
-    * Fingerprints retinal scan
+* Shortcomings of some behavioral biometrics approaches
+    * Fingerprints, retinal scan
         * Specialized hardware
             * Expensive
             * Unavailable
@@ -33,18 +36,15 @@
         * Record sensitive user information
             * Username
             * Password
-        * Complex structure
+        * Complex structure (shape, size, layout)
 * Angle-based metrics
+    * Reduces verification time
+    * High accuracy
     * Independent of the operating environment
 
 ## Goal
 
-* A new user verification system using mouse dynamics
-    * Accuracy
-    * Quick response
-    * Difficult to forge
-* A Novel measurement strategy
-    * Angle-based metrics
+* A Novel measurement strategy, angle-based metrics
 * An experiment involving sessions from over 1,000 unique users
 
 ## Data
@@ -56,36 +56,37 @@
         * Controllable set
         * 30 users
             * Different backgrounds
-    * Online forum(field)
-        * field set
+    * Online forum
+        * Field set
         * 1000 real field users
         * Recorded by JaveScript code
-* Raw data movement
-    * `<ACTION-TYPE, t, x, y>`
-        * `ACTION-TYPE`, {mouse-move, mouse-click}
-        * `t`,  timestamp of the mouse action, collected in milliseconds
-        * `x`, `y`, coordinate
+* Raw data
+    * $$\langle \textrm{ACTION-TYPE}, t, x, y \rangle$$
+        * $$\textrm{ACTION-TYPE}$$, {mouse-move, mouse-click}
+        * $$t$$, timestamp of the mouse action, collected in milliseconds
+        * $$x$$, $$y$$, coordinate
 
 ### Data Processing
 
 * Identify every point-and-click action
     * Continuous mouse movement followed by click
-    * `<mouse-move, t_i, x_i, y_i>_c,j`
-        * `c`, user
-        * `i`, *i*th point-and-click action
-        * `j`, *j*th mouse move record
-        * `t`, timestamp
+    * $$\langle \textrm{mouse-move}, t_i, x_i, y_i\rangle_{c, j}$$
+        * $$i$$, $$i^{th}$$ point-and-click action
+        * $$c$$, user
+        * $$j$$, $$j^{th}$$ mouse move record
+        * $$t_i$$, timestamp
+
 
 ## Feature(Metrics)
 
 * Direction
-    * For consecutive points $$A$$, $$B$$: $$\vec{AB}$$
+    * For consecutive recorded points $$A$$, $$B$$: $$\vec{AB}$$
 * Angle of Curvature
     * For any three consecutive points $$A$$, $$B$$, $$C$$: $$\angle{ABC}$$, angle between $$\vec{AB}$$ and $$\vec{BC}$$
 * Curvature Distance
-    * For any three consecutive points $$A$$, $$B$$, $$C$$: ratio between $$\vert\vec{AB}\vert$$ to length of perpendicular distance from B to $$\vec{AC}$$
+    * For any three consecutive points $$A$$, $$B$$, $$C$$: ratio between $$\vert\vec{AC}\vert$$ to length of perpendicular distance from $$B$$ to $$\vec{AC}$$
 * Speed
-    * `the total distance traveled for that action` divided by `the total time taken to complete the action`
+    * `the total distance traveled for that action` $$/$$ `the total time taken to complete the action`
 * Pause-and-Click
     * Time between the end of the movement and the click event
 
@@ -101,20 +102,22 @@
     * Mouse pointer sensitivity
     * Brand of mouse
 * Desk space available near mousepad
-* Poor choices(affects measurements)
+* Poor feature choices
     * Speed
     * Acceleration
+    * Pause-and-click
+        * Dependent on the reading content
 * Uniqueness of angle-based metrics across users
 
 ### Distance Between Distributions
 
-* Since angle-based features are continuous variables
+* Angle-based features are continuous variables
 * Divided into discrete intervals, $$bins$$
 * Calculate PDF for each distribution
 * $$\mathrm{PDF}_p = \{p_1, p_2, ..., p_n\}$$
     * $$\mathrm{PDF}_p$$ for distribution $$p$$
     * $$p_i$$ represents the probability of falling into the $$bin_i$$
-*  the distance between $$\mathrm{PDF}_p$$, $$\mathrm{PDF}_p$$
+* Distance between $$\mathrm{PDF}_p$$, $$\mathrm{PDF}_q$$
     * $$D(p,q)=\sum_i^n \vert p_i-q_i\vert$$
 
 ### Number of Mouse Clicks in a Real Session
@@ -125,25 +128,26 @@
 ## Classifier
 
 * 2-class SVM
-* RBF kernel
-* Decision:
+    * RBF kernel
+* Decision
     * Threshold
     * Majority vote
-        * Multiple models using sampled data
 
 ## Limitation
 
 * Partial Movements
     * Continuous mouse movements without ending in a click
+        * Aimless
+            * Move its mouse just to stop the screen saver when watching a video
         * Intentionally performed
-        * Move its mouse just to stop the screen saver when watching a video
-        * Aid reading
-        * Moving the mouse to a link, but then decide not to click on it
+            * Aid reading
+            * Moving the mouse to a link, but then decide not to click on it
     * Compare to point-and-clicks
         * More noisy
         * Much more frequent
             * 0.53 mouse clicks per minute
             * 6.58 partial movements per minute
+    * Reduce verification time, at the cost of accuracy degradation
 
 |                  | Equal Error Rate | Verification time |
 | ---------------- | ---------------- | ----------------- |
