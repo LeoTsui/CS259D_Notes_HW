@@ -88,7 +88,7 @@
 
 ## Classification
 
-* KNN
+* kNN
     * Using a k-d tree
     * Euclidian distance
     * k between 1-7

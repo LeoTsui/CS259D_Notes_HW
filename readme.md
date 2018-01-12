@@ -1,6 +1,6 @@
 # CS 259D Data Mining for Cyber Security Notes Introduction
 
-**The notes are the supplement to papers and handouts of [CS 259D](https://web.stanford.edu/class/cs259d)**
+**The notes are the supplement to papers and handouts of [CS 259D](https://web.stanford.edu/class/cs259d). Unless otherwise stated, all images and tables are cited from the original paper.**
 
 English: [GitHub](https://github.com/LeoTsui/CS259D_Notes_HW) [GitBook](https://www.gitbook.com/book/leotsui/cs259d-notes) 中文：[Github](https://github.com/LeoTsui/CS259D_Notes_HW_cn) [GitBook](https://www.gitbook.com/book/leotsui/cs259d-notes-cn)
  
@@ -15,8 +15,7 @@ English: [GitHub](https://github.com/LeoTsui/CS259D_Notes_HW) [GitBook](https://
     - [Behavioral Biometrics](#behavioral-biometrics)
     - [Web Security](#web-security)
     - [Phishing Detection](#phishing-detection)
-    - [Automatic Alert Correlation](#automatic-alert-correlation)
-    - [Multi-Classifier Systems, Intrusion Detection Systems (IDSs)](#multi-classifier-systems-intrusion-detection-systems-idss)
+    - [Intrusion Detection Systems (IDSs)](#intrusion-detection-systems-idss)
     - [Deep Packet Inspection](#deep-packet-inspection)
     - [Polymorphism](#polymorphism)
     - [Machine Learning for Security](#machine-learning-for-security)
@@ -82,17 +81,14 @@ English: [GitHub](https://github.com/LeoTsui/CS259D_Notes_HW) [GitBook](https://
     * Learning to Detect Phishing Emails, Fette et al, 2007
     * Cantina: A content-based approach to detecting phishing websites, Zhang et al, 2007
 
-### Automatic Alert Correlation
-
-* Building attack scenarios from individual alerts correlation
-    * Lecture 20
-    * A Comprehensive Approach to Intrusion Detection Alert Correlation, Valeur et al, 2004
-
-### Multi-Classifier Systems, Intrusion Detection Systems (IDSs)
+### Intrusion Detection Systems (IDSs)
 
 * Overview of multi-classifier systems (MCS), advantages of MCS in security analytics
     * Lecture 10
     * Adaptive Intrusion Detection System via Online Learning, 2012
+* Building attack scenarios from individual alerts correlation
+    * Lecture 20
+    * A Comprehensive Approach to Intrusion Detection Alert Correlation, Valeur et al, 2004
 
 ### Deep Packet Inspection
 
@@ -159,7 +155,3 @@ English: [GitHub](https://github.com/LeoTsui/CS259D_Notes_HW) [GitBook](https://
 ### Homework4
 
 * Quizzes
-
----
-
-Unless otherwise stated, all images and tables are cited from the original paper.
