@@ -9,7 +9,7 @@
 - [Adaptive Intrusion Detection System (A-IDS)](#adaptive-intrusion-detection-system-a-ids)
     - [Mixing Algorithm](#mixing-algorithm)
         - [Notation](#notation)
-        - [Mixing Algorithm](#mixing-algorithm)
+        - [Mixing Algorithm](#mixing-algorithm-1)
 - [Experimental](#experimental)
 - [Limitation](#limitation)
 - [Reference](#reference)
@@ -190,7 +190,7 @@
         * The performance is almost the same as the best IDS
 * Combining (A-IDS)
     * Random permutation
-    * 1O-folds cross-validation
+    * 10-folds cross-validation
     * Mixing Algorithm
         * $$\eta = 0.1$$
         * $$\alpha = 0.001$$

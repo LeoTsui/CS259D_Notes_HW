@@ -2,10 +2,12 @@
 
 <!-- TOC -->
 
-- [Insight](#insight)
-- [Goal](#goal)
-- [Architecture](#architecture)
-- [Web-related attack detection](#web-related-attack-detection)
+- [Background Knowledge and Insight](#background-knowledge-and-insight)
+    - [Assumptions of Anomaly Detection](#assumptions-of-anomaly-detection)
+    - [Web Security](#web-security)
+    - [Web-related Attack Detection](#web-related-attack-detection)
+- [Goal and Contribution](#goal-and-contribution)
+- [Sample Date](#sample-date)
 - [Data model](#data-model)
 - [Detection models](#detection-models)
     - [Attribute length](#attribute-length)
@@ -14,84 +16,65 @@
         - [Learning](#learning)
         - [Detection](#detection)
     - [Attribute character distribution](#attribute-character-distribution)
-        - [User](#user)
-        - [Attacker](#attacker)
-        - [Learning](#learning)
-        - [Detection](#detection)
-    - [Structural inference](#structural-inference)
-        - [User](#user)
-        - [Attacker](#attacker)
-        - [Learning](#learning)
-        - [Detection](#detection)
+        - [User](#user-1)
+        - [Attacker](#attacker-1)
+        - [Learning](#learning-1)
+        - [Detection](#detection-1)
+    - [Structural Inference](#structural-inference)
+        - [User](#user-2)
+        - [Attacker](#attacker-2)
+        - [Learning](#learning-2)
+        - [Detection](#detection-2)
     - [Token finder](#token-finder)
-        - [User](#user)
-        - [Attacker](#attacker)
-        - [Learning](#learning)
-        - [Detection](#detection)
+        - [User](#user-3)
+        - [Attacker](#attacker-3)
+        - [Learning](#learning-3)
+        - [Detection](#detection-3)
     - [Attribute presence or absence](#attribute-presence-or-absence)
-        - [User](#user)
-        - [Attacker](#attacker)
-        - [Learning](#learning)
-        - [Detection](#detection)
+        - [User](#user-4)
+        - [Attacker](#attacker-4)
+        - [Learning](#learning-4)
+        - [Detection](#detection-4)
     - [Attribute order](#attribute-order)
-        - [User](#user)
-        - [Attacker](#attacker)
-        - [Learning](#learning)
-        - [Detection](#detection)
+        - [User](#user-5)
+        - [Attacker](#attacker-5)
+        - [Learning](#learning-5)
+        - [Detection](#detection-5)
     - [Access frequency](#access-frequency)
-        - [User](#user)
-        - [Attacker](#attacker)
-        - [Learning](#learning)
-        - [Detection](#detection)
+        - [User](#user-6)
+        - [Attacker](#attacker-6)
+        - [Learning](#learning-6)
+        - [Detection](#detection-6)
     - [Inter-request time delay](#inter-request-time-delay)
-        - [User](#user)
-        - [Attacker](#attacker)
-        - [Learning](#learning)
-        - [Detection](#detection)
+        - [User](#user-7)
+        - [Attacker](#attacker-7)
+        - [Learning](#learning-7)
+        - [Detection](#detection-7)
     - [Invocation order](#invocation-order)
-        - [User](#user)
-        - [Attacker](#attacker)
-        - [Learning](#learning)
-        - [Detection](#detection)
+        - [User](#user-8)
+        - [Attacker](#attacker-8)
+        - [Learning](#learning-8)
+        - [Detection](#detection-8)
 - [Limitation](#limitation)
 - [Reference](#reference)
 
 <!-- /TOC -->
 
-## Insight
+## Background Knowledge and Insight
+
+### Assumptions of Anomaly Detection
+
+* Relay on models of the intended behavior of user and application
+* Assume attack patterns is **different** from normal behavior
+* The **difference** can be expressed either **quantitatively** or **qualitatively**
+* Interprets deviations from this "normal" behavior as **evidence**
+
+### Web Security
 
 * Web servers accessible by outside world
 * Web apps developed with security as an afterthought
-* Developing ad hoc signatures is a time-intensive and error-prone activity
-* What's new
-    1. A number of different models
-        * Reduce vulnerability
-    2. Target specific types of applications
-        * More focused analysis
 
-## Goal
-
-* Animaly detextion system, detect web-based attacks
-* Unsupervised, learning-based anomaly detection
-* Deployed on host
-
-## Architecture
-
-* Input: Web server log files
-  * Common Log Format (CLF)
-* Analysis: build profiles for apps & active docs
-    * Lower error rates than generic profiles
-    * Use multiple models
-        * Reduce vulnerability to mimicry attacks
-* Output: Anomaly score for each web request
-
-## Web-related attack detection
-
-1. Relay on models of the intended behavior of user and application
-2. Assume attack patterns is **different** from normal behavior
-3. The **defference** can be expressed either quantitatively or qualitatively
-4. Interprets deviations from this "normal" behavior as **evidence**
-
+### Web-related Attack Detection
 
 * Misuse-based detection
     * Example: Snort
@@ -103,22 +86,40 @@
 * Anomaly-based
     * Applicable to custom-developed web apps
     * Support detection of new attacks
-* Classification of intrusion detection
+
+## Goal and Contribution
+
+* Unsupervised, learning-based anomaly detection
+* Deployed on host
+* A number of different models
+    * Reduce vulnerability of mimicry attacks
+* Target specific types of applications
+    * More focused analysis
+
+## Sample Date
+
+| Data set  | Time interval | Size (MByte) | HTTP queries | Programs | Program requests | Attributes |
+|-----------|---------------|--------------|--------------|----------|------------------|------------|
+| Google    | 1 h           | 236          | 640,506      | 3        | 490,704          | 1,611,254  |
+| UCSB      | 297 days      | 1001         | 9,951,174    | 2        | 4617             | 7993       |
+| TU Vienna | 80 days       | 251          | 2,061,396    | 8        | 713,500          | 765,399    |
 
 ## Data model
+
+![Sample web server access log entry](images/Sample_web_server_access_log_entry.png)
 
 * An ordered set $$U=\{u_1,u_2,...,u_m\}$$ of URIs
     * Extract from successful GET requests
     * $$200 \leq \text{return-code} < 300$$
 * Components of $$u_i$$
-    * Path to desired resource: pathi
-    * Optional path information: pinfoi
+    * Path to desired resource: $$path_i$$
+    * Optional path information: $$pinfo_i$$
     * Optional query string: $$q$$
-        * Following a "?" Character
+        * Following a `?` Character
         * Passing parameters to referenced resource
         * Attributes and values: $$q = (a_1, v_1), (a_2, v_2), ..., (a_n, v_n)$$
         * $$A$$, the set of all attributes, $$a_i$$ belongs to $$A$$
-        * $$v_i$$ is a string
+        * $$v_i$$, string
         * $$S_q = \{a_1=v_1, a_2=v_2, ..., a_n=v_n\}$$
 * URIs without query strings not included in $$U$$
 * $$U_r$$: subset of $$U$$ with resource path $$r$$
@@ -127,22 +128,22 @@
 
 ## Detection models
 
-* One model, one query
-* Task: returns probability $$p$$ of normalcy
-* Alerting on a single anomalous attribute is **necessarily  excessively cautious**
-* Anomaly Score
-* Has an associated weight $$w$$
-    * Default $$\text{value} = 1$$, in this paper
+* One query, one model
+* Alerting on a single anomalous attribute is **necessarily cautious**
 * Training mode
-    1. Create profiles for each server-side program  and each of its attributes
-    2. Establish suitable thresholds
+    * Create profiles for each server-side program and each of its attributes
+    * Establish suitable thresholds
         * Store the highest anomaly score
-        * Default thresholds: $$10\%$$ larger than the max anomaly score
+        * Default thresholds: $$10\%$$ larger than the max anomaly score in training mode
 * Detection mode
+    * Task: returns probability $$p$$ of normalcy
+    * Anomaly Score, $$\sum_{m \in \text{Models}} w_m (1 - p_m)$$
+        * Has an associated weight $$w$$
+            * Default $$\text{value} = 1$$, in this paper
 
 ### Attribute length
 
-* Length distribution mot follow a smooth curve
+* Length distribution not follow a smooth curve
 * Distribution has a large variance
 
 #### User
@@ -154,64 +155,65 @@
 
 #### Attacker
 
-* Buffer overflow: shell code & padding
+* Buffer overflow: shell code and padding
     * Several hundred bytes
 * XSS
 
 #### Learning
 
-* Estimate mean μ and variance $$\sigma^2$$ of lengths in training data
+* Estimate mean $$\mu$$ and variance $$\sigma^2$$ of lengths in training data
 
 #### Detection
 
 * Strings with length larger than mean
     * If $$\text{length} < \text{mean}$$, $$p = 1$$
     * Padding not effective
-* **Chebyshev inequality is weak bound**
-* **Useful to flag only significant outliers**
+* Chebyshev inequality is weak bound
+* Useful to flag only significant outliers
 
 ### Attribute character distribution
 
 * Character distribution: sorted relative frequencies
-    * Lost relative frequencies
-    * Example: $$\text{passwd} \Rightarrow 0.33, 0.17, 0.17, 0.17, 0.17, 0, ..., 0$$
+    * Lost connection between individual characters and relative frequencies
+        * `passwd`: 0.33, 0.17, 0.17, 0.17, 0.17, 0, ..., 0
+        * As same as `aabcde`
     * Fall smoothly for human-readable tokens
     * Fall quickly for malicious input
 
 #### User
 
-* Observations about attributes:
+* Observations about attributes
     * Regular structure
     * Mostly human readable
     * Almost always contain only printable characters
-*  Frequencies of query parameters distribution
-    * Not identical to a standard English text
-    * Similar to others
+* Frequencies of query parameters distribution
+    * Similar identical to a standard English text
 
 #### Attacker
 
-* Example:
-    * Buffer overflow: needs to send binary data & padding
-    * Directory traversal exploit: many dots in attribute value
+* Repeated padding characters cause frequencies drop extremely fast
+* Example
+    * Buffer overflow: needs to send binary data and padding
+    * Directory traversal exploit: many `.` in attribute value
 
 #### Learning
 
-* character distribution of each observed attribute is stored
+* Character distribution of each observed attribute is stored
 * Average of all character distributions computed
 
 #### Detection
 
 * Variant of the $$\text{Pearson}\ \chi^2\text{-test}$$
-    * goodness-of-fit
+    * Goodness-of-fit
 * Bins: $$\{[0], [1, 3], [4, 6], [7, 11], [12, 15], [16, 255]\}$$
 * For each query attribute:
     * Compute character distribution
-    * Observed values $$O_i$$ : Aggregate over bins
-    * Expected values $$E_i$$ : Learned character distribution attribute length
-* Compute: $$\chi^2$$
+    * Observed frequencies $$O_i$$ : Aggregate over bins
+    * Expected frequencies $$E_i$$ : Learned character distribution attribute length
+* Compute: $$\chi^2 = \sum_{i=0}^{i<6} \frac{(O_i - E_i)^2}{E_i}$$
 * Read corresponding probability
 
-### Structural inference
+### Structural Inference
 
 #### User
 
@@ -220,7 +222,7 @@
 
 #### Attacker
 
-* Detect exploits requiring different parameter structure
+* Exploits requiring different parameter structure
     * Examples: Buffer overflow, directory traversal, XSS
 * Simple manifestations of an exploit
     * Unusually long parameters
@@ -234,14 +236,13 @@
 * Stop before lost much structural information
 * Goal: Find a model(NFA) with highest likelihood given training examples
 * Markov model/Non-deterministic finite automaton (NFA)
-    * "Reasonable generalizaton"
+    * "Reasonable generalization"
     * $$P_s(o)$$: probability of emitting symbol $$o$$ at state $$S$$
     * $$P(t)$$: probability of transition $$t$$
     * Output: paths from Start state to Terminalstate
-* Bayesian model induction:
+* Bayesian model induction
     * $$P(\text{model}\mid\text{training}\_\text{data}) = \frac{p(\text{training}\_\text{data}\mid\text{model})*p(\text{model})}{p(\text{training}\_\text{data})}$$
     * $$P(\text{training}\_\text{data})$$ a scaling factor; ignored
-    * $$P(\text{training}\_\text{data}\mid\text{model})$$ computed as last slide
     * $$P(\text{model})$$: preference towards smaller models
         * Total number of states: $$N$$
         * Total number of transitions at each state $$S$$: $$T(S)$$
@@ -282,24 +283,25 @@
 
 #### Learning
 
-* Enumerated or Random
-* Growth in # of different argument instances compared to total # of argument instances
-* Compute correlation between these numbers:
-* $$F(x) = x$$
-* $$G(x)$$, $$G$$ is like a "enumeration counter"
-    * $$G(x) = G(x-1)+1$$ if $$\text{x-th}$$ value is new
-    * $$G(x) = G(x-1)-1$$ if $$\text{x-th}$$ value was seen before
-    * $$G(x) = 0$$ if $$x = 0$$
-    * $$Corr = \frac{Covar(F, G)}{\sqrt{Var(F)Var(G)}}$$
-    * If $$Corr < 0$$, then enumeration
-    * If enumeration, then store all values for use in detection phase
+* Argument are enumerated or random value
+    * r.v.: when the number of different argument instances grows proportional to the total number of argument instances
+    * Enumeration: not exit that increase
+* Compute correlation $$\rho$$ between $$f$$ and $$g$$
+    * $$f(x) = x$$
+    * $$g(x)$$, $$g$$ is like a "enumeration counter"
+        * $$g(x) = g(x-1)+1$$ if $$x^{th}$$ value is new
+        * $$g(x) = g(x-1)-1$$ if $$x^{th}$$ value was seen before
+        * $$g(x) = 0$$ if $$x = 0$$
+    * $$Corr = \frac{Covar(f, g)}{\sqrt{Var(f)Var(g)}}$$
+        * If $$Corr < 0$$, then enumeration
+        * If enumeration, then store all values for use in detection phase
 
 #### Detection
 
 * If enumeration: value expected to be among stored values
     * Output $$p = 1$$ or $$p = 0$$ correspondingly
-    * If random: $$p = 1$$
     * Hash table lookup, efficiency
+* If random: $$p = 1$$
 
 ### Attribute presence or absence
 
@@ -331,8 +333,7 @@
 
 #### User
 
-* same parameters in the same order
-* sequential
+* Same parameters in the same order
 * Sequential program logic preserves order even when some attributes left out
 
 #### Attacker
@@ -342,14 +343,19 @@
 
 #### Learning
 
-* Attribute $$a_s$$ precedes $$a_t$$ if as and at appear together in parameter list of at least one query and $$a_s$$ comes before $$a_t$$  when theyappear together
-* Directed graph
-* $$\text{number of vertices} = \text{number of attributes}$$
+* Attribute $$a_s$$ precedes $$a_t$$
+    * $$a_s$$, $$a_t$$ appear together in at least one query
+    * $$a_s$$ comes before $$a_t$$ when they appear together
+* Directed graph, $$G$$
+* Vertex $$v_i$$ corresponds to attribute $$a_i$$
+    * $$\#$$ vertices = $$\#$$ attributes
 * For each training query, add edges between nodes of ordered attribute pairs
+    * Directed edges correspond to orders of attribute pairs
 * Find all strongly connected components (SCC) of the graph
 * Remove edges between nodes in same SCC
+    * Remove "order"s from disordered attributes groups
 * For each node, find all reachable nodes
-* Add corresponding pairs to set of precedence orders
+* Add corresponding pairs $$(a_s, a_t)$$ to set of precedence orders $$O$$
 * Tarjan's algorithm, $$O(v + e)$$
 
 #### Detection
@@ -360,7 +366,7 @@
 ### Access frequency
 
 * Frequency patterns of different server-side web applications
-* Two types of frequencies:
+* Two types of frequencies
     * Frequency of application being accessed from a certain client
         * Base on IP address
     * Total frequency of all accesses
@@ -382,7 +388,7 @@
 
 #### Learning
 
-* divide training time to intervals of fixed time (e.g., 10 sec)
+* Divide training time to intervals of fixed time (e.g., 10 sec)
 * Count accesses in each interval
 * Find total and client-specific distributions
 
@@ -417,19 +423,24 @@
 * Order of invocation of web-based applications for each client
     * Infer session structure regularity
     * Similar to structural inference model
+        * Sequence of queries, not
+        * Parameters syntax of a query
+
 #### User
 
 * Invocation order can be generated by a certain Markov model
 
 #### Attacker
 
+* Can be detected when attacking application logic
 * Cannot be outputed by that model
 
 #### Learning
 
-* group queries based on source IP
+* Group queries based on source IP
     * Session: Queries within an interval of time
     * Build NFA for sessions
+* Independent of server-side applications
 
 #### Detection
 
@@ -437,12 +448,11 @@
 
 ## Limitation
 
-* Google
-    * Nearly half of the number of false positives
-        * Anomalous search strings that contain instances of non-printable characters
-            * Probably requests issued by users with incompatible character sets
-        * Extremely long strings
-            * Such as URLs directly pasted into the search field
+* Google, nearly half of the number of false positives
+    * Anomalous search strings that contain instances of non-printable characters
+        * Probably requests issued by users with incompatible character sets
+    * Extremely long strings
+        * Such as URLs directly pasted into the search field
 
 ## Reference
 

