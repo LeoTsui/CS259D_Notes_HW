@@ -163,9 +163,8 @@ Phishing is a type of computer attack that communicates socially engineered mess
 
 #### Machine Learning
 
-* Good at
-    * Build new model from big data
-    * Zero-hour phishing
+* Build new model from big data
+* Performance better on Zero-hour phishing
 
 ## Mitigation
 

@@ -7,7 +7,7 @@
 - [Data Source](#data-source)
 - [CANTINA](#cantina)
     - [Words](#words)
-    - [Feature: Included in Google ?](#feature-included-in-google-)
+    - [Feature](#feature)
     - [Other Features](#other-features)
 - [Limitation](#limitation)
 - [Reference](#reference)
@@ -63,7 +63,7 @@
     * Downloaded web page
     * Document Object Model (DOM)
 
-### Feature: Included in Google ?
+### Feature
 
 * Assumption
     * Phishing pages have low pagerank
