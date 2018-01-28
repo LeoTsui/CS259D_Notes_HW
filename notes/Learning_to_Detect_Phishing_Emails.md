@@ -15,11 +15,11 @@
 ## Background Knowledge and Insight
 
 * Phishing
-    * Goal:
+    * Goal
         * Account information
         * Logon credentials
         * Identity information
-    * Attack vectors:
+    * Attack vectors
         * Legitimate-looking emails
         * Legitimate-looking websites
 * Detection
@@ -49,14 +49,13 @@
 * Publicly available phishingcorpus
     * ~ 860 phishing messages
     * Challenge with WHOIS queries
-        * Only 505 domains out of 870 domains
+        * Only extracted 505 domains out of 870 domains
         * Increases false negative rate
 
 ## Feature
 
 * IP-based URLs
-    * Example:
-        * `http://192.168.0.1/paypal.cgi?fix_account`
+    * Example: `http://192.168.0.1/paypal.cgi?fix_account`
     * Compromised PCs with no DNS entries
     * Not popular
     * Binary feature
@@ -71,7 +70,7 @@
     * Binary feature: Lifetime < 60 days
 * Non-matching URLs
     * Example: `<a href="badsite.com"> paypal.com</a>`
-    * Binary feature: URL text different from HREF
+    * Binary feature: URL text different from `href`
 * "Here" links to non-modal domain
     * Example: Click here to restore your account
     * Modal domain: domain most frequently linked to
@@ -80,7 +79,7 @@
     * Binary feature: email section with MIME type text/html
 * Number of links
     * Continuous feature(Numeric feature): # links in HTML part(s) of email
-    * Link defined by an `<a>` tag with href attribute
+    * Link defined by an `<a>` tag with `href` attribute
         * Including `mailto:` links
 * Number of domains
     * Domain names for URLs starting with http/ https
@@ -91,7 +90,7 @@
             * `university.edu` for `www.cs.university.edu`
             * `company.co.jp` for `www.company.co.jp`
                 * Top-level: `.jp`
-                * second-level: `.co`
+                * Second-level: `.co`
     * Numeric feature: # distinct domains
 * Number of dots
     * Subdomains: `http://www.my-bank.update.data.com`

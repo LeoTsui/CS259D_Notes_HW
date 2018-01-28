@@ -7,7 +7,7 @@
 - [Data Source](#data-source)
 - [CANTINA](#cantina)
     - [Words](#words)
-    - [Feature: Included in Google](#feature-included-in-google)
+    - [Feature: Included in Google ?](#feature-included-in-google-)
     - [Other Features](#other-features)
 - [Limitation](#limitation)
 - [Reference](#reference)
@@ -42,10 +42,10 @@
 ## Data Source
 
 * English language sites
-* Lhishing URLs
+* Phishing URLs
     * PhishTank.com
 * Legitimate URLs
-    * 3Sharp’s study of anti-phishing toolbars
+    * 3Sharp's study of anti-phishing toolbars
     * Select the login pages of 35 sites that are often attacked by phishers
     * Select the 35 top pages from Alexa Web Search
     * Select 30 random pages from random.yahoo.com/fast/ryl
@@ -63,7 +63,7 @@
     * Downloaded web page
     * Document Object Model (DOM)
 
-### Feature: Included in Google
+### Feature: Included in Google ?
 
 * Assumption
     * Phishing pages have low pagerank
@@ -96,6 +96,7 @@
 
 ## Limitation
 
+* Not include JaveSvript
 * Non-English web sites
 * Rely on Google query
     * Timeout
@@ -108,4 +109,5 @@
 ## Reference
 
 * Cantina: A content-based approach to detecting phishing websites, Zhang et al, 2007
+* Kim Giglia, CSC 682 [CANTINA.ppt](https://kosh.nku.edu/~waldenj/classes/2008/fall/csc682/presentations/CANTINA.ppt)
 * CS 259D Lecture 16
