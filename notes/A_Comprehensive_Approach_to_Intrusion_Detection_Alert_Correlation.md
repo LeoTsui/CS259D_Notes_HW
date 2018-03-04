@@ -28,11 +28,21 @@
 ## Background Knowledge and Insight
 
 * How to cover multiple aspects "as a whole"
+    * Different attack manifestations
+        * Network packets
+        * OS calls
+        * Audit records
+        * Application logs
+    * Different types of intrusion detection
+        * Host vs network
+        * IT environment (e.g., Windows vs Linux)
+        * Levels of abstraction (e.g., Kernel level vs application level)
 
 ## Goal and Contribution
 
-* Comprehensive correlation approach
-* Build a Framework
+* Aggregate outputs of multiple IDSs
+* Filter out irrelevant alerts
+* Provide succinct view of security-related activity on the network
 
 ## Data
 
@@ -48,7 +58,7 @@
 
 
 * Two existing data sets
-   * DARPA
+    * DARPA
         * MIT Lincoln Laboratory 1999
         * MIT Lincoln Laboratory 2000
     * Defcon 9
@@ -63,15 +73,15 @@
         * RedHat 7.2 Linux
         * Microsoft Windows 2000 Server
     * Cyber Treasure Hunt competition
-    * Rome Air Force Research Laboratory’s networks
-        * No successful attacks.
+    * Rome Air Force Research Laboratory's networks
+        * No successful attacks
 * Manually perform the correctness of the correction process
 
 ## Feature
 
 ## Architecture
 
-![ Correlation process overview](images/alert_correlation.png)
+![Correlation process overview](images/alert_correlation.png)
 
 * Optional
 * Parallel
@@ -81,9 +91,9 @@
 
 * Normalization
     * Translate alerts to a common format
-    * Alerts from different sensors can be encoded in different formats
+    * Alerts from different sensors be encoded in different formats
 * Preprocessing
-    * augment normalized alerts by assigning meaningful values to all alert attributes
+    * Augment normalized alerts by assigning meaningful values to all alert attributes
         * Start time
         * End time
         * Source
@@ -104,7 +114,7 @@
 * Multistep correlation
     * Identify common attack patterns
         * Sequence of individual attacks at different points of network
-            * Island hopping
+            * Island hopping attack
 * Impact analysis
     * Determine the attack impact for the specific target network
 * Prioritization
@@ -114,13 +124,13 @@
 
 ### Meta-alerts
 
-* Definition:
+* Definition
     * Higher-level alerts made via merging
     * Attribute values derived from those of original alerts
-* Example:
+* Example
     * a "portscan" alert composed of a series of alerts referring to individual network probe packets
-    * Target attribute: all hosts that were port-scanned
-* Representation:
+    * Target attribute, all hosts that were port-scanned
+* Representation
     * A tree with IDS alerts at the leaves
     * Merging done in a BFS fashion
 
@@ -128,13 +138,13 @@
 
 | AlertID | Name           | Sensor | Start/End | Source   | Target            | Tag |
 | ------- | -------------- | ------ | --------- | -------- | ----------------- | --- |
-| 1       | IIS Exploit    | N1     | 12.0/12.0 | 80.0.0.1 | 10.0.0.1, port:80 |     |
-| 2       | Scanning       | N2     | 10.1/14.8 | 31.3.3.7 | 10.0.0.1          |     |
-| 3       | Portsacn       | N1     | 10.0/15.0 | 31.3.3.7 | 10.0.0.1          |     |
-| 4       | Apache Exploit | N1     | 22.0/22.0 | 31.3.3.7 | 10.0.0.1, port:80 |     |
-| 5       | Bad Request    | A      | 22.1/22.1 |          | localhost, Apache |     |
-| 6       | Local Exploit  | H      | 24.6/24.6 |          | linuxconf         |     |
-| 7       | Local Exploit  | H      | 24.7/24.7 |          | linuxconf         |     |
+| 1       | IIS Exploit    | N1     | 12.0/12.0 | 80.0.0.1 | 10.0.0.1, port:80 | ... |
+| 2       | Scanning       | N2     | 10.1/14.8 | 31.3.3.7 | 10.0.0.1          | ... |
+| 3       | Portsacn       | N1     | 10.0/15.0 | 31.3.3.7 | 10.0.0.1          | ... |
+| 4       | Apache Exploit | N1     | 22.0/22.0 | 31.3.3.7 | 10.0.0.1, port:80 | ... |
+| 5       | Bad Request    | A      | 22.1/22.1 |          | localhost, Apache | ... |
+| 6       | Local Exploit  | H      | 24.6/24.6 |          | linuxconf         | ... |
+| 7       | Local Exploit  | H      | 24.7/24.7 |          | linuxconf         | ... |
 
 * Victim network
     * Vulnerable Apache Web service on a Linux host (IP: 10.0.0.1)
@@ -146,19 +156,20 @@
         * Discovers vulnerable Apache server (Alerts 2, 3)
     * During scan a worm (IP: 80.0.0.1) attempts Microsoft IIS exploit and fails (Alert 1)
     * After scan, attacker exploits Apache buffer overflow (Alerts 4, 5)
-        * Gets interactive  hell as apache user
+        * Gets interactive shell as Apache user
     * Using a local exploit against linuxconf, attacker becomes root (Alerts 6, 7)
-    * Desired output of correlation: Single meta-alert for a multi-step attack against victim host
-        * Step 1: Initial scanning (Alerts 2, 3)
-        * Step 2: Remote attack against web server (Alerts 4, 5)
-        * Step 3: Privilege escalation (Alerts 6, 7)
-    * Alert 1 should be discarded as irrelevant
+* Desired output of correlation
+    * Single meta-alert for a multi-step attack against victim host
+    * Step 1: Initial scanning (Alerts 2, 3)
+    * Step 2: Remote attack against web server (Alerts 4, 5)
+    * Step 3: Privilege escalation (Alerts 6, 7)
+* Alert 1 should be discarded as irrelevant
 
 ### Alert Normalization
 
 | AlertID | Name         | Sensor | Start/End | Source   | Target   | Tag |
 | ------- | ------------ | ------ | --------- | -------- | -------- | --- |
-| 2       | **Portsacn** | N2     | 10.1/14.8 | 31.3.3.7 | 10.0.0.1 |     |
+| 2       | **Portsacn** | N2     | 10.1/14.8 | 31.3.3.7 | 10.0.0.1 | ... |
 
 * Goal: Unify alert formats form different types of sensors
     * Not need to normalize for only one type of sensor
@@ -176,7 +187,7 @@
 | createtime      | The time when the IDS generated the alert                  |
 | detecttime      | The time when the IDS detected the attack                  |
 | end_time        | The time when the attack ended                             |
-| name The        | name of the attack                                         |
+| name The        | The name of the attack                                     |
 | priority        | A value indicating how important the attack is             |
 | receivedtime    | The time the alert was received by the correlator          |
 | reference       | A set of references to other alerts                        |
@@ -192,9 +203,9 @@
 
 | AlertID | Name          | Sensor | Start/End | Source       | Target                             | Tag |
 | ------- | ------------- | ------ | --------- | ------------ | ---------------------------------- | --- |
-| 5       | Bad Request   | A      | 22.1/22.1 | **10.0.0.1** | **10.0.0.1** ~~localhost~~, Apache |     |
-| 6       | Local Exploit | H      | 24.6/24.6 | **10.0.0.1** | **10.0.0.1**, linuxconf            |     |
-| 7       | Local Exploit | H      | 24.7/24.7 | **10.0.0.1** | **10.0.0.1**, linuxconf            |     |
+| 5       | Bad Request   | A      | 22.1/22.1 | **10.0.0.1** | **10.0.0.1** ~~localhost~~, Apache | ... |
+| 6       | Local Exploit | H      | 24.6/24.6 | **10.0.0.1** | **10.0.0.1**, linuxconf            | ... |
+| 7       | Local Exploit | H      | 24.7/24.7 | **10.0.0.1** | **10.0.0.1**, linuxconf            | ... |
 
 * Some necessary fields are omited
     * Start/End-time
@@ -212,7 +223,6 @@
 | **8**   | **Meta-Alert** | **{N1, N2}** | **10.8/14.8** | **31.3.3.7** | **10.0.0.7** | **{2, 3}** |
 
 * Goal: Combine alerts representing independent detection of a same attack by different IDSs
-    * Combine related alerts not related attacks
     * Not combine alerts produced by the same sensor
 * Fusion: Temporal difference between alerts and information they contain
     * Keep sliding time window of alerts
@@ -240,7 +250,7 @@
     * Example: temporary file, outgoing connection
 * Passive techniques
     * Depend on the priori information
-        * Whether the attack target:
+        * Whether the attack target
             * Exist
             * Running
             * Reachable
@@ -261,7 +271,7 @@
             * Visible on the network
             * Consume network resources
             * Cause crash
-            * Raise alarm, should be excluded
+            * Raise false alarm
     * Remote login
         * Advantage
             * Gather high-quality data
@@ -336,7 +346,7 @@
 | -------- | ------- | ------------------------- | ----------- | --------- |
 | High     | 12      | Multistep Attack Scenario |             | {11, 10}  |
 | Low      | 2-11    | ...                       | correlated  | ...       |
-| Low      | 1       | IIS Exploit               | nonrelevant |           |
+| Low      | 1       | IIS Exploit               | nonrelevant | ...       |
 
 ## Reference
 

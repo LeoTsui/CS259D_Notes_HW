@@ -9,7 +9,7 @@
 - [Adaptive Intrusion Detection System (A-IDS)](#adaptive-intrusion-detection-system-a-ids)
     - [Mixing Algorithm](#mixing-algorithm)
         - [Notation](#notation)
-        - [Mixing Algorithm](#mixing-algorithm-1)
+        - [Algorithm](#algorithm)
 - [Experimental](#experimental)
 - [Limitation](#limitation)
 - [Reference](#reference)
@@ -28,20 +28,18 @@
     * Anomaly IDS
         * Detect novel attacks
         * More FP
-    * Decision-Tree-based IDS 
-        * Detects well on DoS
-        * Fail on user-to-root and remote-to-local attacks
     * **Perform differently in different environments**
     * **No Free Lunch Theorem**
 * Combination IDSs
     * High cost
+    * Majority voting
     * Incorrect
-    * Majority Voting
-    * Hedge/Boosting
-        * Online learning framework
-        * Chose best IDS in period T
-        * Destroy the superiority of the best IDS by changing the attacks all the time
-        * All perform badly
+        * Majority can be wrong
+* Hedge/Boosting
+    * Online learning framework
+    * Chose best IDS in period T
+    * Destroy the superiority of the best IDS by changing the attacks all the time
+    * All IDSs perform badly
 * Adaptability of the IDS
     * Adapt to dynamic adversarial environments
     * How to choose the best
@@ -58,18 +56,17 @@
         * Attacks or Normal
     * Attacks
         * Cross-Site Scripting
-        * SQL
-        * Injection
-        * LDAP Injection
-        * XPATH Injection
+        * SQL injection
+        * LDAP injection
+        * XPATH injection
         * Path traversal
         * Command Execution
         * SSI attacks
 * CSIC HTTP 2010
     * 61,000 samples, 41% attacks
         * Anomalous or Normal
-    * Targeted Web APP
-        * Real
+    * Traffic data
+        * Realistic
         * Developed for this purpose
         * E-commerce Web APP
         * Apache server
@@ -77,8 +74,7 @@
         * SQL injection
         * Buffer overflow
         * Information gathering
-        * CRLF
-        * Injection
+        * CRLF injection
         * XSS
         * Server side include
         * Parameter tampering
@@ -86,8 +82,8 @@
 ## Feature
 
 * 30 features
-    * length
-    * number
+    * Length
+    * Number
     * Max
     * Min
     * Type of header
@@ -96,7 +92,7 @@
         * Digits
         * Non-alphanumeric characters
             * Special meanings in programming languages
-            * 'special' char
+            * "special" char
         * Others
     * Entropy
     * Programming languages keywords
@@ -106,19 +102,19 @@
 
 * Base IDS
     * Base classifiers
-        * NaïveBayes
-        * BayesNetwork
+        * Naïve Bayes
+        * Bayes Network
         * Decision Stump
-        * RBFNetwork
+        * RBF Network
     * **No assumptions on selection of baseline classifiers**
-    * 1O-folds cross-validation
+    * 10-folds cross-validation
 * *Loss Update*
     * Hedge/Boosting algorithm
 * *Mixing Update*
     * Bousquet and Warmuth's algorithm (2002)
     * Quick recovery property of the IDSs to deal with their favorite data
         * Remembering the past average weight vector
-* Supervised Framework:
+* Supervised Framework
     * Combine results of base IDSs
     * Receive the true label of the current sample
     * Measure losses between IDS outputs and true label
@@ -129,8 +125,9 @@
 #### Notation
 
 * $$T$$, $$\#$$ instances
-* $$n$$, $$\#$$ base IDSs
 * $$t$$, $$(t=1,...,T)$$, a certain time or trial
+* $$n$$, $$\#$$ base IDSs
+* $$i$$, $$i \in \{ 1, 2, ..., n \}$$, the index of base IDSs
 * $$x_t$$, a vector of $$n$$ IDS's output
     * A-IDS receives $$x_t$$
     * $$x_t = (x_{t,1}, ..., x_{t,n})$$
@@ -142,12 +139,11 @@
     * $$L_{t, i} = (y_t - x_{t, i})^2$$
     * Measure the discrepancy between the true label and the predictions of the base IDSs
 * $$v_t$$, the weight vector maintained by the A-IDS
-    * For the trial $$t$$, and the $$i\text{-th}$$ IDS
     * $$v_t = (v_{t,1}, v_{t,2}, ..., v_{t,n})$$
     * $$v_{t,i} \geq 0$$
     * $$\sum_{i = 1}^n v_{t,i} = 1$$
 
-#### Mixing Algorithm
+#### Algorithm
 
 * Parameters
     * $$\eta > 0$$, learning rate
@@ -172,40 +168,34 @@
 
 ## Experimental
 
-* Setting (Not Mixing Update)
-    * Base classifiers:
-        * NaïveBayes
-        * BayesNetwork
-        * Decision Stump
-        * RBFNetwork
-    * 1O-folds cross-validation
+* Expert setting (Not Mixing Update)
     * Single intrusion detection cannot detect all types
         * Good performance on special segments
         * Need combination
     * *Loss Update*
         * $$\eta = 0.1$$
-    * Not ***Mixing** Update*
+    * Not *Mixing Update*
         * $$v_{t_1,i} = v_{t,i}^m$$
         * Combination is not help
         * The performance is almost the same as the best IDS
-* Combining (A-IDS)
-    * Random permutation
+* Expert Combining (A-IDS)
+    * Simulate adversarial environment
+        * Random permutation
     * 10-folds cross-validation
     * Mixing Algorithm
         * $$\eta = 0.1$$
         * $$\alpha = 0.001$$
         * Uniform Past update
-* Expanding (A-ExIDS)
+* Expert Expanding (A-ExIDS)
 
 ## Limitation
 
-* Double-edge knife of *Lose Update*
+* Lose Update is double-edge knife
     * The best $$v_{t,i}$$($$L_{t,i} = 0$$) controls $$v_{t,i}^m$$
     * Hard to recover if an IDS temporarily performs poorly and then performs well
-    * Consequence:
-        * Slow adaptation to changes in IDS performances
+    * Consequence
+        * Slow adaptation about changes in IDSs' performances
         * Attackers can change attack patterns all the times
-    * *Mixing Update* is used to remember the past average weight vector
 
 ## Reference
 
