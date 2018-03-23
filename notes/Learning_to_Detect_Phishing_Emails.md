@@ -8,7 +8,7 @@
 - [Feature](#feature)
 - [Features in Webpage Classification](#features-in-webpage-classification)
 - [Machine Learning Implementation](#machine-learning-implementation)
-- [Reference](#reference)
+- [References](#references)
 
 <!-- /TOC -->
 
@@ -120,7 +120,7 @@
     * Each decision made on a random attribute
     * Trees pruned
 
-## Reference
+## References
 
 * Learning to Detect Phishing Emails, Fette et al, 2007
 * CS 259D Lecture 16

@@ -14,7 +14,7 @@
     - [Number of Mouse Clicks in a Real Session](#number-of-mouse-clicks-in-a-real-session)
 - [Classifier](#classifier)
 - [Limitation](#limitation)
-- [Reference](#reference)
+- [References](#references)
 
 <!-- /TOC -->
 
@@ -158,7 +158,7 @@
     * Common problem for almost all biometrics approaches
 * More suitable to work together with other authentication methods
 
-## Reference
+## References
 
 * An Efficient User Verification System via Mouse Movements, 2011
 * CS 259D Lecture 7

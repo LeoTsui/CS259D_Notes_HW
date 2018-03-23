@@ -27,7 +27,7 @@
     - [Host-based](#host-based)
     - [Global Correlated](#global-correlated)
 - [Evasion and Botnet Detection Challenges](#evasion-and-botnet-detection-challenges)
-- [Reference](#reference)
+- [References](#references)
 
 <!-- /TOC -->
 
@@ -280,7 +280,7 @@
     * Changing infection models
     * Fast flux hosting
 
-## Reference
+## References
 
 * [Botnet Communication Topologies](https://www.damballa.com/downloads/r_pubs/WP_Botnet_Communications_Primer.pdf)
 * CS 259D Lecture 2

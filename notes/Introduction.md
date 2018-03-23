@@ -25,7 +25,7 @@
         - [Time aspects](#time-aspects)
         - [Activeness](#activeness)
         - [Continuality](#continuality)
-- [Reference](#reference)
+- [References](#references)
 
 <!-- /TOC -->
 
@@ -334,6 +334,6 @@
     * Take periodic snapshots of the environment
     * Lower security: exploiting the window of opportunity between two snapshots
 
-## Reference
+## References
 
 * CS 259D Lecture 1

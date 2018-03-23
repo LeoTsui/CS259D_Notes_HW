@@ -10,7 +10,7 @@
     - [Attacks](#attacks)
 - [Data](#data)
 - [Limitation](#limitation)
-- [Reference](#reference)
+- [References](#references)
 
 <!-- /TOC -->
 
@@ -67,7 +67,7 @@
 
 * [High FP rate](http://www.cse.chalmers.se/edu/course/DAT285B/SLIDESNOTES/NGramPresentation.pptx)
 
-## Reference
+## References
 
 * McPAD : A Multiple Classifier System for Accurate Payload-based Anomaly Detection, Perdisci et al, 2009
 * CS 259D Lecture 15

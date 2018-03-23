@@ -14,7 +14,7 @@
     - [Keeping The Scope Narrow](#keeping-the-scope-narrow)
     - [Reducing the Costs](#reducing-the-costs)
     - [Evaluation](#evaluation)
-- [Reference](#reference)
+- [References](#references)
 
 <!-- /TOC -->
 
@@ -199,7 +199,7 @@
 * Develop insight into anomaly detection system's capabilities
     * What can/can't it detect? Why?
 
-## Reference
+## References
 
 * Outside the closed world: On using machine learning for network intrusion detection, Sommer-Paxson, 2010 
 * CS 259D Session 13

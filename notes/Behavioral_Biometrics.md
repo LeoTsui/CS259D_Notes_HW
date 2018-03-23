@@ -9,7 +9,7 @@
     - [Social Biometric (Social Behavioural Biometric)](#social-biometric-social-behavioural-biometric)
 - [Behavioral Biometrics Categories](#behavioral-biometrics-categories)
 - [Implementation factors](#implementation-factors)
-- [Reference](#reference)
+- [References](#references)
 
 <!-- /TOC -->
 
@@ -103,7 +103,7 @@
     * False acceptance rate (FAR)
     * Equal error rate (ERR): error rate when FRR=FAR
 
-## Reference
+## References
 
 * NIST SP 800-63-2: Electronic Authentication Guideline
 * Biometrics: A Tool for Information Security

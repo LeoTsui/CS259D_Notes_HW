@@ -5,7 +5,7 @@
 - [Background Knowledge](#background-knowledge)
 - [Insight and Goal](#insight-and-goal)
 - [Eigen co-occurrence matrix (ECM)](#eigen-co-occurrence-matrix-ecm)
-- [Reference](#reference)
+- [References](#references)
 
 <!-- /TOC -->
 
@@ -46,7 +46,7 @@
 
 * Handwritten Notes :)
 
-## Reference
+## References
 
 * Anomaly Detection Using Layered Networks Based on Eigen Co-occurrence Matrix
 * Anomaly Detection Using Integration Model of Vector Space and Network Representation

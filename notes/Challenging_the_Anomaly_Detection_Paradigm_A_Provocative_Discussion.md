@@ -8,7 +8,7 @@
     - [Training Data](#training-data)
     - [Operational Usability](#operational-usability)
 - [Recommend](#recommend)
-- [Reference](#reference)
+- [References](#references)
 
 <!-- /TOC -->
 
@@ -75,7 +75,7 @@
 * More models
 * More tests
 
-## Reference
+## References
 
 * Challenging the Anomaly Detection Paradigm: A Provocative Discussion, Gates-Taylor, 2007
 * CS 259D Session 13

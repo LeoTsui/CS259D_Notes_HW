@@ -18,7 +18,7 @@
         - [C4.5 decision tree algorithm](#c45-decision-tree-algorithm)
 - [Evaluation](#evaluation)
 - [Limitation (Evasion)](#limitation-evasion)
-- [Reference](#reference)
+- [References](#references)
 
 <!-- /TOC -->
 
@@ -251,7 +251,7 @@
     * Reduces attacker's impact
     * Requires high degree of coordination
 
-## Reference
+## References
 
 * EXPOSURE: Finding Malicious Domains Using Passive DNS Analysis (2011)
 * CS 259D Lecture 3

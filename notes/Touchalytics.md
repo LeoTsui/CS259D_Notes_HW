@@ -9,7 +9,7 @@
 - [Feature](#feature)
 - [Classification](#classification)
 - [Limitation](#limitation)
-- [Reference](#reference)
+- [References](#references)
 
 <!-- /TOC -->
 
@@ -113,7 +113,7 @@
         * Less scrolling
         * More degrees of freedom
 
-## Reference
+## References
 
 * Touchalytics: On the Applicability of Touchscreen Input as a Behavioral Biometric for Continuous Authentication, 2013
 * [Touchalytics](http://www.mariofrank.net/touchalytics/index.html)

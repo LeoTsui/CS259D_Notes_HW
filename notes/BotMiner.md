@@ -11,7 +11,7 @@
     - [A-plane Clustering](#a-plane-clustering)
     - [Cross-plane Correlation](#cross-plane-correlation)
 - [Limitations and Potential Solutions](#limitations-and-potential-solutions)
-- [Reference](#reference)
+- [References](#references)
 
 <!-- /TOC -->
 
@@ -186,7 +186,7 @@
         * Impedes attack efficiency
         * The bot may be offline or powered off
 
-## Reference
+## References
 
 * [BotMiner: Clustering Analysis of Network Traffic for Protocol- and Structure- Independent Botnet Detection](https://www.usenix.org/legacy/event/sec08/tech/full_papers/gu/gu_html/)
 * CS 259D Lecture 2

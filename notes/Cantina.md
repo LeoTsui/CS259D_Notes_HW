@@ -10,7 +10,7 @@
     - [Feature](#feature)
     - [Other Features](#other-features)
 - [Limitation](#limitation)
-- [Reference](#reference)
+- [References](#references)
 
 <!-- /TOC -->
 
@@ -106,7 +106,7 @@
     * Images instead of words
     * Invisible text
 
-## Reference
+## References
 
 * Cantina: A content-based approach to detecting phishing websites, Zhang et al, 2007
 * Kim Giglia, CSC 682 [CANTINA.ppt](https://kosh.nku.edu/~waldenj/classes/2008/fall/csc682/presentations/CANTINA.ppt)

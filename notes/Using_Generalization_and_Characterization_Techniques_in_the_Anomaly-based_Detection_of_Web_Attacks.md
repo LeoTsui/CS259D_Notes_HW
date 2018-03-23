@@ -26,7 +26,7 @@
         - [Cross-Site Scripting](#cross-site-scripting)
         - [SQL Injection](#sql-injection)
         - [Buffer Overflow](#buffer-overflow)
-- [Reference](#reference)
+- [References](#references)
 
 <!-- /TOC -->
 
@@ -260,7 +260,7 @@ GET /cgi-bin/show.cgi?sID=12345&file=%90%90%90%90%90...
 * Attack inference
     * Scan attribute string for binary values (ASCII char values > `0x80`)
 
-## Reference
+## References
 
 * Using Generalization and Characterization Techniques in the Anomaly-based Detection of Web Attacks, Robertson et al., 2006
 * [http://dreamkorea.tistory.com/attachment/hk70.pdf](http://dreamkorea.tistory.com/attachment/hk70.pdf)

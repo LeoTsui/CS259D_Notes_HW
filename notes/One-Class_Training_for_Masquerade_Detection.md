@@ -5,10 +5,10 @@
 - [Background Knowledge and Insight](#background-knowledge-and-insight)
 - [Schonlau Dataset](#schonlau-dataset)
 - [Machine learning methods](#machine-learning-methods)
-    - [Naïve Bayes Classifier](#na%C3%AFve-bayes-classifier)
+    - [Naïve Bayes Classifier](#naïve-bayes-classifier)
     - [One-class support vector machine](#one-class-support-vector-machine)
 - [Limitation](#limitation)
-- [Reference](#reference)
+- [References](#references)
 
 <!-- /TOC -->
 
@@ -86,7 +86,7 @@
 * This system(paper) should not be viewed as a single detector
 * Need to include command arguments, not only truncated commands
 
-## Reference
+## References
 
 * One-class Training for Masquerade Detection (2003)
 * CS 259D Lecture 3

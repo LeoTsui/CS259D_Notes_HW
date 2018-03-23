@@ -15,7 +15,7 @@
     - [Propagation strength](#propagation-strength)
     - [Overall strength](#overall-strength)
 - [Hybrid Engine: Combining Polymorphism and Blending](#hybrid-engine-combining-polymorphism-and-blending)
-- [Reference](#reference)
+- [References](#references)
 
 <!-- /TOC -->
 
@@ -138,7 +138,7 @@ $$\Pi(\text{engine}) = \Phi(\text{engine}) \cdot \Psi(\text{engine})$$
     * 4-byte salient artifact too small to use as a signature
     * Essentially impossible to model
 
-## Reference
+## References
 
 * On the Infeasibility of Modeling Polymorphic Shellcode, Song et al, 2007
 * CS 259D Session 14

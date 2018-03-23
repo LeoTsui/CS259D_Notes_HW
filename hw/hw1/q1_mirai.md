@@ -38,7 +38,7 @@
 * Stopped, police arrested one suspected hacker
 * New Virus variants
 
-## Reference
+## References
 
 * [Wikipedia Mirai (malware)](https://en.wikipedia.org/wiki/Mirai_(malware))
 * [Wikipedia Mirai (恶意软件)](https://zh.wikipedia.org/wiki/Mirai_(%E6%81%B6%E6%84%8F%E8%BD%AF%E4%BB%B6))

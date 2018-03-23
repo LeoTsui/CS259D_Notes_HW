@@ -12,7 +12,7 @@
         - [Algorithm](#algorithm)
 - [Experimental](#experimental)
 - [Limitation](#limitation)
-- [Reference](#reference)
+- [References](#references)
 
 <!-- /TOC -->
 
@@ -197,7 +197,7 @@
         * Slow adaptation about changes in IDSs' performances
         * Attackers can change attack patterns all the times
 
-## Reference
+## References
 
 * Adaptive Intrusion Detection System via Online Learning, 2012
 * CS 259D Session 10

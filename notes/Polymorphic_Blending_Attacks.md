@@ -23,7 +23,7 @@
     - [1-gram and 2-gram Attacks](#1-gram-and-2-gram-attacks)
 - [Countermeasures](#countermeasures)
 - [Limitations and Improvements](#limitations-and-improvements)
-- [Reference](#reference)
+- [References](#references)
 
 <!-- /TOC -->
 
@@ -254,7 +254,7 @@
 * Are the assumption of PBA are realistic
 * Explore techniques for continuous data streams
 
-## Reference
+## References
 
 * Polymorphic Blending Attacks, Fogla et al, 2006
 * [CDA6938 Special Topic:Research in Computer and Network Security (Spring 2007)](http://www.cs.ucf.edu/~czou/CDA6938/Polymorphic_blending_attacks_Himanshu_Pagey.ppt)

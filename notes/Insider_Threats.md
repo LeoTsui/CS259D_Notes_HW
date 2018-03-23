@@ -9,7 +9,7 @@
     - [Forms of Attack](#forms-of-attack)
     - [Characteristics of Insider Attacks](#characteristics-of-insider-attacks)
 - [Detection Approach](#detection-approach)
-- [Reference](#reference)
+- [References](#references)
 
 <!-- /TOC -->
 
@@ -89,7 +89,7 @@
 | Network Activity Audit                              | Medium - If attack uses network and attribution is possible                   | High - If attack uses network  and attribution is possible                |
 | Honeypots and Decoy Technologies                    | High - Unfamiliar with local information and likely to interact with honeypot | Medium - Unlikely to interact if aware of the location of honeypots       |
 
-## Reference
+## References
 
 * [The Athens Affair](http://spectrum.ieee.org/telecom/security/the-athens-affair)
 * Insider Attack and Cyber Security: Beyond the Hacker, chapter "A Survey of Insider Attack Detection Research"

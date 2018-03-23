@@ -56,7 +56,7 @@
         - [Learning](#learning-8)
         - [Detection](#detection-8)
 - [Limitation](#limitation)
-- [Reference](#reference)
+- [References](#references)
 
 <!-- /TOC -->
 
@@ -454,7 +454,7 @@
     * Extremely long strings
         * Such as URLs directly pasted into the search field
 
-## Reference
+## References
 
 * A multi-model approach to the detection of web-based attacks, 2005
 * CS 259D Lecture 8

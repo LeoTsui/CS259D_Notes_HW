@@ -21,7 +21,7 @@
     - [Multistep Correlation](#multistep-correlation)
     - [Impact Analysis](#impact-analysis)
     - [Alert Prioritization](#alert-prioritization)
-- [Reference](#reference)
+- [References](#references)
 
 <!-- /TOC -->
 
@@ -348,7 +348,7 @@
 | Low      | 2-11    | ...                       | correlated  | ...       |
 | Low      | 1       | IIS Exploit               | nonrelevant | ...       |
 
-## Reference
+## References
 
 * A Comprehensive Approach to Intrusion Detection Alert Correlation, Valeur et al, 2004
 * Lecture 20

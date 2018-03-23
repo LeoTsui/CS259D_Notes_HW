@@ -14,7 +14,7 @@
     - [Unsupervised learning](#unsupervised-learning)
     - [Z-string](#z-string)
 - [Limitation](#limitation)
-- [Reference](#reference)
+- [References](#references)
 
 <!-- /TOC -->
 
@@ -141,7 +141,7 @@
 * Not robust against adversaries
 * No focused scope
 
-## Reference
+## References
 
 * Anomalous payload-based network intrusion detection, Wang-Stolfo 2004
 * CS 259D Session 12

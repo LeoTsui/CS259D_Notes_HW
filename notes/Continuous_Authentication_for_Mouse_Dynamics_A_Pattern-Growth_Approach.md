@@ -10,14 +10,14 @@
     - [Mouse Behavior Pattern Mining](#mouse-behavior-pattern-mining)
         - [Notation](#notation)
         - [Mining Method](#mining-method)
-        - [Reference-Behavior Pattern Generation and Matching](#reference-behavior-pattern-generation-and-matching)
+        - [References-Behavior Pattern Generation and Matching](#references-behavior-pattern-generation-and-matching)
         - [Behavior Pattern Analysis](#behavior-pattern-analysis)
 - [Feature](#feature)
     - [Feature Construction from Mined Pattern](#feature-construction-from-mined-pattern)
     - [Empirical Feature Study](#empirical-feature-study)
 - [Detection Implementation](#detection-implementation)
 - [Limitation](#limitation)
-- [Reference](#reference)
+- [References](#references)
 
 <!-- /TOC -->
 
@@ -153,7 +153,7 @@
         * Based on set of patterns mined so far
     * Mine locally frequent patterns in each projected database
 
-#### Reference-Behavior Pattern Generation and Matching
+#### References-Behavior Pattern Generation and Matching
 
 * Create "baseline", normal behavior pattern generation
     * For each user
@@ -235,7 +235,7 @@
 * No impostors' samples
 * Need to collect data and train models for every deploy
 
-## Reference
+## References
 
 * Continuous Authentication for Mouse Dynamics: A Pattern-Growth Approach (C. Shen et al., 2012)
 * CS 259D Lecture 5

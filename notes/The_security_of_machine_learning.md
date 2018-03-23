@@ -16,7 +16,7 @@
     - [Defend: against Exploratory attacks](#defend-against-exploratory-attacks)
     - [Defend: against Causative attacks](#defend-against-causative-attacks)
 - [SpamBayes Example](#spambayes-example)
-- [Reference](#reference)
+- [References](#references)
 
 <!-- /TOC -->
 
@@ -228,7 +228,7 @@
     * Get target to disable spam filter
     * DoS against a bidding competitor
 
-## Reference
+## References
 
 * The security of machine learning, 2010
 * CS 259D Session 10

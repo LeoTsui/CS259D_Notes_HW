@@ -23,9 +23,9 @@
 * [Intrusion Detection](notes/Intrusion_Detection.md)
     * [A-IDS](notes/A-IDS.md)
     * [A Comprehensive Approach to Intrusion Detection Alert Correlation](notes/A_Comprehensive_Approach_to_Intrusion_Detection_Alert_Correlation.md)
-* [Entropy of Streaming Data](notes/Entropy_of_Streaming_Data.md)
+* [Streaming Data and Entropy](notes/Streaming_Data_and_Entropy.md)
     * [Data Streaming Algorithms for Estimating Entropy of Network Traffic](notes/Data_Streaming_Algorithms_for_Estimating_Entropy_of_Network_Traffic.md)
-    * [A Simple Sketching Algorithm for Entropy Estimation over Streaming Data](notes/A_simple_sketching_algorithm_for_entropy_estimation_over_streaming_data.md)
+    <!-- * [A Simple Sketching Algorithm for Entropy Estimation over Streaming Data](notes/A_simple_sketching_algorithm_for_entropy_estimation_over_streaming_data.md) >
 * [Deep Packet Inspection and Polymorphism](notes/Deep_Packet_Inspection_and_Polymorphism.md)
     * [PAYL Anomalous Payload-Based Network Intrusion Detection](notes/PAYL_Anomalous_Payload-Based_Network_Intrusion_Detection.md)
     * [McPAD](notes/McPAD.md)

@@ -52,7 +52,7 @@
 * Actually, threshold is used to exclude out outliers
     * The anomalous data can be regarded as outliers
 
-## Reference
+## References
 
 * [Keystroke Dynamics - Benchmark Data Set](http://www.cs.cmu.edu/~keystroke/)
 * Kevin S. Killourhy and Roy A. Maxion. "Comparing Anomaly Detectors for Keystroke Dynamics," in Proceedings of the 39th Annual International Conference on Dependable Systems and Networks (DSN-2009), pages 125-134, Estoril, Lisbon, Portugal, June 29-July 2, 2009. IEEE Computer Society Press, Los Alamitos, California, 2009.

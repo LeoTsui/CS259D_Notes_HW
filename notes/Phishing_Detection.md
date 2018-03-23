@@ -25,7 +25,7 @@
     - [Correction Approaches](#correction-approaches)
     - [Prevention Approaches](#prevention-approaches)
 - [Evaluation Metrics](#evaluation-metrics)
-- [Reference](#reference)
+- [References](#references)
 
 <!-- /TOC -->
 
@@ -192,7 +192,7 @@ Phishing is a type of computer attack that communicates socially engineered mess
 
 * Common statistical errors
 
-## Reference
+## References
 
 * Phishing Detection: A Literature Survey
 * [PHISHING DETECTION](https://www.slideshare.net/ummeayesha/phishing-detection)

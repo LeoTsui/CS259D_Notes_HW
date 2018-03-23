@@ -17,7 +17,7 @@
     - [Botnet's strategy](#botnets-strategy)
     - [Cost of botnet](#cost-of-botnet)
     - [Fail case](#fail-case)
-- [Reference](#reference)
+- [References](#references)
 
 <!-- /TOC -->
 
@@ -156,7 +156,7 @@
 * Change the C&C server extremely frequently
 * Use completely different traffic patterns after each C&C server change
 
-## Reference
+## References
 
 * BotFinder: Finding Bots in Network Traffic Without Deep Packet Inspection
 * CS 259D Lecture 2

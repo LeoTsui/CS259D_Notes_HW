@@ -27,7 +27,7 @@
     - [Summary of Feature Space](#summary-of-feature-space)
 - [Implementation schemes](#implementation-schemes)
 - [Experimental](#experimental)
-- [Reference](#reference)
+- [References](#references)
 
 <!-- /TOC -->
 
@@ -330,7 +330,7 @@
 * Tracking a Valid User
     * Identify the same valid user on different hardware
 
-## Reference
+## References
 
 * An examination of user behavior for re- authentication (M. Pusara's PhD thesis, 2007)
 * Toward Reliable User Authentication through Biometrics
