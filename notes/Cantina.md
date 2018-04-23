@@ -2,8 +2,8 @@
 
 <!-- TOC -->
 
-- [Background Knowledge and Insight](#background-knowledge-and-insight)
-- [Goal and Contribution](#goal-and-contribution)
+- [Background Knowledge and Insights](#background-knowledge-and-insights)
+- [Goals and Contributions](#goals-and-contributions)
 - [Data Source](#data-source)
 - [CANTINA](#cantina)
     - [Words](#words)
@@ -14,7 +14,7 @@
 
 <!-- /TOC -->
 
-## Background Knowledge and Insight
+## Background Knowledge and Insights
 
 * TF-IDF
     * Measure importance of word in document
@@ -33,7 +33,7 @@
         * Common on brand's webpages
         * Rare on the web
 
-## Goal and Contribution
+## Goals and Contributions
 
 * CANTINA makes use of TF-IDF for detecting phishing sites
 * Apply Robust Hyperlinks to anti-phishing

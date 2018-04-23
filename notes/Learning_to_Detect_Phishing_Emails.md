@@ -2,8 +2,8 @@
 
 <!-- TOC -->
 
-- [Background Knowledge and Insight](#background-knowledge-and-insight)
-- [Goal and Contribution](#goal-and-contribution)
+- [Background Knowledge and Insights](#background-knowledge-and-insights)
+- [Goals and Contributions](#goals-and-contributions)
 - [Data](#data)
 - [Feature](#feature)
 - [Features in Webpage Classification](#features-in-webpage-classification)
@@ -12,7 +12,7 @@
 
 <!-- /TOC -->
 
-## Background Knowledge and Insight
+## Background Knowledge and Insights
 
 * Phishing
     * Goal
@@ -38,7 +38,7 @@
             * More complete context (content, headers, etc.)
             * Completely shield user from decision-making process
 
-## Goal and Contribution
+## Goals and Contributions
 
 * A machine-learning based phishing e-mail filter
 

@@ -3,7 +3,7 @@
 <!-- TOC -->
 
 - [Background Knowledge](#background-knowledge)
-- [Insight and Goal](#insight-and-goal)
+- [Insights and Goals](#insights-and-goals)
 - [Eigen co-occurrence matrix (ECM)](#eigen-co-occurrence-matrix-ecm)
 - [References](#references)
 
@@ -31,7 +31,7 @@
         * Hidden Markov Model (HMM)
             * Hard to build an adequate topology
 
-## Insight and Goal
+## Insights and Goals
 
 * Assumption
     * The dynamic behavior of a user appearing in a sequence can be captured by correlating not only connected events but also events that are not adjacent to each other while appearing within a certain distance (non-connected events)

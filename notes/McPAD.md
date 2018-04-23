@@ -2,7 +2,7 @@
 
 <!-- TOC -->
 
-- [Goal and Contribution](#goal-and-contribution)
+- [Goals and Contributions](#goals-and-contributions)
 - [Architecture](#architecture)
     - [One-class SVM](#one-class-svm)
     - [Fusion rules](#fusion-rules)
@@ -14,7 +14,7 @@
 
 <!-- /TOC -->
 
-## Goal and Contribution
+## Goals and Contributions
 
 * Improve $$2$$-grams
 
@@ -28,8 +28,8 @@
 
 * Combine all different One-Class SVM
 * Min, Max, Mean, Product, Majority voting
-* Apply for every $$p_i(\mathrm{x}|\omega)$$
-* Assume uniform distribution for outliers
+* Applied to a-posteriori class probabilities under different models, $$p_i(\mathrm{x}|\omega)$$
+* Assuming uniform distribution for outliers can turn these rules into class-conditional probabilities
 
 ### McPAD
 
@@ -38,20 +38,20 @@
 * Feature Extraction
     * $$2_v$$-grams, $$65536$$ dimensions
         * $$n$$-grams, $$256^n$$ dimensions
-        * For $$v = 0$$, $$2$$-gram
+        * For $$v = 0$$, $$2$$-gram model (of PAYL)
         * Size of sliding window, $$v + 2$$
     * No auto way to derive $$2_(v-1)$$-grams, $$2_(v-2)$$-grams from $$2_v$$-grams
         * Not like $$n$$-grams
         * Different $$v$$ cause different structural information about the payload
 * Feature Reduction
-    * Cluster
+    * Feature clustering algorithm
 
 ### Attacks
 
 * Generic attacks
 * Shell-code attacks
 * CLET attacks
-* PBA attacks
+* PBA(Polymorphic Blending Attack) attacks
 
 ## Data
 

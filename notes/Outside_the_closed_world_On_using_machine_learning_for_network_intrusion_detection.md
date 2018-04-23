@@ -1,7 +1,7 @@
 # Outside the Closed World: On Using Machine Learning for Network Intrusion Detection
 <!-- TOC -->
 
-- [Background Knowledge and Insight](#background-knowledge-and-insight)
+- [Background Knowledge and Insights](#background-knowledge-and-insights)
 - [Challenges of Using Machine Learning](#challenges-of-using-machine-learning)
     - [Outlier Detection](#outlier-detection)
     - [High Cost of Errors](#high-cost-of-errors)
@@ -18,7 +18,7 @@
 
 <!-- /TOC -->
 
-## Background Knowledge and Insight
+## Background Knowledge and Insights
 
 * Network Intrusion Detection Systems (NIDS)
     *  Misuse detection

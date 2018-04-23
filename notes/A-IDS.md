@@ -2,8 +2,8 @@
 
 <!-- TOC -->
 
-- [Background Knowledge and Insight](#background-knowledge-and-insight)
-- [Goal](#goal)
+- [Background Knowledge and Insights](#background-knowledge-and-insights)
+- [Goals](#goals)
 - [Data Source](#data-source)
 - [Feature](#feature)
 - [Adaptive Intrusion Detection System (A-IDS)](#adaptive-intrusion-detection-system-a-ids)
@@ -16,7 +16,7 @@
 
 <!-- /TOC -->
 
-## Background Knowledge and Insight
+## Background Knowledge and Insights
 
 * Diverse network environments
 * Dynamic attack types
@@ -44,7 +44,7 @@
     * Adapt to dynamic adversarial environments
     * How to choose the best
 
-## Goal
+## Goals
 
 * New efficient online learning framework
 * Adaptive Intrusion Detection System (**A-IDS**)

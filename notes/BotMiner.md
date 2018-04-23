@@ -2,8 +2,8 @@
 
 <!-- TOC -->
 
-- [Background Knowledge and Insight](#background-knowledge-and-insight)
-- [Goal and Contribution](#goal-and-contribution)
+- [Background Knowledge and Insights](#background-knowledge-and-insights)
+- [Goals and Contributions](#goals-and-contributions)
 - [BotMiner](#botminer)
     - [C-plane Monitor](#c-plane-monitor)
     - [A-plane Monitor](#a-plane-monitor)
@@ -15,7 +15,7 @@
 
 <!-- /TOC -->
 
-## Background Knowledge and Insight
+## Background Knowledge and Insights
 
 * **The Botnet is like an army**
 * Bots act a similar/correlated way
@@ -25,7 +25,7 @@
     * Otherwise, degenerate into a group of unrelated/isolated infections
         * A bot**net** should be different from a set of **isolated** individual malware instances
 
-## Goal and Contribution
+## Goals and Contributions
 
 * Detection is grounded on the definition and essential properties, no a priori knowledge
 * A new "aggregated communication flow" (C-flow)

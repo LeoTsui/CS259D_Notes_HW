@@ -2,8 +2,8 @@
 
 <!-- TOC -->
 
-- [Background Knowledge and Insight](#background-knowledge-and-insight)
-- [Goal and Contribution](#goal-and-contribution)
+- [Background Knowledge and Insights](#background-knowledge-and-insights)
+- [Goals and Contributions](#goals-and-contributions)
 - [Data](#data)
 - [Feature](#feature)
 - [Architecture](#architecture)
@@ -25,7 +25,7 @@
 
 <!-- /TOC -->
 
-## Background Knowledge and Insight
+## Background Knowledge and Insights
 
 * How to cover multiple aspects "as a whole"
     * Different attack manifestations
@@ -38,7 +38,7 @@
         * IT environment (e.g., Windows vs Linux)
         * Levels of abstraction (e.g., Kernel level vs application level)
 
-## Goal and Contribution
+## Goals and Contributions
 
 * Aggregate outputs of multiple IDSs
 * Filter out irrelevant alerts

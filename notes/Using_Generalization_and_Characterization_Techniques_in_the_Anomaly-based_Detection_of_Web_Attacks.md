@@ -2,7 +2,7 @@
 
 <!-- TOC -->
 
-- [Background Knowledge and Insight](#background-knowledge-and-insight)
+- [Background Knowledge and Insights](#background-knowledge-and-insights)
     - [Web application](#web-application)
     - [Anomaly detection for web security](#anomaly-detection-for-web-security)
     - [Generalization and Characterization](#generalization-and-characterization)
@@ -30,7 +30,7 @@
 
 <!-- /TOC -->
 
-## Background Knowledge and Insight
+## Background Knowledge and Insights
 
 ### Web application
 

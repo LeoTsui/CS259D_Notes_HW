@@ -3,7 +3,7 @@
 <!-- TOC -->
 
 - [Entry-point authentication on mobile devices](#entry-point-authentication-on-mobile-devices)
-- [Contribution](#contribution)
+- [Contributions](#contributions)
 - [Data Source](#data-source)
 - [Touch-based Gestures](#touch-based-gestures)
 - [Feature](#feature)
@@ -25,7 +25,7 @@
     * Disable unlock
 * Higher risk of thief
 
-## Contribution
+## Contributions
 
 * Touch-based behavioral biometric authentication
 

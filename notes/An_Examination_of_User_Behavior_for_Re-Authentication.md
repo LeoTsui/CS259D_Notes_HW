@@ -2,7 +2,7 @@
 
 <!-- TOC -->
 
-- [Background Knowledge and Insight](#background-knowledge-and-insight)
+- [Background Knowledge and Insights](#background-knowledge-and-insights)
     - [Re-authentication](#re-authentication)
     - [Behavioral Biometrics (Re-)authentication](#behavioral-biometrics-re-authentication)
 - [Objective of User Re–authentication System](#objective-of-user-reauthentication-system)
@@ -37,7 +37,7 @@
 > 
 > <div align="right">US Secret Service National Threat Assessment Center (NTAC), Insider threat study (2004)</div>
 
-## Background Knowledge and Insight
+## Background Knowledge and Insights
 
 ### Re-authentication
 

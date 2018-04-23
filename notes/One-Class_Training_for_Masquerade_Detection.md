@@ -2,7 +2,7 @@
 
 <!-- TOC -->
 
-- [Background Knowledge and Insight](#background-knowledge-and-insight)
+- [Background Knowledge and Insights](#background-knowledge-and-insights)
 - [Schonlau Dataset](#schonlau-dataset)
 - [Machine learning methods](#machine-learning-methods)
     - [Naïve Bayes Classifier](#naïve-bayes-classifier)
@@ -12,7 +12,7 @@
 
 <!-- /TOC -->
 
-## Background Knowledge and Insight
+## Background Knowledge and Insights
 
 * Modeling user behaviors
 * Detect anomalous misbehaviors

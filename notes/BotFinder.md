@@ -2,8 +2,8 @@
 
 <!-- TOC -->
 
-- [Background Knowledge and Insight](#background-knowledge-and-insight)
-- [Goal and Contribution](#goal-and-contribution)
+- [Background Knowledge and Insights](#background-knowledge-and-insights)
+- [Goals and Contributions](#goals-and-contributions)
 - [DATA](#data)
 - [BotFinder](#botfinder)
     - [Notation](#notation)
@@ -21,7 +21,7 @@
 
 <!-- /TOC -->
 
-## Background Knowledge and Insight
+## Background Knowledge and Insights
 
 * Three core design goals
     * Able to detect individual bot infections
@@ -41,7 +41,7 @@
     * Timing patterns of communications with C&C
 * Run bot binaries in a controlled environment, learn patterns
 
-## Goal and Contribution
+## Goals and Contributions
 
 * Observe that C&C traffic of different bot families exhibits regularities
 * A learning-based approach that automatically generates bot detection models

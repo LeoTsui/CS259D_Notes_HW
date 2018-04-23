@@ -2,30 +2,28 @@
 
 <!-- TOC -->
 
-- [Goal](#goal)
-- [Shellcode](#shellcode)
-    - [Decoder](#decoder)
-- [Related work: Signature matching](#related-work-signature-matching)
-- [Problem definition](#problem-definition)
+- [Background Knowledge and Insights](#background-knowledge-and-insights)
+    - [Shellcode](#shellcode)
+    - [Signature Matching](#signature-matching)
+    - [Decoder and Decoder Detector](#decoder-and-decoder-detector)
+- [Goals and Contributions](#goals-and-contributions)
 - [Polymorphic Engine Analysis](#polymorphic-engine-analysis)
+    - [Notation](#notation)
+    - [Problem Definition](#problem-definition)
     - [Measures](#measures)
-    - [Spectral Image](#spectral-image)
-    - [Minimum Euclidian distance](#minimum-euclidian-distance)
-    - [Variation strength](#variation-strength)
-    - [Propagation strength](#propagation-strength)
-    - [Overall strength](#overall-strength)
+        - [Spectral Image](#spectral-image)
+        - [Minimum Euclidian distance](#minimum-euclidian-distance)
+        - [Variation strength](#variation-strength)
+        - [Propagation strength](#propagation-strength)
+        - [Overall strength](#overall-strength)
 - [Hybrid Engine: Combining Polymorphism and Blending](#hybrid-engine-combining-polymorphism-and-blending)
 - [References](#references)
 
 <!-- /TOC -->
 
-## Goal
+## Background Knowledge and Insights
 
-* Describe describes shellcode and code obfuscation techniques
-* Measure the strengths of polymorphic engines
-* Introduce a hybrid engine
-
-## Shellcode
+### Shellcode
 
 * Traditional shellcode structure
     * [nop][**payload**][retaddr]
@@ -37,26 +35,9 @@
     * Code-obfuscation
         * Encrypt
         * Dynamically decrypt at runtime
-        * Remain code obfuscated at runtime
+        * Remain code obfuscated at transmission
 
-### Decoder
-
-* Look for decoder rather than payload
-* **How well the decoder can be hidden**
-    * Rearranging and randomizing the order of the individual ciphers components
-    * Randomly chosen keys
-    * Insert junk instructions
-* Decoder detector
-    * Modification operation
-        * `add`, `sub`, `xor`, etc.
-    * Loop component
-        * `jmpz`
-    * Maintenance operations
-        * Clear register
-        * Multiple cipher operation
-        * Calculate the location of the executable
-
-## Related work: Signature matching
+### Signature Matching
 
 * String-based signatures
     * Snort
@@ -66,65 +47,99 @@
 * Signature from the actual actual exploit code
 * Statistical measures of packet content
 
+### Decoder and Decoder Detector
 
-## Problem definition
+* Look for decoder rather than payload
+* **How well the decoder can be hidden**
+    * Rearranging and randomizing the order of the individual ciphers components
+    * Randomly chosen keys
+    * Insert junk instructions
+* Decoder
+    * Components
+        * Modification operation
+            * `add`, `sub`, `xor`, etc.
+        * Loop component
+            * `jmpz`
+    * Maintenance behaviors, more than "decoding"
+        * Clear register
+        * Multiple cipher operation
+        * Calculate the location of the executable
 
-* Given n bytes, there exist 256<sup>n</sup> possible strings
-* x86 code of length n is a subspace
-* How difficult is it to model this subspace?
+## Goals and Contributions
+
+* Describe shellcode and code obfuscation techniques
+* Measure the strengths of polymorphic engines
+* Introduce a hybrid engine
+* Proved: Given any normal statistical model, there is a significant probability that an attacker can craft successful targeted attacks against it.
 
 ## Polymorphic Engine Analysis
 
+### Notation
+
+* $$n$$, $$\#$$ string bytes
+* $$N$$, $$\#$$ samples
+* $$\mathbf{x}$$ ($$\mathbf{y}$$), set of column vectors (samples)
+* $$\mathbf{x}_i$$ ($$\mathbf{x}_j$$), $$i, j  = 1 ... N$$, the $$i^{th}$$ ($$j^{th}$$) vector (sample) in the set $$\mathbf{x}$$
+* $$\mathbf{x}(i)$$, the $$i^{th}$$ component of the vector $$\mathbf{x}$$
+
+### Problem Definition
+
+* Given $$n$$ bytes, there exist $$256^n$$ possible strings
+* *x86* code of length $$n$$ is a subspace
+* How difficult is it to model this subspace?
+
 ### Measures
 
-* Spectral image
-* Minimum Euclidian distance
-* Variation strength
-* Propagation strength
-* Overall strength
+####  Spectral Image
 
-###  Spectral Image
+![visualization of shellcode variations](images/visualization_of_shellcode_variations.png)
 
-![visualization_of_shellcode_variations](images/visualization_of_shellcode_variations.png)
-
-* D decoders of length N
-* Compile into D*N matrix
+* $$D$$ decoders of length $$N$$
+* Compile into $$D \times N$$ matrix
 * Display matrix as image
+    * `0x00`-`0xFF`: black-white
 
-### Minimum Euclidian distance
+#### Minimum Euclidian distance
 
 * Intuition: Decoders can shift order of operations
-* String x as point in n-dim Euclidian space
-    * Example: "ab" -> (97,98)
-* Minimum Euclidian Distance: minimum normalized distance between two points under arbitrary byte-level rotations
+* String $$\mathbf{x}$$ as point in $$n$$-dimensional Euclidian space
+    * Example (2D): "ab" $$\rightarrow (97, 98)$$
+* Minimum Euclidian Distance: 
+    * Minimum normalized distance between two points under arbitrary byte-level rotations
+    * $$rot(\mathbf{y}, r)$$, rotate the string $$\mathbf{y}$$ to the left by $$r$$-bytes, with wraparound
 
-$$\delta(\textbf{x}, \textbf{y}) = \min_{1 \leq r \leq n}\{\frac{\parallel \textbf{x} = rot(\textbf{y}, r) \parallel}{\parallel \textbf{x} \parallel + \parallel \textbf{y} \parallel}\}$$
+<p align="center">$$\delta(\mathbf{x}, \mathbf{y}) = \min_{1 \leq r \leq n}\{\frac{\parallel \mathbf{x} = rot(\mathbf{y}, r) \parallel}{\parallel \mathbf{x} \parallel + \parallel \mathbf{y} \parallel}\}$$</p>
 
-### Variation strength
+#### Variation strength
 
-* Magnitude of the space covered by span of points in n-space corresponding to detectors
-* Decoders $$x_1, x_2, ..., x_N$$ in n-space
-* $$\lambda_1, \lambda_2, ..., \lambda_n$$ eigenvalues of covariance matrix
+* Magnitude of the space covered by span of points in $$n$$-space corresponding to detectors
+* Decoders $$x_1, x_2, ..., x_N$$ in $$n$$-space
+* $$\lambda_1, \lambda_2, ..., \lambda_n$$, eigenvalues of covariance matrix
 * Variation strength:
 
-$$\Psi(\text{engine}) = \frac{1}{d}\sum_{i = 1}^{d}{\sqrt{\lambda_i}}$$
+<p align="center">$$\Psi(\text{engine}) = \frac{1}{d}\sum_{i = 1}^{d}{\sqrt{\lambda_i}}$$</p>
 
-### Propagation strength
+#### Propagation strength
 
+* Worst case of variation strength measure
+    * Decoder is distributed on a hollow $$n$$-dimensional sphere with a large radius
 * Efficacy in making sample pairs different
 * Consider fully connected graph with decoders as nodes
-* Edge weight = minimum Euclidian distance
-* Propagation strength = average edge weight
+    * Edge weight $$=$$ minimum Euclidian distance
+    * Average edge weight $$=$$ propagation strength
 * $$\eta = \#$$ salient bytes in samples
-* p(.) = prior (default: p(.) = 1)
+* $$\delta(\mathbf{x}, \mathbf{y})$$, distance between two samples
+    * Flexible selection of distance function $$\delta$$
+* Default: uniform prior, $$p(\delta(\cdot)) = 1$$
+* Propagation strength:
 
-$$\Phi(engine) = (1 - \frac{\eta}{n})\int\int p(\delta(x, y))\delta(x, y)dxdy$$
+<p align="center">$$\Phi(engine) = (1 - \frac{\eta}{n})\int\int p(\delta(\mathbf{x}, \mathbf{y}))\delta(\mathbf{x}, \mathbf{y})d\mathbf{x} d\mathbf{y}$$</p>
 
-### Overall strength
+#### Overall strength
 
-* For a polymorphic engine
+* Measure polymorphic engine:
 
-$$\Pi(\text{engine}) = \Phi(\text{engine}) \cdot \Psi(\text{engine})$$
+<p align="center">$$\Pi(\text{engine}) = \Psi(\text{engine}) \cdot \Phi(\text{engine})$$</p>
 
 ## Hybrid Engine: Combining Polymorphism and Blending
 
@@ -141,4 +156,5 @@ $$\Pi(\text{engine}) = \Phi(\text{engine}) \cdot \Psi(\text{engine})$$
 ## References
 
 * On the Infeasibility of Modeling Polymorphic Shellcode, Song et al, 2007
+* On the Infeasibility of Modeling Polymorphic Shellcode Re-thinking the role of learning in intrusion detection systems, Song et al, 2009
 * CS 259D Session 14

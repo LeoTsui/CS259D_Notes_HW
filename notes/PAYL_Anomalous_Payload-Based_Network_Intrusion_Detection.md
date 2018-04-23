@@ -2,11 +2,10 @@
 
 <!-- TOC -->
 
-- [Background Knowledge and Insight](#background-knowledge-and-insight)
-- [Goal](#goal)
+- [Background Knowledge and Goals](#background-knowledge-and-goals)
 - [Data](#data)
 - [Feature](#feature)
-- [PAYL (Payload Modeling and Anomaly Detection)](#payl-payload-modeling-and-anomaly-detection)
+- [PAYL](#payl)
     - [Length Conditioned n-Gram Payload Model](#length-conditioned-n-gram-payload-model)
     - [Simplified Mahalanobis Distance](#simplified-mahalanobis-distance)
     - [Incremental Learning](#incremental-learning)
@@ -18,14 +17,11 @@
 
 <!-- /TOC -->
 
-## Background Knowledge and Insight
+## Background Knowledge and Goals
 
-* Available IDS failed on
+* Existing IDSs failed on
     * 0-day
     * Slow and stealthy worm propagation
-
-## Goal
-
 * Detect first occurrences of zero-day worms or new malicious codes delivered via network
     * Signatures not effective
     * Slow/stealthy worm propagation can avoid bursts in network traffic flows or probes
@@ -35,7 +31,6 @@
 
 * 1999 DARPA IDS dataset
 * CUCS dataset
-* Smoothing factor = 0.001
 * Data units
     * Full packet
     * First 100 bytes of packet
@@ -47,7 +42,7 @@
 
 * Mean and variance of each frequency
 
-## PAYL (Payload Modeling and Anomaly Detection)
+## PAYL
 
 * Design criteria and operating objectives
     * Hands-free
@@ -68,12 +63,12 @@
     * Direction of stream
         * Inbound
         * Outbound
-* Measurement: n-gram frequencies
-    * Length $$L$$: frequency $$= \#$$ of occurrences $$/ (L-n+1)$$
+* Measurement: $$n \text{-gram}$$ frequencies
+    * Given packet length $$L$$, frequency $$= \#$$ of occurrences $$/ (L-n+1)$$
     * Use $$n = 1$$: 256 ASCII characters
 * $$i$$, observed length bin
 * $$j$$, port number
-* $$M_{ij}$$, average byte frequency and the standard deviation of each byte’s frequency
+* $$M_{ij}$$, average byte frequency and the standard deviation of each byte's frequency
 
 
 ### Simplified Mahalanobis Distance
@@ -81,9 +76,9 @@
 * Simplifications
     * Naïve assumption: Byte frequencies independent
         * Covariance matrix becomes diagonal
-    * Replace variance with standard deviation
+    * Replace 2-norm with 1-norm
         * Avoid time-consuming square and square-root computations
-    * Add smoothing factor
+    * Add smoothing factor = 0.001
         * Avoid zero SD and infinite distance
         * Avoid same frequency
         * Reflect statistical confidence of sampled training data
@@ -95,7 +90,7 @@
 * Intuitive Explanation
     * **A kind of "normalization" observation examples by "length bin", and summing the results**
     * For each dimension (observed length bin, $$i$$)
-        * Measure the Euclidean distance between a sample data and the center point
+        * Measure the Manhattan distance between a sample data and the center point
         * Normalize with smoothed SD
     * Summation
 
@@ -108,11 +103,11 @@
 
 ### Reduced Model Size by Clustering
 
-* Fine-grained model problem:
+* Fine-grained model problem
     * Large total size of model
         * Similar distributions for near lengths
     * Insufficient training data for some lengths
-* Solution:
+* Solution
     * Merge neighboring models
         * Manhattan distance
     * Borrow data from neighboring bins
@@ -130,16 +125,17 @@
 
 ### Z-string
 
-* Distribution ordered by Zipf law can represent the signature
-* Z-strings of payloads from different match each other
+* Distribution ordered by Zipf's law can represent the signature
+* Z-strings of anomalous payloads from different sites match each other
     * A worm has appeared
 
 ## Limitation
 
-* Curse of dimensionality (Maybe not today)
+* Curse of dimensionality
 * Spurious features
 * Not robust against adversaries
 * No focused scope
+* Easily escaped by mimicry attacks (blending attack)
 
 ## References
 

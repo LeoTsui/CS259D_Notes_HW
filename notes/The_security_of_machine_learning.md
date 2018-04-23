@@ -2,7 +2,7 @@
 
 <!-- TOC -->
 
-- [Background Knowledge and Insight](#background-knowledge-and-insight)
+- [Background Knowledge and Insights](#background-knowledge-and-insights)
 - [Framework](#framework)
     - [Security analysis](#security-analysis)
     - [Taxonomy](#taxonomy)
@@ -20,7 +20,7 @@
 
 <!-- /TOC -->
 
-## Background Knowledge and Insight
+## Background Knowledge and Insights
 
 * Evaluate the quality of a learning system
 * Determine whether it satisfies requirements for secure learning

@@ -27,7 +27,7 @@
     * [Data Streaming Algorithms for Estimating Entropy of Network Traffic](notes/Data_Streaming_Algorithms_for_Estimating_Entropy_of_Network_Traffic.md)
     <!-- * [A Simple Sketching Algorithm for Entropy Estimation over Streaming Data](notes/A_simple_sketching_algorithm_for_entropy_estimation_over_streaming_data.md) >
 * [Deep Packet Inspection and Polymorphism](notes/Deep_Packet_Inspection_and_Polymorphism.md)
-    * [PAYL Anomalous Payload-Based Network Intrusion Detection](notes/PAYL_Anomalous_Payload-Based_Network_Intrusion_Detection.md)
+    * [PAYL](notes/PAYL_Anomalous_Payload-Based_Network_Intrusion_Detection.md)
     * [McPAD](notes/McPAD.md)
     * [Polymorphic Blending Attacks](notes/Polymorphic_Blending_Attacks.md)
     * [On the Infeasibility of Modeling Polymorphic Shellcode](notes/On_the_Infeasibility_of_Modeling_Polymorphic_Shellcode.md)

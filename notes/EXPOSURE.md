@@ -2,8 +2,8 @@
 
 <!-- TOC -->
 
-- [Background Knowledge and Insight](#background-knowledge-and-insight)
-- [Goal and Contribution](#goal-and-contribution)
+- [Background Knowledge and Insights](#background-knowledge-and-insights)
+- [Goals and Contributions](#goals-and-contributions)
 - [Overview of EXPOSURE](#overview-of-exposure)
 - [Collect Training Data](#collect-training-data)
 - [Features](#features)
@@ -22,7 +22,7 @@
 
 <!-- /TOC -->
 
-## Background Knowledge and Insight
+## Background Knowledge and Insights
 
 * Typical Internet attacks
     * Botnet
@@ -35,7 +35,7 @@
         * Migrate servers flexibly
         * Server more "fault-tolerant" than IP
 
-## Goal and Contribution
+## Goals and Contributions
 
 * Detect malicious domains
     * Passive

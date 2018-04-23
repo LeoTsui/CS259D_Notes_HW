@@ -2,8 +2,8 @@
 
 <!-- TOC -->
 
-- [Background Knowledge and Insight](#background-knowledge-and-insight)
-- [Goal](#goal)
+- [Background Knowledge and Insights](#background-knowledge-and-insights)
+- [Goals](#goals)
 - [Data](#data)
     - [Data Source](#data-source)
     - [Data Processing](#data-processing)
@@ -18,7 +18,7 @@
 
 <!-- /TOC -->
 
-## Background Knowledge and Insight
+## Background Knowledge and Insights
 
 * Re-verification system
     * Accuracy
@@ -42,7 +42,7 @@
     * High accuracy
     * Independent of the operating environment
 
-## Goal
+## Goals
 
 * A Novel measurement strategy, angle-based metrics
 * An experiment involving sessions from over 1,000 unique users

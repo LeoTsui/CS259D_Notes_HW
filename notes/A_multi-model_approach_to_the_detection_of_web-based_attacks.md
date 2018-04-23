@@ -2,11 +2,11 @@
 
 <!-- TOC -->
 
-- [Background Knowledge and Insight](#background-knowledge-and-insight)
+- [Background Knowledge and Insights](#background-knowledge-and-insights)
     - [Assumptions of Anomaly Detection](#assumptions-of-anomaly-detection)
     - [Web Security](#web-security)
     - [Web-related Attack Detection](#web-related-attack-detection)
-- [Goal and Contribution](#goal-and-contribution)
+- [Goals and Contributions](#goals-and-contributions)
 - [Sample Date](#sample-date)
 - [Data model](#data-model)
 - [Detection models](#detection-models)
@@ -60,7 +60,7 @@
 
 <!-- /TOC -->
 
-## Background Knowledge and Insight
+## Background Knowledge and Insights
 
 ### Assumptions of Anomaly Detection
 
@@ -87,7 +87,7 @@
     * Applicable to custom-developed web apps
     * Support detection of new attacks
 
-## Goal and Contribution
+## Goals and Contributions
 
 * Unsupervised, learning-based anomaly detection
 * Deployed on host
