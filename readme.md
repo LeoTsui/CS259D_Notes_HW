@@ -1,6 +1,6 @@
 # CS 259D Data Mining for Cyber Security Notes Introduction
 
-**The notes are the supplement to papers and handouts of [CS 259D](https://web.stanford.edu/class/cs259d). Unless otherwise stated, all images and tables are cited from the original paper.**
+**The notes are the supplement to papers and handouts of [CS 259D](https://web.stanford.edu/class/cs259d). Unless otherwise stated, all images and tables are cited from the original papers and slides.**
 
 English: [GitHub](https://github.com/LeoTsui/CS259D_Notes_HW) [GitBook](https://www.gitbook.com/book/leotsui/cs259d-notes) 中文：[Github](https://github.com/LeoTsui/CS259D_Notes_HW_cn) [GitBook](https://www.gitbook.com/book/leotsui/cs259d-notes-cn)
  

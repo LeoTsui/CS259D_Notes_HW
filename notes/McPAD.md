@@ -10,7 +10,7 @@
     - [Attacks](#attacks)
 - [Data](#data)
 - [Limitation](#limitation)
-- [References](#references)
+- [References and Recommended Readings](#references-and-recommended-readings)
 
 <!-- /TOC -->
 
@@ -67,7 +67,9 @@
 
 * [High FP rate](http://www.cse.chalmers.se/edu/course/DAT285B/SLIDESNOTES/NGramPresentation.pptx)
 
-## References
+## References and Recommended Readings
 
 * McPAD : A Multiple Classifier System for Accurate Payload-based Anomaly Detection, Perdisci et al, 2009
+* HMMPayl: An intrusion detection system based on Hidden Markov Models, Ariu, 2011
+* [McPAD and HMMPayl Two Multiple-Classifier Payload-based Anomaly Detectors](http://pralab.diee.unica.it/en/HMMPayl_and_McPAD)
 * CS 259D Lecture 15
