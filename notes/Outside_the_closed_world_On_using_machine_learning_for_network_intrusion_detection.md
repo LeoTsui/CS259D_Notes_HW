@@ -14,6 +14,7 @@
     - [Keeping The Scope Narrow](#keeping-the-scope-narrow)
     - [Reducing the Costs](#reducing-the-costs)
     - [Evaluation](#evaluation)
+- [Guideline: Gain Insights to the Problems Space](#guideline-gain-insights-to-the-problems-space)
 - [References](#references)
 
 <!-- /TOC -->
@@ -22,31 +23,31 @@
 
 * Network Intrusion Detection Systems (NIDS)
     *  Misuse detection
-        * _Exact descriptions_ of known bad behavior
+        * **Exact descriptions** of known bad behavior
     * Anomaly detection
         * Deviations from profiles of normal behavior
-        * Without _precisely describe_ activity
+        * Without **precisely describe** activity
         * First proposed in 1987 by Dorothy Denning (Stanford Research Institute)
 * Misuse detectors are used more commonly than anomaly detectors
     * Despite lots of research on anomaly detection
-    * Despite anomaly detection is suitable for finding _novel_ attacks
+    * Despite anomaly detection is suitable for finding **novel** attacks
     * Despite success of machine learning in many other areas
 
 ## Challenges of Using Machine Learning
 
 ### Outlier Detection
 
-||Classification|Outlier detection|
-|-|-|-|
-|Training samples|Many from both classes|Almost all from one class|
-|Required quality|Enough to distinguish two classes|Perfect model of normal|
+|                  | Classification                    | Outlier detection         |
+|------------------|-----------------------------------|---------------------------|
+| Training samples | Many from both classes            | Almost all from one class |
+| Required quality | Enough to distinguish two classes | Perfect model of normal   |
 
 * Premise: Anomaly detection can find **novel** attacks
 * Fact: ML is better at finding similar patterns than at finding outliers
     * Example: Recommend similar products; similarity: products purchased together
 * Conclusion: ML is better for finding variants of **known** attacks
 * Hard to create **a "closed" world**
-    * Cover all cases
+    * Hard to Cover all cases
 * Underlying assumptions
     * Malicious activity is anomalous
     * Anomalies correspond to malicious activity
@@ -54,16 +55,17 @@
     * Former employee requests authorization code
         * Account revocation bug? Insider threat?
         * Username typo
+    * User authentication fails 10K times
         * Brute force attack?
         * User changed password, forgot to update script
 
 ### High Cost of Errors
 
-||Cost of False Negatives|Cost of False Positives|
-|-|-|-|
-|Product recommendation|Low: potential missed sales|Low: continue shopping|
-|Spam detection|Low: spam finding way to inbox|**High**: missed important email|
-|Intrusion detection|**High**: Arbitrary damage|**High**: wasted precious analyst time|
+|                        | Cost of False Negatives        | Cost of False Positives                |
+|------------------------|--------------------------------|----------------------------------------|
+| Product recommendation | Low: potential missed sales    | Low: continue shopping                 |
+| Spam detection         | Low: spam finding way to inbox | **High**: missed important email       |
+| Intrusion detection    | **High**: Arbitrary damage     | **High**: wasted precious analyst time |
 
 
 ### Semantic Gap, Interpretation of Results
@@ -106,7 +108,7 @@
     * Data's sensitive nature
         * Personal communications
         * Organization's business secret
-        * Nerwork access patterns
+        * Network access patterns
     * Lack of appropriate public data
         * DARPA/Lincoln Labs packet traces
         * KDD Cup dataset
@@ -116,7 +118,7 @@
         * Capturing characteristics of real data
         * Capturing novel attack detection
     * Anonymization
-        * Fear of de-anonymization
+        * Fear of information leakage
         * Removing features of interest to anomaly detection
     * Assemble own datasets
         * Not large enough
@@ -149,7 +151,7 @@
     * No Free Lunch Theorem
 * Not only mathematical guarantee, suit for domain-specific properties
 * Insight into the features' significance and capabilities
-* Example: Anomalous payload-based network intrusion detection, Wang-Stolfo 2004
+* Example: Anomalous payload-based network intrusion detection, Wang-Stolfo 2004 [\[note\]](PAYL_Anomalous_Payload-Based_Network_Intrusion_Detection.html)
     * Features: Byte frequencies in packet payloads
     * Algorithm: Detect packets with anomalous frequency patterns
     * Assumption: Attack payloads have different payload byte frequencies
@@ -162,10 +164,11 @@
     * Data
         * Successful GET requests to CGI apps, from web server Access Logs 
     * Features
-        * Length of attribute value, Character distribution of attribute value 
+        * Length of attribute value
+        * Character distribution of attribute value 
     * Why is this feature relevant
         * Length: Buffer overflow needs to send shellcode and padding
-        * Character distribution: Directory traversal uses too many "." & "/"
+        * Character distribution: Directory traversal uses too many `.` & `/`
 
 ### Reducing the Costs
 
@@ -199,7 +202,14 @@
 * Develop insight into anomaly detection system's capabilities
     * What can/can't it detect? Why?
 
+## Guideline: Gain Insights to the Problems Space
+
+* ML as means to identify important features
+* Use those features to build non-ML detectors
+* ML as a means to an end
+
 ## References
 
-* Outside the closed world: On using machine learning for network intrusion detection, Sommer-Paxson, 2010 
+* Outside the closed world: On using machine learning for network intrusion detection, Sommer-Paxson, 2010
+* [\[Slides\]Outside the closed world: On using machine learning for network intrusion detection](http://oakland10.cs.virginia.edu/slides/anomaly-oakland.pdf)
 * CS 259D Session 13

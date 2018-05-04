@@ -2,25 +2,27 @@
 
 <!-- TOC -->
 
-- [Background Knowledge and Insights](#background-knowledge-and-insights)
+- [Background Knowledge and Goal](#background-knowledge-and-goal)
 - [Framework](#framework)
     - [Security analysis](#security-analysis)
     - [Taxonomy](#taxonomy)
     - [Notation](#notation)
     - [Adversarial learning game](#adversarial-learning-game)
 - [Learn, Attack and Defend](#learn-attack-and-defend)
-    - [Attack: Causative Integrity](#attack-causative-integrity)
-    - [Attack: Causative Availability](#attack-causative-availability)
-    - [Attack: Exploratory Integrity](#attack-exploratory-integrity)
-    - [Attack: Exploratory Availability](#attack-exploratory-availability)
-    - [Defend: against Exploratory attacks](#defend-against-exploratory-attacks)
-    - [Defend: against Causative attacks](#defend-against-causative-attacks)
-- [SpamBayes Example](#spambayes-example)
+    - [Attack: Causative and Integrity](#attack-causative-and-integrity)
+    - [Attack: Causative and Availability](#attack-causative-and-availability)
+    - [Attack: Exploratory and Integrity](#attack-exploratory-and-integrity)
+    - [Attack: Exploratory and Availability](#attack-exploratory-and-availability)
+    - [Defend: Against Exploratory Attacks](#defend-against-exploratory-attacks)
+        - [Defenses against attacks without probing](#defenses-against-attacks-without-probing)
+        - [Defenses against probing attacks](#defenses-against-probing-attacks)
+    - [Defend: Against Causative Attacks](#defend-against-causative-attacks)
+- [Case Study: SpamBayes](#case-study-spambayes)
 - [References](#references)
 
 <!-- /TOC -->
 
-## Background Knowledge and Insights
+## Background Knowledge and Goal
 
 * Evaluate the quality of a learning system
 * Determine whether it satisfies requirements for secure learning
@@ -33,6 +35,7 @@
 ## Framework
 
 ### Security analysis
+
 * Security goals
     * Integrity goal
     * Availability goal
@@ -42,36 +45,38 @@
             * **Cost of defender** corresponds to **benefit of attacker**
     * Attacker capabilities
         * Attackers have knowledge of machine learning
+            * Training algorithm
+            * Training dataset
         * Attackers can generate arbitrary instances, or not
+        * Attackers can control training data, to what extent
+        * Attackers annnot control
             * Label by hand labeled
             * Arrival order of packets
-        * Attackers can control training data, to what extent
 
 ### Taxonomy
 
 * **Influence** (**capability**, influence training data or not)
-    * **Causative** attacks influence learning with control over training data
-    * **Exploratory** attacks exploit misclassifications but do not affect training
+    * **Causative**, attacks influence learning with control over training data
+    * **Exploratory**, attacks exploit misclassifications but do not affect training
 * **Security violation** (**type**)
-    * **Integrity** attacks compromise assets via false negatives
-    * **Availability** attacks cause denial of service, usually via false positives
+    * **Integrity**, attacks compromise assets via false negatives
+    * **Availability**, attacks cause denial of service, usually via false positives
 * **Specificity** (**specific intention**)
-    * **Targeted** attacks focus on a particular instance
-    * **Indiscriminate** attacks encompass a wide class of instances
-* Influence, structure of the game and move sequence
-* Security violation and specificity, cost function
+    * **Targeted**, attacks focus on a particular instance
+    * **Indiscriminate**, attacks encompass a wide class of instances
+* **Influence** determines structure of the game and move sequence
+* **Security violation** and **specificity** determine cost function
 
 ### Notation
 
 ![notation](images/SecML-MLJ2010.notation.png)
 
-###  Adversarial learning game
+### Adversarial learning game
 
 * Exploratory game
     * Defender Choose procedure $$H$$ for selecting hypothesis
-    * Attacker Choose procedure $$A_E$$ for selecting distribution
+    * Attacker Choose procedure $$A_E$$ for selecting distribution $$\mathbb{P}_E$$
         * Construct an unfavorable evaluation distribution concentrating probability mass on high-cost instances
-        * Procedure $$A_E$$ try to construct $$P_E$$
 * Causative game
     * Defender Choose procedure $$H$$ for selecting hypothesis
     * Attacker Choose procedures $$A_T$$ and $$A_E$$ for selecting distributions
@@ -82,7 +87,7 @@
 
 *"Defender" is the "Learner"*
 
-### Attack: Causative Integrity
+### Attack: Causative and Integrity
 
 * Contamination in PAC learning (Kearns and Li 1993)
     * PAC, probably approximately correct
@@ -105,7 +110,7 @@
     * **Learner**
         * Learn spurious features as necessary elements of malicious behavior
 
-### Attack: Causative Availability
+### Attack: Causative and Availability
 
 * Rogue filter (Nelson et al. 2008)
     * **Attacker**
@@ -118,18 +123,18 @@
         * Add spurious features to malicious instances
     * **Learner**
         * Filter blocks benign traffic with those features
-* Allergy attack (Chung and Mok 2006, 2007) 
-    * Against the Autograph worm signature generation system
+* Allergy attack (Chung and Mok 2006, 2007)
+    * Against Autograph, a worm signature generation system
     * **Learner**
-        * Identify infected nodes, based on behavioral patterns
-        * Learn new blocking rules by observing traffic from infected nodes
+        * Phase I, Identify infected nodes, based on behavioral patterns
+        * Phase II, Learn new blocking rules by observing traffic from infected nodes
     * **Attacker**
-        * Convince Autograph that an attack node is infected by scanning
-        * Send crafted packets from attack node, causing Autograph to lean rules blocking begin traffic (DoS)
+        * Phase I, Convince Autograph that an attack node is infected by scanning
+        * Phase II, Send crafted packets from attack node, causing Autograph to lean rules blocking begin traffic (DoS)
 
-### Attack: Exploratory Integrity
+### Attack: Exploratory and Integrity
 
-* Shifty spammer, Good word attacks  (Lowd and Meek 2005b and Wittel and Wu 2004)
+* Shifty spammer, good word attacks (Lowd and Meek 2005b and Wittel and Wu 2004)
     * **Attacker**
         * Craft spam so as to evade classifier without direct influence over the classifier itself
             * Exchange common spam words with less common synonyms
@@ -137,66 +142,68 @@
 * Polymorphic blending (Fogla and Lee 2006)
     * **Attacker**
         * Encrypt attack traffic so it appears statistically identical to normal traffic
-* Mimicry attack, Attacking a sequence-based IDS (Tan et al. 2002)
+* Mimicry attack (Tan et al. 2002)
     * Example: attacking sequence-based IDS
         * Shortest malicious subsequence longer than IDS window size
-* Feature drop
+* Feature drop (FDROP, Amir Globerson and Sam Roweis 2006)
 * Reverse engineering (Lowd and Meek 2005a)
     * **Attacker**
-        * Seeks the highest cost instance that passes the classifier
+        * Seeks the worst case for classifier, best case for attacker
 
-### Attack: Exploratory Availability
+### Attack: Exploratory and Availability
 
 * Mistaken identity (Moore et al. 2006)
     * **Attacker**
         * Interfere with legitimate operation without influence over training
-            * Create a spam campaign with target’s email address as the From: address of spams
-            * Flood of message bounces, vacation replies, angry responses, etc. fill target’s inbox
+            * Create a spam campaign with target's email address as the From: address of spams
+            * Flood of message bounces, vacation replies, angry responses, etc. fill target's inbox
 * Spoofing
     * **Learner**
         * IPS trained on intrusion traffic blocks hosts that originate intrusions
     * **Attacker**
-        * Attack node spoofs legitimate host’s IP address
-* Algorithmic complexity  (Dredze et al. 2007; Wang et al. 2007)
+        * Attack node spoofs legitimate host's IP address
+* Algorithmic complexity (Dredze et al. 2007; Wang et al. 2007)
     * **Attacker**
         * Sending spams embedded in images
 
-### Defend: against Exploratory attacks
+### Defend: Against Exploratory Attacks
 
-* Defenses against attacks without probing
-    * Training data
-        * **Defender**
-            * Limit information accessible to attacker
-    * Feature selection
-        * **Defender**
-            * Example: use inexact string matching in feature selection to defeat obfuscation of words in spams
-            * Avoid spurious features
-            * Regularization: smooth weights, defend against feature deletion
-    * Hypothesis space/learning procedures
-        * **Defender**
-            * Complex space harder to decode, but also harder to learn
-            * Regularization: balance complexity and over-fitting
-* Defenses against probing attacks
-    * Analysis of reverse engineering
-        * **Attacker**
-            * Do not need to model the classifier explicitly
-            * Find lowest-attacker-cost instance
-        * **Defender**
-            * adversarial classifier reverse engineering (ACRE)
-            * ACRE find the lowest-attacker-cost
-    * Randomization
-        * **Defender**
-            * Random decision instead of binary decision
-    * Limiting/misleading feedback
-        * **Defender**
-            * Eliminating bounce emails
-            * Sending fraudulent feedback
+#### Defenses against attacks without probing
 
-### Defend: against Causative attacks
+* Training data
+    * **Defender**
+        * Limit information accessible to attacker
+* Feature selection
+    * **Defender**
+        * Example: use inexact string matching in feature selection to defeat obfuscation of words in spams
+        * Avoid spurious features
+        * Regularization: smooth weights, defend against feature deletion
+* Hypothesis space/learning procedures
+    * **Defender**
+        * Complex space harder to decode, but also harder to learn
+        * Regularization: balance complexity and over-fitting
 
-* The RONI defense
+#### Defenses against probing attacks
+
+* Analysis of reverse engineering
+    * **Attacker**
+        * Do not need to model the classifier explicitly
+        * Find lowest-attacker-cost instance
+    * **Defender**
+        * Adversarial classifier reverse engineering (ACRE)
+        * ACRE find the lowest-attacker-cost
+* Randomization
+    * **Defender**
+        * Random decision instead of binary decision
+* Limiting/misleading feedback
+    * **Defender**
+        * Eliminating bounce emails
+        * Sending fraudulent feedback
+
+### Defend: Against Causative Attacks
+
+* Data sanitization
     * Reject On Negative Impact (RONI)
-    * Data sanitization
     * **Learner**
         * Train two classifier, by whether including a certain instance
         * Measure the accuracy of them
@@ -210,21 +217,21 @@
 * Online prediction with experts
     * Multi-classifier systems
 
-## SpamBayes Example
+## Case Study: SpamBayes
 
 | (**Targeted** or **Indiscriminate**) | **Integrity**                                                 | **Availability**                                                                        |
 | ------------------------------------ | ------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
 | **Causative**                        | **Spam foretold**: mis-train **a** or **any** particular spam | **Rogue filter**: mis-train filter to block **a certain** or **arbitrary** normal email |
 | **Exploratory**                      | **Shifty spammer**: obfuscate **a** or **any** chosen spam    | **Unwanted reply**: flood **a particular** or **any of several** target inbox           |
 
-* Method:
+* Method
     * Send attack emails with legitimate words
     * Legitimate words receive higher spam scores
     * Future legitimate emails more likely filtered
-* Types:
+* Types
     * Indiscriminate: Dictionary attack
     * Targeted: Focused attack
-* Goals:
+* Goals
     * Get target to disable spam filter
     * DoS against a bidding competitor
 

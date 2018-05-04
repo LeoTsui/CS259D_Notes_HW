@@ -3,11 +3,11 @@
 <!-- TOC -->
 
 - [Definitions of Anomaly](#definitions-of-anomaly)
-- [Assumptions And Question](#assumptions-and-question)
-    - [Problem Domain](#problem-domain)
+- [Problems with Anomaly Detection](#problems-with-anomaly-detection)
+    - [Assumptions](#assumptions)
     - [Training Data](#training-data)
     - [Operational Usability](#operational-usability)
-- [Recommend](#recommend)
+- [Recommendations](#recommendations)
 - [References](#references)
 
 <!-- /TOC -->
@@ -26,20 +26,20 @@
     * Subjective
     * Site-specific
 
-## Assumptions And Question
+## Problems with Anomaly Detection
 
-### Problem Domain
+### Assumptions
 
 * Attacks are anomalous (different from the norm)
     * Blind spots of detector
-    * Hind actions
+    * Hide attack actions
 * Attacks are rare
     * Anomaly not the smallest cluster 
     * Scanning is on the top of flow counts
 * Anomalous activity is malicious
     * Alpha flows (very large point-to-point data exchanges)
-    * DoS
-    * _Flash crowds_
+    * _DoS_
+    * Flash crowds
     * _Port scans_
     * _Network scans_
     * Outage events
@@ -68,11 +68,11 @@
 * Administrators can interpret anomalies
     * They are tired
 
-## Recommend
+## Recommendations
 
 * More clearly define
-* More accurate purpose
-* More models
+* More specific purpose
+* More IDS models
 * More tests
 
 ## References
